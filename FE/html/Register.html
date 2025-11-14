@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrintNow - Sign Up</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/Register.css" />
+
+    <style>
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+
+      /* Center submit button inside the register form */
+      #registerForm .btn {
+        display: block;
+        margin: 16px auto 0;
+        width: auto;
+        min-width: 180px;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="bx bx-printer"></i>
+        </div>
+        <div class="text">
+          <h1>PrintNow</h1>
+          <p>Print service</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="form-box">
+        <div class="form-icon">
+          <div class="icon-circle">
+            <i class="bx bx-printer"></i>
+          </div>
+        </div>
+
+        <h2>Get Started with <span class="highlight">PrintNow</span></h2>
+        <p class="subtext">Create your free account</p>
+
+        <form id="registerForm">
+          <div class="input_box">
+            <input
+              id="fullName"
+              type="text"
+              placeholder="Your Full Name"
+              required
+            />
+            <i class="bx bx-user icon-left"></i>
+          </div>
+          <div class="input_box">
+            <input
+              id="email"
+              type="email"
+              placeholder="Your Email Address"
+              required
+            />
+            <i class="bx bx-envelope icon-left"></i>
+          </div>
+          <div class="input_box">
+            <input
+              id="phone"
+              type="tel"
+              placeholder="Your Phone Number"
+              required
+            />
+            <i class="bx bx-phone icon-left"></i>
+          </div>
+          <div class="input_box">
+            <input
+              id="password"
+              type="password"
+              placeholder="Create a Strong Password"
+              required
+            />
+            <i class="bx bx-lock-alt icon-left"></i>
+            <i
+              id="eye-pass"
+              class="bx bx-eye-closed icon-right"
+              role="button"
+              tabindex="0"
+              aria-label="Toggle password visibility"
+            ></i>
+          </div>
+          <button type="submit" class="btn">Sign Up</button>
+        </form>
+
+        <p class="login-text">
+          Already have an account? <a href="/login">Login</a>
+        </p>
+      </div>
+    </main>
+
+    <script>
+      const passwordInput = document.getElementById("password");
+      const eyeIcon = document.getElementById("eye-pass");
+      const registerForm = document.getElementById("registerForm");
+
+      // Toggle password visibility
+      eyeIcon.addEventListener("click", () => {
+        const isPassword = passwordInput.type === "password";
+
+        passwordInput.type = isPassword ? "text" : "password";
+        eyeIcon.classList.toggle("active", isPassword);
+
+        if (isPassword) {
+          eyeIcon.classList.replace("bx-eye-closed", "bx-eye"); // mắt mở
+        } else {
+          eyeIcon.classList.replace("bx-eye", "bx-eye-closed"); // mắt nhắm
+        }
+      });
+
+      // Handle register form submission
+      registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const fullName = document.getElementById("fullName").value;
+        const email = document.getElementById("email").value;
+        const phone = document.getElementById("phone").value;
+        const password = document.getElementById("password").value;
+
+        try {
+          const response = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              fullName: fullName,
+              email,
+              phone,
+              password,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            // Lưu email vào localStorage để sử dụng ở trang xác thực
+            localStorage.setItem("registrationEmail", email);
+            alert(
+              "Đăng ký thành công! Vui lòng kiểm tra email để lấy mã OTP xác thực."
+            );
+            window.location.href =
+              "/verify-otp?email=" + encodeURIComponent(email);
+          } else {
+            alert("Đăng ký thất bại: " + data.message);
+          }
+        } catch (error) {
+          console.error("Registration error:", error);
+          alert("Registration failed. Please try again.");
+        }
+      });
+    </script>
+  </body>
+</html>

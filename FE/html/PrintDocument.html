@@ -1,0 +1,1502 @@
+<!-- FE/html/PrintDocument.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Print Documents</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <!-- Boxicons -->
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Thử thay thế đường dẫn cũ -->
+    <script src="https://unpkg.com/pdfjs-dist@2.9.359/legacy/build/pdf.min.js"></script>
+    <script>
+      // Cấu hình worker cho PDF.js từ CDN
+      if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://unpkg.com/pdfjs-dist@4.2.67/legacy/build/pdf.worker.min.js";
+      }
+    </script>
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background: #f6f7f9;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1150px;
+        margin: auto;
+        display: flex;
+        gap: 24px;
+      }
+
+      .left-panel {
+        flex: 1;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        padding: 28px 32px;
+      }
+
+      .right-panel {
+        width: 300px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: fit-content;
+      }
+
+      .page-header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .page-header > div h2 {
+        margin-bottom: 5px !important;
+      }
+
+      .page-header > div p {
+        margin-top: -2px !important;
+        line-height: 1;
+      }
+
+      .page-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .page-header p {
+        color: #6b7280;
+        font-size: 0.95rem;
+      }
+
+      .btn-back {
+        text-decoration: none;
+        color: #374151;
+        font-size: 1.4rem;
+        transition: color 0.2s ease;
+      }
+
+      .btn-back:hover {
+        color: #007bff;
+        /* transform: translateX(-3px); */
+      }
+
+      h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+        color: #222;
+      }
+
+      p.subtitle {
+        color: #777;
+        margin: 5px 0 20px 0;
+      }
+
+      .section {
+        border: 1px solid #e3e5e8;
+        border-radius: 10px;
+        padding: 5px 25px 25px 25px;
+        margin-top: 20px;
+        background: #fff;
+      }
+
+      .section h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #222;
+      }
+
+      label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+        color: #444;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 0px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      /* .card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        } */
+
+      .input-group {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .input-group .input-field {
+        padding-right: 20px;
+      }
+
+      .input-field {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .input-field label {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+      }
+
+      .input-field span {
+        color: #ef4444;
+      }
+
+      .input-field input {
+        padding: 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 0.95rem;
+      }
+
+      .file-upload {
+        border: 2px dashed #b5b5b5;
+        border-radius: 10px;
+        text-align: center;
+        padding: 35px;
+        background: #fafafa;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .file-upload:hover {
+        border-color: #007bff;
+        background: #f0f8ff;
+      }
+
+      .file-upload input {
+        display: none;
+      }
+
+      textarea {
+        width: 97%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        margin-top: 6px;
+        font-size: 0.95rem;
+        resize: vertical;
+      }
+
+      .file-config {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 12px;
+        background: #fafafa;
+      }
+
+      .file-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .file-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .remove-btn {
+        color: red;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .arrow {
+        transition: transform 0.3s ease;
+        font-size: 13px;
+      }
+
+      .arrow.open {
+        transform: rotate(90deg);
+      }
+
+      .file-details {
+        display: none;
+        margin-top: 15px;
+      }
+
+      .option-group {
+        margin-top: 10px;
+      }
+
+      .flex-row {
+        display: flex;
+        gap: 10px;
+      }
+
+      .option-group.flex-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .option-group.flex-row > div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 100px;
+      }
+
+      .option-group.flex-row label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #374151;
+        margin-bottom: 6px;
+      }
+
+      .option-group.flex-row input,
+      .option-group.flex-row select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background-color: #fff;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+      }
+
+      .option-group.flex-row input:focus,
+      .option-group.flex-row select:focus {
+        border-color: #155dfc;
+        box-shadow: 0 0 0 2px rgba(26, 79, 213, 0.2);
+        outline: none;
+      }
+
+      .option-group.flex-row select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='%236366f1' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 16px;
+        padding-right: 32px;
+        cursor: pointer;
+      }
+
+      /* Style riêng cho radio */
+
+      .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 12px;
+      }
+
+      .radio-group .radio-row label {
+        font-weight: 400;
+        font-size: 16px;
+        color: #374151;
+      }
+
+      .radio-title {
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+
+      .radio-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .radio-row label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      label span {
+        white-space: nowrap;
+      }
+
+      /* Style riêng cho checkbox */
+
+      .checkbox-options {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-left: 28px;
+        padding-left: 10px;
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      .checkbox-options.show {
+        max-height: 80px;
+        opacity: 1;
+      }
+
+      .checkbox-options label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: normal;
+        color: #374151;
+        font-size: 16px;
+      }
+
+      .checkbox-options input[type="checkbox"] {
+        width: auto;
+        /*Giúp checkbox không bị kéo căng hết chiều rộng */
+        padding: 0;
+        margin: 0;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        height: 16px;
+        width: 16px;
+      }
+
+      /* Thêm CSS để chữ nằm bên phải checkbox */
+
+      .checkbox-options label {
+        justify-content: flex-start;
+      }
+
+      /* Style cho ô input số trang màu */
+
+      .combination-options {
+        margin-left: 28px;
+        padding-left: 10px;
+        margin-top: 0px;
+        /* Hiệu ứng trượt và ẩn ban đầu */
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        /* Ẩn ban đầu */
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: all 0.3s ease-out;
+      }
+
+      .combination-options.show {
+        max-height: 100px;
+        opacity: 1;
+      }
+
+      .combination-options label {
+        font-weight: 400;
+        font-size: 16px;
+        color: #374151;
+        margin-bottom: 0;
+        display: block;
+      }
+
+      .combination-options textarea {
+        width: 250px;
+        box-sizing: border-box;
+        padding: 8px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        margin-top: 2px;
+        resize: vertical;
+      }
+
+      /* RIGHT-PANEL*/
+
+      .order-summary-header {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        font-size: 15px;
+      }
+
+      .summary-file {
+        background: #f2f4f7;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      .summary-file strong {
+        display: block;
+        /* Quan trọng để áp dụng width và overflow */
+        max-width: 170px;
+        /* Điều chỉnh độ rộng tối đa cho tên file */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 14px;
+        color: #222;
+      }
+
+      .summary-file .file-details {
+        font-size: 13px;
+        color: #555;
+        line-height: 1.3;
+      }
+
+      .summary-file .file-price {
+        font-weight: 600;
+        font-size: 13px;
+        text-align: right;
+        color: #000;
+      }
+
+      .order-summary-footer {
+        border-top: 1px solid #e5e5e5;
+        margin-top: 12px;
+        padding-top: 12px;
+        font-size: 14px;
+      }
+
+      /*  Đảm bảo nhãn ở trái, giá trị ở phải, căn thẳng hàng */
+
+      .order-summary-footer .d-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-right: 6px;
+      }
+
+      /* LÀM NỔI BẬT: Dòng Total (thẻ div con thứ 2) */
+
+      .order-summary-footer > div:nth-child(2) {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #111827;
+        margin-top: 8px !important;
+      }
+
+      #totalPrice {
+        color: #111827;
+      }
+
+      .btn-payment {
+        background: #374151;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        margin-top: 15px;
+        margin-bottom: 10px;
+      }
+
+      .btn-payment:hover {
+        background: #111827;
+      }
+
+      small {
+        color: #555;
+      }
+
+      .config-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .config-title i {
+        color: #555;
+      }
+
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main role="main">
+      <div class="container">
+        <div class="left-panel">
+          <div class="page-header">
+            <a
+              href="javascript:void(0)"
+              aria-label="Go back"
+              class="btn-back"
+              id="backButton"
+              onclick="goBack()"
+              ><i class="bx bx-arrow-back" aria-hidden="true"></i
+            ></a>
+            <div>
+              <h2>Print Documents</h2>
+              <p>Upload files and configure print options for each file</p>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Customer Information</h3>
+            <div class="input-group">
+              <div class="input-field">
+                <label>Full Name <span>*</span></label>
+                <input
+                  type="text"
+                  id="customerName"
+                  placeholder="Enter full name"
+                  required
+                />
+              </div>
+              <div class="input-field">
+                <label>Email <span>*</span></label>
+                <input
+                  type="email"
+                  id="customerEmail"
+                  placeholder="Enter email"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Upload file</h3>
+            <label class="file-upload">
+              <input
+                type="file"
+                id="fileInput"
+                multiple
+                accept=".pdf,.doc,.docx,.ppt,.pptx"
+              />
+              <p>
+                📄 <strong>Select file to print</strong><br /><small
+                  >Supports PDF, DOC, DOCX, PPT, PPTX (max 10MB per file)</small
+                >
+              </p>
+            </label>
+          </div>
+
+          <div class="section">
+            <h3>Special request</h3>
+            <textarea
+              rows="3"
+              id="specialRequest"
+              placeholder="For example: deliver before 2pm, print on thicker paper..."
+            ></textarea>
+          </div>
+
+          <div class="section" id="configSection" style="display: none">
+            <h3 class="config-title">
+              <i class="bi bi-gear-fill"></i> Configure print files
+            </h3>
+            <div id="configContainer"></div>
+          </div>
+        </div>
+
+        <div class="right-panel">
+          <div>
+            <div class="order-summary-header">
+              <i class="bi bi-list"></i> <span>Order Summary</span>
+            </div>
+
+            <div id="orderSummaryList">
+              <p class="text-muted">No files uploaded yet</p>
+            </div>
+          </div>
+
+          <div class="order-summary-footer">
+            <div class="d-flex justify-content-between">
+              <span>Number of files:</span>
+              <span id="fileCount">0 files</span>
+            </div>
+            <div class="d-flex justify-content-between fw-semibold mt-1">
+              <span>Total:</span>
+              <span id="totalPrice">0₫</span>
+            </div>
+            <button class="btn-payment mt-3" id="btnPay" disabled>
+              Proceed with payment
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <script src="/js/apiService.js"></script>
+
+      <script>
+        // === CÁC BIẾN DOM ===
+        const fileInput = document.getElementById("fileInput");
+        const configContainer = document.getElementById("configContainer");
+        const configSection = document.getElementById("configSection");
+        const orderSummaryList = document.getElementById("orderSummaryList");
+        const fileCountElement = document.getElementById("fileCount");
+        const totalPriceElement = document.getElementById("totalPrice");
+        const btnPay = document.getElementById("btnPay");
+
+        // CÁC BIẾN NÀY ĐÃ ĐƯỢC LẤY CHÍNH XÁC NHỜ CÓ ID TRONG HTML
+        const customerNameInput = document.getElementById("customerName");
+        const customerEmailInput = document.getElementById("customerEmail");
+        const specialRequestTextarea =
+          document.getElementById("specialRequest");
+
+        let uploadedFiles = [];
+        // Đọc preset nếu có (tạo bởi Order_History → Reorder)
+        const _reorderPresetRaw = localStorage.getItem("reorderPreset");
+        const _reorderPreset = (() => {
+          try {
+            return JSON.parse(_reorderPresetRaw || "null");
+          } catch {
+            return null;
+          }
+        })();
+        const docDefaults = (() => {
+          if (
+            _reorderPreset?.type !== "DOCUMENT" ||
+            !_reorderPreset.items?.length
+          ) {
+            return null;
+          }
+          // Lấy item đầu tiên làm mặc định chung cho các file mới
+          const it = _reorderPreset.items[0];
+          return {
+            size: it.size || "A4",
+            side: it.side || "1 side",
+            mode: it.mode || "Black & White",
+            type: it.type || "Regular",
+            binding: !!it.binding,
+            coverPage: !!it.coverPage,
+            copies: Number(it.copies || 1),
+            colorPages: it.colorPages || "",
+          };
+        })();
+
+        // === HÀM TIỆN ÍCH ===
+
+        // Hàm chuẩn hoá chuỗi (bỏ dấu, khoảng trắng, chữ hoa/thường)
+        const norm = (s) =>
+          String(s || "")
+            .normalize("NFD") // tách dấu
+            .replace(/[\u0300-\u036f]/g, "") // bỏ dấu tiếng Việt
+            .replace(/\u00A0/g, " ") // NBSP -> space
+            .replace(/\s+/g, " ") // gộp khoảng trắng
+            .trim()
+            .toLowerCase();
+
+        // Hàm format tiền tệ (VND)
+        function formatCurrency(amount) {
+          // Đảm bảo amount là số
+          if (typeof amount !== "number") return "0₫";
+          return amount.toLocaleString("vi-VN") + "₫";
+        }
+
+        function toggleDetails(id) {
+          const details = document.getElementById(`details-${id}`);
+          const arrow = document.getElementById(`arrow-${id}`);
+          const isOpen = details.style.display === "block";
+
+          details.style.display = isOpen ? "none" : "block";
+          arrow.classList.toggle("open", !isOpen);
+
+          if (!isOpen) {
+            updateSummary(true);
+          }
+        }
+
+        function removeFile(event, id) {
+          event.stopPropagation();
+          uploadedFiles = uploadedFiles.filter((f) => f.id !== id);
+          if (uploadedFiles.length === 0) {
+            configSection.style.display = "none";
+          }
+          renderFileConfig();
+        }
+
+        // Hàm đếm số trang của file PDF sử dụng PDF.js
+        async function getPdfPageCount(file) {
+          if (!window.pdfjsLib) return 1;
+          try {
+            const buf = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+            return pdf.numPages || 1;
+          } catch {
+            return 1; // fallback an toàn
+          }
+        }
+
+        // === XỬ LÝ UPLOAD FILE (đếm trang thật) ===
+        fileInput.addEventListener("change", async function () {
+          const files = Array.from(this.files);
+          if (files.length === 0) return;
+
+          // Gọi API backend để phân tích nhiều file một lượt
+          let pageByName = new Map();
+          try {
+            const res = await analyzeMultipleFiles(files); // từ apiService.js
+            if (res?.results && Array.isArray(res.results)) {
+              for (const it of res.results) {
+                const pages = Number(it.pageCount) || 1;
+
+                // Ghi theo nhiều khoá có thể backend trả:
+                if (it.originalName)
+                  pageByName.set(norm(it.originalName), pages);
+                if (it.fileName) pageByName.set(norm(it.fileName), pages);
+                if (it.storedName) pageByName.set(norm(it.storedName), pages);
+              }
+            }
+          } catch (err) {
+            console.error("Analyze error:", err);
+            // nếu lỗi, để fallback 1 trang
+          }
+
+          configSection.style.display = "block";
+
+          // 2) Với PDF, nếu backend không có trang → đếm cục bộ bằng PDF.js
+          for (const file of files) {
+            console.log(
+              "[lookup]",
+              norm(file.name),
+              "→",
+              pageByName.get(norm(file.name)),
+              pageByName
+            );
+            let pages = pageByName.get(norm(file.name));
+
+            // Nếu chưa match, thử so với base-name không đuôi + so rộng
+            if (!pages) {
+              const targetFull = norm(file.name);
+              const targetBase = targetFull.replace(/\.[a-z0-9]+$/i, "");
+
+              for (const [k, v] of pageByName) {
+                const kFull = norm(k);
+                const kBase = kFull.replace(/\.[a-z0-9]+$/i, "");
+                if (kFull === targetFull || kBase === targetBase) {
+                  pages = v;
+                  break;
+                }
+              }
+            }
+
+            // Cuối cùng mới fallback PDF.js (khi là PDF)
+            if (!pages && /\.pdf$/i.test(file.name)) {
+              pages = await getPdfPageCount(file);
+            }
+            pages = pages || 1;
+
+            const defaultPrice = pages * 500;
+            const id = Date.now() + Math.random().toString(16).slice(2);
+            uploadedFiles.push({
+              id,
+              name: file.name,
+              pages,
+              copies: docDefaults?.copies ?? 1,
+              size: docDefaults?.size ?? "A4",
+              side: docDefaults?.side ?? "1 side",
+              mode: docDefaults?.mode ?? "Black & White",
+              type: docDefaults?.type ?? "Regular",
+              binding: !!docDefaults?.binding,
+              coverPage: !!docDefaults?.coverPage,
+              colorPages: docDefaults?.colorPages ?? "",
+              price: defaultPrice,
+            });
+          }
+
+          this.value = "";
+          renderFileConfig();
+        });
+
+        // === LOGIC TÍNH TOÁN VÀ ĐỒNG BỘ DỮ LIỆU ===
+
+        // Hàm đếm số trang màu từ chuỗi chỉ định
+        function countColorPagesSpec(spec, totalPages) {
+          if (!spec) return 0;
+          const set = new Set();
+          let invalid = false;
+
+          // Xử lý từng token trong chuỗi
+          spec
+            .split(",")
+            .map((s) => s.trim())
+            .forEach((tok) => {
+              if (/^\d+$/.test(tok)) {
+                const n = +tok;
+                if (n >= 1 && n <= totalPages) set.add(n);
+                else invalid = true;
+              } else if (/^\d+\s*-\s*\d+$/.test(tok)) {
+                const [a, b] = tok.split("-").map((x) => +x.trim());
+                const lo = Math.min(a, b),
+                  hi = Math.max(a, b);
+                for (let i = lo; i <= hi; i++) {
+                  if (i >= 1 && i <= totalPages) set.add(i);
+                  else invalid = true;
+                }
+              } else {
+                invalid = true;
+              }
+            });
+
+          if (invalid)
+            console.warn("Color pages spec has invalid tokens:", spec);
+          return set.size;
+        }
+
+        function calculateFilePrice(file) {
+          let pricePerPageBW = 500;
+          let pricePerPageColor = 3000;
+          const priceBinding = 5000;
+          const priceCoverPage = 2000;
+
+          const totalPages =
+            (Number(file.pages) || 0) * (Number(file.copies) || 1);
+          let calculatedPrice = 0;
+          // cách tính theo TỜ: 2 sides thì 1 tờ chứa 2 mặt in
+          const isDouble = String(file.side || "")
+            .toLowerCase()
+            .includes("2");
+          const sheets = isDouble ? Math.ceil(totalPages / 2) : totalPages;
+
+          if (file.mode.includes("Black & White")) {
+            calculatedPrice = sheets * pricePerPageBW;
+          } else if (file.mode.includes("Color")) {
+            calculatedPrice = sheets * pricePerPageColor;
+          } else if (file.mode.includes("Combination")) {
+            const colorPagesSingle = countColorPagesSpec(
+              file.colorPages,
+              file.pages
+            );
+            const colorFaces = colorPagesSingle * file.copies;
+            const bwFaces = Math.max(0, totalPages - colorFaces);
+            // Quy đổi theo TỜ: gom từng nhóm 2 mặt nếu in 2 sides
+            const colorSheets = isDouble
+              ? Math.ceil(colorFaces / 2)
+              : colorFaces;
+            const bwSheets = isDouble ? Math.ceil(bwFaces / 2) : bwFaces;
+            calculatedPrice =
+              bwSheets * pricePerPageBW + colorSheets * pricePerPageColor;
+          }
+
+          if (file.binding) calculatedPrice += priceBinding;
+          if (file.coverPage) calculatedPrice += priceCoverPage;
+
+          file.price = Math.round(calculatedPrice);
+
+          return file.price;
+        }
+
+        function syncFileConfigurations() {
+          let grandTotal = 0;
+
+          uploadedFiles = uploadedFiles.map((file) => {
+            const fileDiv = document.getElementById(`details-${file.id}`);
+
+            if (fileDiv) {
+              // --- Cập nhật giá trị từ DOM ---
+              const copiesInput = fileDiv.querySelector(
+                'div.option-group.flex-row input[type="number"]'
+              );
+              const copies = parseInt(copiesInput ? copiesInput.value : 1) || 1;
+              file.copies = copies;
+
+              const sizeSelect = fileDiv.querySelector(
+                'select[data-field="paper"]'
+              );
+              file.size = sizeSelect ? sizeSelect.value : "A4";
+
+              const sideSelect = fileDiv.querySelector(
+                'select[data-field="side"]'
+              );
+              file.side = sideSelect ? sideSelect.value : "1 side";
+
+              const selectedModeRadio = fileDiv.querySelector(
+                `input[name="mode-${file.id}"]:checked`
+              );
+              if (selectedModeRadio) {
+                file.mode = selectedModeRadio.parentNode.textContent
+                  .trim()
+                  .replace(/\s\(.*\)/, "");
+
+                if (selectedModeRadio.value === "combination") {
+                  const colorPagesTextarea = fileDiv.querySelector(
+                    `#color-pages-${file.id}`
+                  );
+                  file.colorPages = colorPagesTextarea
+                    ? colorPagesTextarea.value.trim()
+                    : "";
+                } else {
+                  file.colorPages = "";
+                }
+              }
+
+              const selectedTypeRadio = fileDiv.querySelector(
+                `input[name="type-${file.id}"]:checked`
+              );
+              if (selectedTypeRadio) {
+                file.type = selectedTypeRadio.value;
+              }
+
+              const bindingCheckbox = fileDiv.querySelector(
+                '.checkbox-options input[data-field="binding"]'
+              );
+              const coverCheckbox = fileDiv.querySelector(
+                '.checkbox-options input[data-field="cover"]'
+              );
+
+              if (file.type === "Thesis/Report") {
+                file.binding = !!(bindingCheckbox && bindingCheckbox.checked);
+                file.coverPage = !!(coverCheckbox && coverCheckbox.checked);
+              } else {
+                file.binding = false;
+                file.coverPage = false;
+              }
+            }
+
+            const newPrice = calculateFilePrice(file);
+            grandTotal += newPrice;
+
+            return file;
+          });
+
+          return grandTotal;
+        }
+
+        function addChangeListeners() {
+          configContainer.addEventListener("change", (e) => {
+            const target = e.target;
+            if (
+              target.tagName === "INPUT" ||
+              target.tagName === "SELECT" ||
+              target.tagName === "TEXTAREA"
+            ) {
+              updateSummary(true);
+            }
+          });
+
+          configContainer.addEventListener("input", (e) => {
+            const target = e.target;
+            if (target.type === "number" || target.tagName === "TEXTAREA") {
+              updateSummary(true);
+            }
+          });
+
+          uploadedFiles.forEach((file) => {
+            const typeRadios = document.querySelectorAll(
+              `#details-${file.id} input[name="type-${file.id}"]`
+            );
+            const checkGroup = document.querySelector(
+              `#details-${file.id} .checkbox-options`
+            );
+            const modeRadios = document.querySelectorAll(
+              `#details-${file.id} input[name="mode-${file.id}"]`
+            );
+            const combinationInputDiv = document.getElementById(
+              `combination-input-${file.id}`
+            );
+
+            typeRadios.forEach((radio) => {
+              radio.addEventListener("change", () => {
+                if (radio.value === "Thesis/Report") {
+                  checkGroup.classList.add("show");
+                } else {
+                  checkGroup.classList.remove("show");
+                }
+                updateSummary(true);
+              });
+            });
+
+            modeRadios.forEach((radio) => {
+              radio.addEventListener("change", () => {
+                if (radio.value === "combination") {
+                  combinationInputDiv.classList.add("show");
+                } else {
+                  combinationInputDiv.classList.remove("show");
+                  const colorPagesTextarea = document.getElementById(
+                    `color-pages-${file.id}`
+                  );
+                  if (colorPagesTextarea) colorPagesTextarea.value = "";
+                }
+                updateSummary(true);
+              });
+            });
+          });
+        }
+
+        // === RENDER VÀ UPDATE SUMMARY ===
+
+        function renderFileConfig() {
+          configContainer.innerHTML = "";
+
+          uploadedFiles.forEach((file) => {
+            const priceDisplay = formatCurrency(file.price);
+
+            const isCombination = file.mode.includes("Combination");
+            const isThesisReport = file.type === "Thesis/Report";
+
+            const div = document.createElement("div");
+            div.classList.add("file-config");
+            div.innerHTML = `
+              <div class="file-header" onclick="toggleDetails('${file.id}')">
+                  <div class="file-title">
+                  <span class="arrow" id="arrow-${file.id}">▶</span>
+                  <strong></strong>
+                  </div>
+                  <span class="remove-btn" onclick="removeFile(event, '${
+                    file.id
+                  }')">✖</span>
+              </div>
+              <div><small id="file-price-${file.id}">${
+              file.pages
+            } pages • ${priceDisplay}</small></div>
+              <div class="file-details" id="details-${
+                file.id
+              }" style="display: none;">
+                  <div class="option-group flex-row">
+                      <div style="flex:1;">
+                          <label>Number of copies</label>
+                          <input type="number" value="${file.copies}" min="1">
+                      </div>
+                      <div style="flex:1;">
+                        <label>Paper size</label>
+                        <select data-field="paper">
+                          <option value="A4" ${
+                            file.size === "A4" ? "selected" : ""
+                          }>A4</option>
+                          <option value="A5" ${
+                            file.size === "A5" ? "selected" : ""
+                          }>A5</option>
+                          <option value="A3" ${
+                            file.size === "A3" ? "selected" : ""
+                          }>A3</option>
+                        </select>
+                      </div>
+
+                      <div style="flex:1;">
+                        <label>Printed sides</label>
+                        <select data-field="side">
+                          <option value="1 side" ${
+                            file.side === "1 side" ? "selected" : ""
+                          }>1 side</option>
+                          <option value="2 sides" ${
+                            file.side === "2 sides" ? "selected" : ""
+                          }>2 sides</option>
+                        </select>
+                      </div>
+                  </div>
+
+                  <div class="radio-group">
+                      <label class="radio-title">Print mode</label>
+                      <div class="radio-row">
+                          <label><input type="radio" name="mode-${
+                            file.id
+                          }" value="bw" ${
+              !isCombination && file.mode.includes("Black & White")
+                ? "checked"
+                : ""
+            }><span>Black &amp; White</span></label>
+                      </div>
+                      <div class="radio-row">
+                          <label><input type="radio" name="mode-${
+                            file.id
+                          }" value="color" ${
+              !isCombination && file.mode.includes("Color") ? "checked" : ""
+            }> Color</label>
+                      </div>
+                      <div class="radio-row">
+                          <label><input type="radio" name="mode-${
+                            file.id
+                          }" value="combination" ${
+              isCombination ? "checked" : ""
+            }><span>Combination (some coloring pages)</span></label>
+                      </div>
+
+                      <div class="combination-options ${
+                        isCombination ? "show" : ""
+                      }" id="combination-input-${file.id}">
+                          <label>Pages to be printed in color</label>
+                          <textarea rows="2" id="color-pages-${
+                            file.id
+                          }" placeholder="E.g., 1, 3-5, 8, 10">${
+              file.colorPages
+            }</textarea>
+                      </div>
+
+                  </div>
+
+                  <div class="radio-group">
+                      <label class="radio-title">Document type</label>
+                      <div class="radio-row">
+                          <label><input type="radio" name="type-${
+                            file.id
+                          }" value="Regular" ${
+              !isThesisReport ? "checked" : ""
+            }> Regular</label>
+                      </div>
+                      <div class="radio-row">
+                          <label><input type="radio" name="type-${
+                            file.id
+                          }" value="Thesis/Report" ${
+              isThesisReport ? "checked" : ""
+            }> Thesis/Report</label>
+                      </div>
+
+                    <div class="checkbox-options ${
+                      isThesisReport ? "show" : ""
+                    }">
+                      <label>
+                        <input type="checkbox" data-field="binding" ${
+                          file.binding ? "checked" : ""
+                        }>
+                        <span>Binding (+5.000₫)</span>
+                      </label>
+                      <label>
+                        <input type="checkbox" data-field="cover" ${
+                          file.coverPage ? "checked" : ""
+                        }>
+                        <span>Cover Page (+2.000₫)</span>
+                      </label>
+                    </div>
+
+
+                  </div>
+              </div>`;
+            // 👇 THÊM 2 DÒNG NÀY để tránh XSS cho tên file
+            const nameStrong = div.querySelector(".file-title strong");
+            if (nameStrong) nameStrong.textContent = file.name;
+            configContainer.appendChild(div);
+          });
+
+          addChangeListeners();
+          updateSummary(true);
+        }
+
+        function updateSummary(sync = false) {
+          if (sync) {
+            syncFileConfigurations();
+          }
+
+          orderSummaryList.innerHTML = "";
+          let total = 0;
+
+          if (uploadedFiles.length === 0) {
+            orderSummaryList.innerHTML = `<p class="text-muted">No files uploaded yet</p>`;
+            fileCountElement.textContent = "0 files";
+            totalPriceElement.textContent = "0₫";
+            btnPay.disabled = true;
+            return;
+          }
+
+          uploadedFiles.forEach((f) => {
+            total += f.price;
+
+            // cập nhật card bên trái (file-config) cho khớp
+            const priceEl = document.getElementById(`file-price-${f.id}`);
+            if (priceEl) {
+              priceEl.textContent = `${
+                f.pages * f.copies
+              } pages • ${formatCurrency(f.price)}`;
+            }
+
+            let details = `${f.pages * f.copies} pages total`;
+            if (f.binding) details += " (+Binding)";
+            if (f.coverPage) details += " (+Cover)";
+
+            const item = document.createElement("div");
+            item.classList.add("summary-file");
+            item.innerHTML = `
+              <div>
+                  <strong></strong>
+                  <div class="file-details">
+                      ${f.copies} copy • ${f.size} • ${f.mode}<br>
+                      ${details}
+                  </div>
+              </div>
+              <div class="file-price">${formatCurrency(f.price)}</div>`;
+            // 👇 THÊM 2 DÒNG NÀY để tránh XSS cho tên file
+            const strongName = item.querySelector("strong");
+            if (strongName) strongName.textContent = f.name;
+            orderSummaryList.appendChild(item);
+          });
+
+          fileCountElement.textContent = `${uploadedFiles.length} file${
+            uploadedFiles.length > 1 ? "s" : ""
+          }`;
+          totalPriceElement.textContent = formatCurrency(total);
+          btnPay.disabled = false;
+        }
+
+        // Map UI -> DB code
+        function mapPaperCode(ui) {
+          const x = String(ui || "A4").toUpperCase();
+          return ["A3", "A4", "A5"].includes(x) ? x : "A4";
+        }
+        function mapSideCode(ui) {
+          const s = String(ui || "").toLowerCase();
+          if (s.includes("2")) return "DOUBLE";
+          return "SINGLE";
+        }
+        function mapColorCode(ui) {
+          const m = String(ui || "").toLowerCase();
+          if (m.includes("black") || m.includes("bw")) return "BW"; // giả định DB có code 'BW'
+          if (m.includes("combination") || m.includes("color")) return "COLOR";
+          return "BW";
+        }
+
+        // Lấy id theo code (paper/color/side)
+        async function lookupIdsByCode(paperCode, colorCode, sideCode) {
+          const url = `/api/orders/lookup-ids?paper=${encodeURIComponent(
+            paperCode
+          )}&color=${encodeURIComponent(colorCode)}&side=${encodeURIComponent(
+            sideCode
+          )}`;
+          const r = await fetch(url, { credentials: "include" });
+
+          // 👇 Bắt 401 trước khi parse JSON
+          if (r.status === 401) {
+            alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+            window.location.href = "/login";
+            throw new Error("UNAUTHORIZED");
+          }
+
+          let data;
+          try {
+            data = await r.json();
+          } catch {
+            throw new Error("LOOKUP_IDS_PARSE_ERROR");
+          }
+
+          if (!r.ok || !data?.success) throw new Error("LOOKUP_IDS_FAILED");
+          if (!data.paperSizeId || !data.colorModeId || !data.sideId)
+            throw new Error("MISSING_REF_IDS");
+          return data;
+        }
+
+        // ✨ THÊM CACHE NHẸ
+        const _idCache = new Map(); // key = `${paper}|${color}|${side}`
+
+        async function lookupIdsCached(paperCode, colorCode, sideCode) {
+          const key = `${paperCode}|${colorCode}|${sideCode}`;
+          if (_idCache.has(key)) return _idCache.get(key);
+          const data = await lookupIdsByCode(paperCode, colorCode, sideCode);
+          _idCache.set(key, data);
+          return data;
+        }
+
+        // Tạo payload orderItems từ uploadedFiles hiện có
+        async function buildOrderItems(files) {
+          const items = [];
+          for (const f of files) {
+            const paperCode = mapPaperCode(f.size);
+            const sideCode = mapSideCode(f.side);
+            const colorCode = mapColorCode(f.mode);
+
+            const ids = await lookupIdsCached(paperCode, colorCode, sideCode);
+
+            // Đảm bảo giá đã đúng theo cấu hình hiện tại
+            const totalForThisFile = calculateFilePrice(f); // đã set f.price = total
+
+            const extraOptions = {};
+            if (f.type === "Thesis/Report") {
+              if (f.binding) extraOptions.binding = true;
+              if (f.coverPage) extraOptions.coverPage = true;
+            }
+            items.push({
+              printType: "DOCUMENT",
+              pricingMode: "FIXED", // ⟵ bắt buộc
+              paperSizeId: Number(ids.paperSizeId),
+              colorModeId: Number(ids.colorModeId),
+              sideId: Number(ids.sideId),
+              pages: Math.max(1, parseInt(f.pages, 10) || 1), // BE validate cần có
+              quantity: 1, // FIXED → 1 item
+              unitPrice: Number(totalForThisFile).toFixed(2), // string "12345.00" pass isDecimal()
+              extraOptions,
+            });
+          }
+          return items;
+        }
+
+        function makeIdemKey() {
+          return crypto?.randomUUID?.()
+            ? crypto.randomUUID()
+            : Date.now() + "-" + Math.random().toString(16).slice(2);
+        }
+
+        async function createOrderOnBackend(orderItems, note, idemKey) {
+          const r = await fetch("/api/orders", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Idempotency-Key": idemKey || makeIdemKey(), // chống tạo trùng, có fallback
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              note: String(note ?? ""),
+              orderItems,
+            }),
+          });
+
+          if (r.status === 401) {
+            alert("Bạn cần đăng nhập để tạo đơn.");
+            window.location.href = "/login";
+            throw new Error("UNAUTHORIZED");
+          }
+
+          let data = null;
+          try {
+            data = await r.json();
+          } catch {}
+          if (!r.ok) {
+            console.error("Create order failed:", data);
+            if (r.status === 400 && data?.errors?.length) {
+              alert(
+                "Dữ liệu không hợp lệ:\n" +
+                  data.errors.map((e) => `${e.path}: ${e.msg}`).join("\n")
+              );
+            } else {
+              alert(data?.message || "CREATE_ORDER_FAILED");
+            }
+            throw new Error(data?.message || "CREATE_ORDER_FAILED");
+          }
+          return data.order; // full order (kèm items)
+        }
+
+        // === HÀM XỬ LÝ THANH TOÁN (LƯU DỮ LIỆU) ===
+        btnPay.addEventListener("click", async () => {
+          // Đồng bộ & tính tổng
+          const grandTotal = syncFileConfigurations();
+
+          // Check thông tin KH
+          const customerName = customerNameInput.value.trim();
+          const customerEmail = customerEmailInput.value.trim();
+          const specialRequest = specialRequestTextarea.value.trim();
+          if (!customerName || !customerEmail) {
+            alert("Please enter your Full Name and Email.");
+            return;
+          }
+
+          // Disable tránh double-click
+          btnPay.disabled = true;
+          // 👇 Thêm loading text
+          const originalBtnText = btnPay.textContent;
+          btnPay.textContent = "Processing...";
+
+          try {
+            // 1) Build orderItems từ danh sách file
+            const orderItems = await buildOrderItems(uploadedFiles);
+            console.table(orderItems); // giữ 1 lần là đủ
+            console.log("Payload →", {
+              note: String(specialRequest ?? ""),
+              orderItems,
+            });
+
+            // 2) Gửi tạo đơn ở backend (kèm idempotency key)
+            const idemKey = crypto?.randomUUID?.()
+              ? crypto.randomUUID()
+              : Date.now() + "-" + Math.random().toString(16).slice(2);
+            const order = await createOrderOnBackend(
+              orderItems,
+              specialRequest,
+              idemKey
+            );
+
+            // 3) Lưu localStorage cho trang Payment + Confirmation
+            const orderCode = "DOC-" + String(order.id).padStart(6, "0"); // hoặc dùng mã bạn có
+            localStorage.setItem("backendOrderId", String(order.id));
+            const orderForUi = {
+              orderCode,
+              service: "Print Documents",
+              fileCount: uploadedFiles.length,
+              customer: { name: customerName, email: customerEmail },
+              files: uploadedFiles.map((f) => ({
+                name: f.name,
+                pages: f.pages,
+                copies: f.copies,
+                size: f.size,
+                side: f.side,
+                mode: f.mode,
+                type: f.type,              // để trang Confirm render đúng "Thesis/Report"
+                binding: !!f.binding,
+                coverPage: !!f.coverPage,  // key này trang Confirm đang đọc là coverPage
+                price: f.price,
+              })),
+              specialRequest,
+              summary: {
+                fileCount: uploadedFiles.length,
+                totalPrice: grandTotal,
+              },
+            };
+            localStorage.setItem("currentOrderData", JSON.stringify(orderForUi));
+            localStorage.setItem("printOrderData", JSON.stringify(orderForUi));
+
+            // 4) Chuyển sang trang XÁC NHẬN trước
+            window.location.href = "/order/confirm";
+          } catch (e) {
+            console.error(e);
+            alert("Tạo đơn thất bại. Vui lòng thử lại.");
+          } finally {
+            btnPay.disabled = false;
+            btnPay.textContent = originalBtnText; // 👈 khôi phục
+          }
+        });
+
+        // === KHỞI TẠO BAN ĐẦU ===
+        document.addEventListener("DOMContentLoaded", () => {
+          if (uploadedFiles.length === 0) {
+            configSection.style.display = "none";
+          }
+          // Nếu có preset, đưa note vào ô "Special request"
+          if (_reorderPreset?.type === "DOCUMENT" && _reorderPreset?.note) {
+            specialRequestTextarea.value = _reorderPreset.note;
+          }
+          updateSummary();
+        });
+
+        function goBack() {
+          window.history.back();
+        }
+      </script>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,731 @@
+<!--FE/html/Service_Print.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Printing Service</title>
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background: #f6f7f9;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+      /* ------------------------------------- */
+      /* HEADER (NAVIGATION BAR) */
+      /* ------------------------------------- */
+
+      .header {
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 10px 20px;
+      }
+
+      .nav-bar {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      /* Logo Styles */
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 40%;
+        background-color: #043873;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-icon i {
+        color: white;
+        font-size: 22px;
+      }
+
+      .text {
+        line-height: 1.1;
+      }
+
+      .logo .text h1 {
+        font-size: 25px;
+        font-weight: 600;
+        font-family: "Times New Roman", serif;
+        font-style: italic;
+        margin: 0;
+        color: #111827;
+      }
+
+      .logo .text p {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        gap: 60px;
+        font-weight: 500;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: #374151;
+        transition: color 0.2s;
+      }
+
+      .nav-links li a:hover {
+        color: #1a4a8d;
+      }
+
+      .nav-links .service {
+        font-weight: 700;
+        color: #1a4a8d;
+      }
+
+      .nav-links li:last-child {
+        margin-left: 0;
+      }
+
+      .login-btn {
+        text-decoration: none;
+        color: #fff;
+        background-color: #000000;
+        border: 1px solid #000000;
+        border-radius: 6px;
+        padding: 8px 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: background-color 0.2s, opacity 0.2s;
+      }
+
+      .login-btn:hover {
+        opacity: 0.9;
+      }
+
+      .login-btn i {
+        font-size: 1.1em;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px 20px 0 20px;
+      }
+
+      .page-header {
+        text-align: center;
+        padding: 0px 0 10px 0;
+      }
+
+      .page-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #043873;
+        margin-bottom: 3px;
+        margin-top: 5px;
+      }
+
+      .page-header p {
+        color: #4a7aa3;
+        font-size: 1.1rem;
+        margin-top: 0;
+        font-weight: 500;
+      }
+      /* --- SERVICE CARDS GRID (2 Cột) --- */
+
+      .service-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        padding-bottom: 60px;
+      }
+
+      .service-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      /* Icon và Tiêu đề */
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .card-icon-wrapper {
+        background: #e5f1ff;
+        border-radius: 8px;
+        padding: 8px;
+        line-height: 1;
+      }
+
+      .card-icon-wrapper i {
+        font-size: 50px;
+        color: #1a4a8d;
+      }
+      /* Icon Tùy chỉnh: Frame icon */
+
+      .card-icon-wrapper .frame-icon {
+        width: 30px;
+        height: 30px;
+        border: 3px solid #1a4a8d;
+        border-radius: 4px;
+        position: relative;
+      }
+
+      .card-icon-wrapper .frame-icon::before {
+        content: "";
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #1a4a8d;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+      }
+
+      .card-title-block h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+      }
+
+      .card-title-block p {
+        font-size: 0.95rem;
+        color: #6b7280;
+        margin: 5px 0 0 0;
+      }
+
+      .card-features {
+        padding: 20px 0;
+        border-top: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        margin-top: 15px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .card-features ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .card-features li {
+        font-size: 0.9rem;
+        color: #111827;
+        margin-bottom: 8px;
+        position: relative;
+        padding-left: 15px;
+      }
+
+      .card-features li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: #111827;
+        font-weight: 700;
+        font-size: 1.1rem;
+        line-height: 1;
+      }
+      /* --- FOOTER --- */
+
+      .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+      }
+
+      .price-block {
+        line-height: 1.3;
+      }
+
+      .price-block .label {
+        font-size: 0.8rem;
+        color: #6b7280;
+      }
+
+      .price-block .price {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .select-btn {
+        background: #4a8ff0;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        display: inline-block;
+        text-decoration: none;
+      }
+
+      .select-btn:hover {
+        background: #3a7fd0;
+      }
+
+      .help-section {
+        background: #e6eff9;
+        padding: 40px 20px;
+        text-align: center;
+      }
+
+      .help-section h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 15px;
+      }
+
+      .help-section p {
+        font-size: 1.1rem;
+        color: #111827;
+        margin-bottom: 30px;
+        font-weight: 500;
+      }
+
+      .contact-info {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #111827;
+      }
+
+      .contact-info i {
+        vertical-align: middle;
+        margin-right: 5px;
+      }
+
+      .contact-info .bx-phone {
+        color: #28a745;
+      }
+
+      .contact-info .bx-envelope {
+        color: #007bff;
+        margin-left: 20px;
+      }
+
+      @media (max-width: 992px) {
+        .nav-links {
+          gap: 20px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 20px 10px 0 10px;
+        }
+        .header {
+          padding: 10px 15px;
+        }
+        .nav-bar {
+          flex-direction: column;
+          gap: 15px;
+        }
+        .nav-links {
+          justify-content: center;
+          gap: 15px;
+          margin: 0;
+        }
+        .login-btn {
+          width: auto;
+          padding: 8px 15px;
+        }
+        .page-header h1 {
+          font-size: 1.8rem;
+        }
+        .service-grid {
+          grid-template-columns: 1fr;
+          gap: 15px;
+          padding-bottom: 40px;
+        }
+        .card-features {
+          grid-template-columns: 1fr;
+        }
+        .help-section {
+          padding: 30px 15px;
+        }
+        .contact-info {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .contact-info .bx-envelope {
+          margin-left: 0;
+        }
+      }
+
+      .footer-section {
+        background-color: #0b2c65;
+        color: #dcdcdc;
+        font-family: "Inter", sans-serif;
+        padding: 40px 20px 20px;
+      }
+
+      .footer-section h5,
+      .footer-section h6 {
+        color: #fff;
+        margin-bottom: 15px;
+      }
+
+      .footer-section p {
+        margin: 5px 0;
+        font-size: 14px;
+        color: #dcdcdc;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .footer-columns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        justify-content: space-between;
+      }
+
+      .footer-column {
+        flex: 1 1 200px;
+      }
+
+      .footer-services {
+        display: flex;
+        gap: 20px;
+      }
+
+      .footer-services div p {
+        margin: 4px 0;
+      }
+
+      .footer-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        font-size: 13px;
+        color: #dcdcdc;
+      }
+
+      .footer-bottom .dropdown .btn {
+        color: #fff;
+        font-size: 14px;
+        padding: 0;
+        background: none;
+        border: none;
+      }
+
+      .footer-bottom .dropdown-menu a {
+        font-size: 14px;
+        color: #0b2c65;
+      }
+
+      .footer-bottom .dropdown-menu a:hover {
+        background-color: #0b2c65;
+        color: #fff;
+      }
+
+      .footer-section hr {
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        margin: 20px 0;
+      }
+      /* Responsive */
+
+      @media (max-width: 768px) {
+        .footer-columns {
+          flex-direction: column;
+          gap: 20px;
+        }
+        .footer-bottom {
+          flex-direction: column;
+          gap: 10px;
+          text-align: center;
+        }
+      }
+
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+
+      /* Focus styles for accessibility */
+      a:focus-visible,
+      button:focus-visible {
+        outline: 3px solid #1a4a8d;
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main role="main">
+      <div class="header">
+        <nav class="nav-bar" role="navigation" aria-label="Primary">
+          <div class="logo">
+            <div class="logo-icon">
+              <i class="bx bx-printer" aria-hidden="true"></i>
+            </div>
+            <div class="text">
+              <h1>PrintNow</h1>
+              <p>Print service</p>
+            </div>
+          </div>
+
+          <ul class="nav-links">
+            <li><a href="/home" class="home">Home</a></li>
+            <li>
+              <a href="/service/print" class="service" aria-current="page"
+                >Services</a
+              >
+            </li>
+            <li><a href="/about-us" class="introduce">About Us</a></li>
+          </ul>
+
+          <div id="authArea" class="auth-area">
+            <a href="/login" class="login-btn">
+              <i class="bx bx-log-in" aria-hidden="true"></i> Login
+            </a>
+          </div>
+        </nav>
+      </div>
+
+      <div class="container">
+        <div class="page-header">
+          <h1>Printing Service</h1>
+          <p>Choose the service that suits your needs</p>
+        </div>
+
+        <div class="service-grid">
+          <div class="service-card">
+            <div class="card-content">
+              <div class="card-header">
+                <div class="card-icon-wrapper">
+                  <i class="bx bx-file" aria-hidden="true"></i>
+                </div>
+                <div class="card-title-block">
+                  <h2>Print Document</h2>
+                  <p>Print PDF, Word, PowerPoint files with many options</p>
+                </div>
+              </div>
+
+              <div class="card-features">
+                <ul>
+                  <li>Black White & Color</li>
+                  <li>Thesis Binding</li>
+                </ul>
+                <ul>
+                  <li>Multiple Paper Sizes</li>
+                  <li>Double-Sided Printing</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <div class="price-block">
+                <span class="label">Price from</span>
+                <div class="price">500 VND/page</div>
+              </div>
+              <a class="select-btn" href="/print/document">Select service</a>
+            </div>
+          </div>
+
+          <div class="service-card">
+            <div class="card-content">
+              <div class="card-header">
+                <div class="card-icon-wrapper">
+                  <i class="bx bx-image" aria-hidden="true"></i>
+                </div>
+                <div class="card-title-block">
+                  <h2>Print Photos</h2>
+                  <p>Print high quality photos in a variety of sizes</p>
+                </div>
+              </div>
+
+              <div class="card-features">
+                <ul>
+                  <li>Various Sizes</li>
+                  <li>High Quality</li>
+                </ul>
+                <ul>
+                  <li>Glossy/Matte Paper</li>
+                  <li>Color Correction</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <div class="price-block">
+                <span class="label">Price from</span>
+                <div class="price">5,000 VND/Photo</div>
+              </div>
+              <a class="select-btn" href="/print/photo">Select service</a>
+            </div>
+          </div>
+
+          <div class="service-card">
+            <div class="card-content">
+              <div class="card-header">
+                <div class="card-icon-wrapper">
+                  <i class="bx bx-id-card" aria-hidden="true"></i>
+                </div>
+                <div class="card-title-block">
+                  <h2>Print business cards</h2>
+                  <p>Professional Business Card Printing from Your Design</p>
+                </div>
+              </div>
+
+              <div class="card-features">
+                <ul>
+                  <li>From Your Design</li>
+                  <li>Fast Printing</li>
+                </ul>
+                <ul>
+                  <li>Various Paper Types</li>
+                  <li>High Quality</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <div class="price-block">
+                <span class="label">Price from</span>
+                <div class="price">200,000 VND/box</div>
+              </div>
+              <a class="select-btn" href="/print/business-card"
+                >Select service</a
+              >
+            </div>
+          </div>
+
+          <div class="service-card">
+            <div class="card-content">
+              <div class="card-header">
+                <div class="card-icon-wrapper">
+                  <i class="bx bx-coffee" aria-hidden="true"></i>
+                </div>
+                <div class="card-title-block">
+                  <h2>Print Cups</h2>
+                  <p>Print logos and designs on paper cups and plastic cups</p>
+                </div>
+              </div>
+
+              <div class="card-features">
+                <ul>
+                  <li>Paper & Plastic Cups</li>
+                  <li>Large Quantity</li>
+                </ul>
+                <ul>
+                  <li>Logo/Design Printing</li>
+                  <li>Business Use</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <div class="price-block">
+                <span class="label">Price from</span>
+                <div class="price">2,000 VND/cup</div>
+              </div>
+              <a class="select-btn" href="/print/cup">Select service</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-section">
+        <h3>Need help?</h3>
+        <p>Contact us for detailed advice on the service</p>
+        <div class="contact-info">
+          <span>
+            <i class="bx bxs-phone" aria-hidden="true"></i> Hotline: 1900169874
+          </span>
+          <span class="email-icon">
+            <i class="bx bxs-envelope" aria-hidden="true"></i> Email:
+            print@gmail.com
+          </span>
+        </div>
+      </div>
+      <!-- <script>
+      function changeLanguage(lang) {
+        const langText = document.getElementById("currentLanguage");
+        if (lang === "Vietnamese") {
+          langText.textContent = "Vietnam";
+          // Ví dụ thay đổi thêm nội dung (nếu muốn)
+          document.querySelector("h3.fw-bold.mb-4").textContent =
+            "Thành Tựu Của Chúng Tôi";
+        } else if (lang === "English") {
+          langText.textContent = "English";
+          document.querySelector("h3.fw-bold.mb-4").textContent =
+            "Our Achievements";
+        }
+      }
+    </script> -->
+      <footer class="footer-section" role="contentinfo">
+        <div class="footer-columns">
+          <div class="footer-column">
+            <h6>PrintNow</h6>
+            <p>Fast & reliable printing services.</p>
+          </div>
+          <!-- Có thể thêm cột khác tại đây -->
+        </div>
+        <hr />
+        <div class="footer-bottom">
+          <span>© 2025 PrintNow</span>
+        </div>
+      </footer>
+    </main>
+    <script src="/js/authHeader.js"></script>
+  </body>
+</html>

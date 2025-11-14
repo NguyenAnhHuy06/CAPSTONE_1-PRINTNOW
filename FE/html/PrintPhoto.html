@@ -1,0 +1,1116 @@
+<!-- FE/html/PrintPhoto.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>High Quality Photo Printing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f7f8fb;
+        --card: #fff;
+        --muted: #8b95a1;
+        --accent: #556ee6;
+        --panel: #f2f4f7;
+        --border: #dcdfe6;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Inter, system-ui, Arial;
+        background: var(--bg);
+        margin: 0;
+        padding: 24px;
+        color: #222;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: var(--card);
+        border-radius: 10px;
+        padding: 26px;
+        box-shadow: 0 6px 18px rgba(20, 30, 60, 0.06);
+      }
+
+      .page-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .btn-back {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 6px 8px;
+        border-radius: 6px;
+      }
+
+      .btn-back:hover {
+        background: #f1f6ff;
+      }
+
+      .title-wrap h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .title-wrap p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .layout {
+        display: flex;
+        gap: 18px;
+        align-items: flex-start;
+      }
+
+      .left {
+        flex: 1;
+      }
+
+      .right {
+        width: 300px;
+        flex-shrink: 0;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .input-group .input-field {
+        padding-right: 20px;
+      }
+
+      .input-field {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .input-field label {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+      }
+
+      .input-field span {
+        color: #ef4444;
+      }
+
+      .input-field input {
+        padding: 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 0.95rem;
+      }
+
+      .section {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        background: #fff;
+        margin-bottom: 16px;
+      }
+
+      .section h3 {
+        margin: 0 0 10px;
+        font-size: 15px;
+      }
+
+      .row {
+        display: flex;
+        gap: 12px;
+      }
+
+      .col {
+        flex: 1;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      textarea,
+      select,
+      input[type="number"] {
+        border: 1px solid #e4e7eb;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 13px;
+        width: 100%;
+        background: #fbfcfe;
+      }
+
+      textarea {
+        min-height: 64px;
+        resize: vertical;
+      }
+
+      .upload-area {
+        border: 2px dashed var(--border);
+        border-radius: 10px;
+        padding: 28px;
+        text-align: center;
+        background: linear-gradient(180deg, #fff, #fbfdff);
+      }
+
+      .upload-area .icon {
+        font-size: 28px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .upload-area p {
+        margin: 6px 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .file-input-row {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .file-input {
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1px solid #e4e7eb;
+        background: #f2f6ff;
+        cursor: pointer;
+      }
+
+      .file-names {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 8px;
+        text-align: left;
+      }
+
+      .config-list-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+      }
+
+      .file-card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: #fff;
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.18s ease;
+      }
+
+      .file-card .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .file-left {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .thumb {
+        width: 44px;
+        height: 44px;
+        border-radius: 6px;
+        background: #f0f2f5;
+        object-fit: cover;
+        border: 1px solid #e8ebef;
+      }
+
+      .meta {
+        font-size: 13px;
+      }
+
+      .meta strong {
+        display: block;
+        font-weight: 600;
+      }
+
+      .meta .sub {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      .remove-x {
+        color: #e75b6b;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 6px;
+      }
+
+      .expand-arrow {
+        cursor: pointer;
+        color: var(--muted);
+        padding: 6px;
+        border-radius: 6px;
+      }
+
+      .file-summary-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .details {
+        display: none;
+        margin-top: 10px;
+        border-top: 1px dashed #eef2f5;
+        padding-top: 10px;
+      }
+
+      .details .row {
+        align-items: center;
+      }
+
+      .price-badge {
+        font-weight: 700;
+        color: #0b1220;
+      }
+
+      .paper-type {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+      }
+
+      .chip {
+        border-radius: 999px;
+        padding: 6px 8px;
+        border: 1px solid #e4e7eb;
+        font-size: 12px;
+        color: var(--muted);
+        background: #fbfdff;
+      }
+
+      .chip.active {
+        background: #eef3ff;
+        border-color: #d7e0ff;
+        color: #234;
+      }
+
+      .footer-note {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+
+      .order-summary-box {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 16px;
+        background-color: #fff;
+        max-width: 300px;
+        word-wrap: break-word;
+      }
+
+      .order-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        background: #f8f9fb;
+        border-radius: 8px;
+        padding: 8px 10px;
+        margin-bottom: 8px;
+        overflow: hidden;
+      }
+
+      .order-item .thumb {
+        width: 38px;
+        height: 38px;
+        border-radius: 6px;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      .order-item .o-meta {
+        font-weight: 500;
+        font-size: 15px;
+        color: #111827;
+        max-width: 70%;
+        /* Giới hạn chiều rộng tối đa cho tên file */
+        white-space: nowrap;
+        /* Ngăn tên file xuống dòng */
+        overflow: hidden;
+        /* Ẩn phần chữ bị tràn */
+        text-overflow: ellipsis;
+        /* Hiển thị dấu '...' cho phần bị ẩn */
+      }
+
+      .order-item .o-price {
+        flex-shrink: 0;
+        white-space: nowrap;
+        text-align: right;
+        font-weight: 600;
+      }
+
+      .summary-footer {
+        border-top: 1px solid #eef2f5;
+        padding-top: 12px;
+        margin-top: 6px;
+      }
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 6px;
+      }
+
+      .pay-btn {
+        display: block;
+        margin: 12px auto 0;
+        width: 100%;
+        text-align: center;
+        background: #374151;
+        color: #fff;
+        border: none;
+        padding: 10px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .pay-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      @media (max-width: 960px) {
+        .layout {
+          flex-direction: column;
+        }
+
+        .right {
+          width: 100%;
+        }
+
+        .order-summary {
+          position: relative;
+          top: auto;
+        }
+      }
+
+      .details .row > div {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main role="main">
+      <div class="container">
+        <div class="page-header">
+          <button class="btn-back" onclick="window.history.back()">←</button>
+          <div class="title-wrap">
+            <h1>High Quality Photo Printing</h1>
+            <p>Upload your photo and choose size and paper type</p>
+          </div>
+        </div>
+
+        <div class="layout">
+          <div class="left">
+            <div class="section">
+              <h3>Customer Information</h3>
+              <div class="input-group">
+                <div class="input-field">
+                  <label>Full Name <span>*</span></label>
+                  <input type="text" placeholder="Enter full name" required />
+                </div>
+                <div class="input-field">
+                  <label>Email <span>*</span></label>
+                  <input type="email" placeholder="Enter email" required />
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>Upload image</h3>
+              <div class="upload-area" id="uploadArea">
+                <div class="icon">📤</div>
+                <p style="font-weight: 600; margin: 6px 0 4px">
+                  Select a photo to print
+                </p>
+                <p
+                  style="margin: 0 0 8px; color: var(--muted); font-size: 13px"
+                >
+                  Supports JPG, PNG, TIFF (up to 20MB per image, minimum
+                  resolution 300 DPI)
+                </p>
+                <div class="file-input-row">
+                  <label class="file-input" for="fileInput">
+                    <span id="chooseText">Select file</span>
+                  </label>
+                  <input
+                    id="fileInput"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style="display: none"
+                  />
+                  <small
+                    style="color: var(--muted); font-size: 13px"
+                    id="fileNames"
+                  ></small>
+                </div>
+                <div class="file-names" id="filePreviewSmall"></div>
+              </div>
+            </div>
+
+            <div class="section">
+              <h3>Special request</h3>
+              <label>Additional notes (optional)</label>
+              <textarea
+                id="notes"
+                placeholder="For example: crop to scale, adjust colors, deliver to a different address..."
+              ></textarea>
+            </div>
+
+            <div class="section" id="configSection" style="display: none">
+              <div class="config-list-title">
+                ⚙️ Print configuration (<span id="countLabel">0 files</span>)
+              </div>
+              <div id="configList"></div>
+            </div>
+          </div>
+
+          <div class="right">
+            <div class="order-summary-box">
+              <h4>Order Summary</h4>
+              <div id="orderList">
+                <p style="color: var(--muted); text-align: center">
+                  No file has been uploaded
+                </p>
+              </div>
+
+              <div class="summary-footer">
+                <div class="summary-row">
+                  <div>Number of photos:</div>
+                  <div id="orderCount">0 photo</div>
+                </div>
+                <div class="summary-row">
+                  <div style="font-weight: 700">Total:</div>
+                  <div id="orderTotal">0₫</div>
+                </div>
+                <button id="payBtn" class="pay-btn" disabled>
+                  Proceed to payment
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const fileInput = document.getElementById("fileInput");
+        const chooseText = document.getElementById("chooseText");
+        const fileNames = document.getElementById("fileNames");
+        const filePreviewSmall = document.getElementById("filePreviewSmall");
+        const configSection = document.getElementById("configSection");
+        const configList = document.getElementById("configList");
+        const countLabel = document.getElementById("countLabel");
+        const orderList = document.getElementById("orderList");
+        const orderCount = document.getElementById("orderCount");
+        const orderTotal = document.getElementById("orderTotal");
+        const payBtn = document.getElementById("payBtn");
+        const customerNameInput = document.querySelector(
+          ".input-group .input-field:nth-child(1) input"
+        );
+        const customerEmailInput = document.querySelector(
+          ".input-group .input-field:nth-child(2) input"
+        );
+        const notesTextarea = document.getElementById("notes");
+
+        let items = [];
+        // Đọc preset nếu có (Order_History → Reorder)
+        const _reorderPresetRaw = localStorage.getItem("reorderPreset");
+        const _reorderPreset = (() => {
+          try {
+            return JSON.parse(_reorderPresetRaw || "null");
+          } catch {
+            return null;
+          }
+        })();
+        const photoDefaults = (() => {
+          if (_reorderPreset?.type !== "PHOTO" || !_reorderPreset.items?.length)
+            return null;
+          const it = _reorderPreset.items[0];
+          // map sizeCode sang label
+          const sizeLabelMap = {
+            "10x15": "10 x 15 cm",
+            "13x18": "13 x 18 cm",
+            "15x20": "15 x 20 cm",
+          };
+          return {
+            size: it.sizeCode || "10x15",
+            sizeLabel: sizeLabelMap[it.sizeCode || "10x15"] || "10 x 15 cm",
+            paper: it.paper || "Glossy",
+            borderless: !!it.borderless,
+            copies: Number(it.copies || 1),
+            note: _reorderPreset.note || "",
+          };
+        })();
+
+        // Bảng giá (VND)
+        const basePrice = {
+          "10x15": 5500,
+          "13x18": 8800,
+          "15x20": 16500,
+        };
+        const paperExtra = {
+          Glossy: 0,
+          Matte: 2000,
+          Premium: 4000,
+        };
+        const BORDERLESS_MULT = 0.1; // +10%
+
+        // Hàm định dạng tiền tệ
+        function fmt(v) {
+          return v.toLocaleString("vi-VN") + "₫";
+        }
+
+        // Hàm rút ngắn tên file
+        function shortName(name, n = 30) {
+          return name.length > n ? name.slice(0, n - 3) + "..." : name;
+        }
+
+        fileInput.addEventListener("change", (e) => {
+          const files = Array.from(e.target.files);
+          if (!files.length) return;
+
+          // Validate dung lượng & loại file (<= 20MB; ảnh phổ biến)
+          const MAX_MB = 20;
+          const oversize = files.find((f) => f.size > MAX_MB * 1024 * 1024);
+          if (oversize) {
+            alert(
+              `Tệp "${oversize.name}" vượt quá ${MAX_MB}MB. Vui lòng chọn tệp nhỏ hơn.`
+            );
+            return;
+          }
+          const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/tiff",
+            "image/gif",
+            "image/heic",
+            "image/heif",
+          ];
+          const unsupported = files.find(
+            (f) => !allowedTypes.includes((f.type || "").toLowerCase())
+          );
+          if (unsupported) {
+            alert(
+              `Định dạng "${
+                unsupported.type || unsupported.name
+              }" chưa được hỗ trợ.`
+            );
+            return;
+          }
+          // Lưu ý preview TIFF/HEIC có thể không hiển thị thumbnail trên một số trình duyệt
+
+          // De-dupe theo name-size-lastModified
+          const existed = new Set(items.map((i) => i._key));
+          const sizeLabelMap = {
+            "10x15": "10 x 15 cm",
+            "13x18": "13 x 18 cm",
+            "15x20": "15 x 20 cm",
+          };
+
+          files.forEach((f) => {
+            const key = `${f.name}-${f.size}-${f.lastModified}`;
+            if (existed.has(key)) return;
+            const id =
+              Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+            const url = URL.createObjectURL(f);
+            const sizeCode = photoDefaults?.size ?? "10x15";
+            items.push({
+              id,
+              _key: key,
+              name: f.name,
+              preview: url,
+              file: f,
+              pages: 1,
+              copies: photoDefaults?.copies ?? 1,
+              size: sizeCode,
+              sizeLabel: sizeLabelMap[sizeCode] ?? "10 x 15 cm",
+              paper: photoDefaults?.paper ?? "Glossy",
+              borderless: !!photoDefaults?.borderless,
+              price: 0,
+            });
+            existed.add(key);
+          });
+
+          fileNames.textContent = items.map((i) => i.name).join(", ");
+          filePreviewSmall.innerHTML = items
+            .map(
+              (i) =>
+                `<div style="display:inline-block;margin-right:10px">
+           <img src="${i.preview}" onerror="this.outerHTML='<div style=&quot;width:40px;height:40px;border-radius:6px;border:1px solid #e8ebef;display:flex;align-items:center;justify-content:center;font-size:10px;color:#666;&quot;>No preview</div>'" style="width:40px;height:40px;border-radius:6px;object-fit:cover;border:1px solid #e8ebef">
+         </div>`
+            )
+            .join("");
+          fileInput.value = ""; // Cho phép chọn tiếp cùng file lần nữa
+          renderAll();
+        });
+
+        // ... (phần còn lại của mã JavaScript giữ nguyên, bao gồm renderAll, calcPrice, toggleDetails, removeItem, updateItem, renderOrderSummary, và sự kiện click của payBtn)
+        // Tính giá cho mỗi ảnh
+        function calcPrice(it) {
+          const base = basePrice[it.size] || basePrice["10x15"];
+          const pExtra = paperExtra[it.paper] || 0;
+          let p = (base + pExtra) * it.copies;
+          if (it.borderless) p = Math.round(p * (1 + BORDERLESS_MULT));
+          return p;
+        }
+
+        function renderAll() {
+          // Lưu trạng thái mở/đóng của các chi tiết
+          const expanded = {};
+          document.querySelectorAll(".details").forEach((det) => {
+            const id = det.id.replace("details-", "");
+            expanded[id] = det.style.display === "block";
+          });
+
+          // Hiển thị phần cấu hình
+          configSection.style.display = items.length ? "block" : "none";
+          countLabel.textContent = `${items.length} ${
+            items.length > 1 ? "ảnh" : "ảnh"
+          }`;
+
+          // Render danh sách cấu hình
+          configList.innerHTML = "";
+          items.forEach((it) => {
+            it.price = calcPrice(it);
+            const card = document.createElement("div");
+            card.className = "file-card";
+            card.id = "card-" + it.id;
+            card.innerHTML = `
+                    <div class="top">
+                        <div class="file-left">
+                            <div class="expand-arrow" data-id="${
+                              it.id
+                            }" title="Show/hide details" style="margin-right:6px">${
+              expanded[it.id] ? "▴" : "▾"
+            }</div>
+                            <img class="thumb" src="${it.preview}" alt="">
+                            <div class="meta">
+                                <strong>${shortName(it.name, 40)}</strong>
+                                <div class="sub">${it.sizeLabel} • ${
+              it.copies
+            } bản${it.copies > 1 ? "" : ""} • ${fmt(it.price)}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <div class="remove-x" data-id="${
+                              it.id
+                            }" title="Xóa">✖</div>
+                        </div>
+                    </div>
+                    <div class="details" id="details-${it.id}" style="display:${
+              expanded[it.id] ? "block" : "none"
+            }">
+                        <div class="row" style="align-items:flex-end; flex-wrap:wrap;">
+                            <div style="flex:0 0 130px">
+                                <label>Số bản</label>
+                                <input type="number" min="1" value="${
+                                  it.copies
+                                }" data-field="copies" data-id="${
+              it.id
+            }" style="width:100%;margin-top:6px">
+                            </div>
+                            <div style="flex:1; min-width:160px">
+                                <label>Paper size</label>
+                                <select data-field="size" data-id="${
+                                  it.id
+                                }" style="margin-top:6px; width:100%">
+                                    <option value="10x15" ${
+                                      it.size === "10x15" ? "selected" : ""
+                                    }>10 x 15 cm</option>
+                                    <option value="13x18" ${
+                                      it.size === "13x18" ? "selected" : ""
+                                    }>13 x 18 cm</option>
+                                    <option value="15x20" ${
+                                      it.size === "15x20" ? "selected" : ""
+                                    }>15 x 20 cm</option>
+                                </select>
+                            </div>
+                            <div style="flex:1; min-width:180px">
+                                <label>Type of paper</label>
+                                <select data-field="paper" data-id="${
+                                  it.id
+                                }" style="margin-top:6px; width:100%">
+                                    <option value="Glossy" ${
+                                      it.paper === "Glossy" ? "selected" : ""
+                                    }>Glossy</option>
+                                    <option value="Matte" ${
+                                      it.paper === "Matte" ? "selected" : ""
+                                    }>Matte (+2.000đ)</option>
+                                    <option value="Premium" ${
+                                      it.paper === "Premium" ? "selected" : ""
+                                    }>Premium (+4.000đ)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top:10px; display:flex; align-items:center; gap:12px">
+                            <label><input type="checkbox" data-field="borderless" data-id="${
+                              it.id
+                            }" ${
+              it.borderless ? "checked" : ""
+            }> Borderless (+10%)</label>
+                            <div style="flex:1"></div>
+                            <div style="font-weight:700">${fmt(it.price)}</div>
+                        </div>
+                        <div class="footer-note">The photo will be printed in full size, without any white borders around it.</div>
+                    </div>
+                `;
+            configList.appendChild(card);
+          });
+
+          // Gắn sự kiện
+          configList.querySelectorAll(".remove-x").forEach((el) => {
+            el.onclick = (ev) => {
+              const id = el.getAttribute("data-id");
+              removeItem(id);
+            };
+          });
+
+          configList.querySelectorAll(".expand-arrow").forEach((el) => {
+            el.onclick = () => {
+              const id = el.getAttribute("data-id");
+              toggleDetails(id);
+            };
+          });
+
+          configList.querySelectorAll('input[type="number"]').forEach((inp) => {
+            inp.oninput = (ev) => {
+              const id = inp.getAttribute("data-id");
+              const val = Math.max(1, parseInt(inp.value) || 1);
+              const idx = items.findIndex((x) => x.id === id);
+              if (idx > -1) {
+                items[idx].copies = val;
+                updateItem(idx);
+              }
+            };
+          });
+
+          configList
+            .querySelectorAll('select[data-field="size"]')
+            .forEach((sel) => {
+              sel.onchange = () => {
+                const id = sel.getAttribute("data-id");
+                const idx = items.findIndex((x) => x.id === id);
+                if (idx > -1) {
+                  items[idx].size = sel.value;
+                  items[idx].sizeLabel = sel.options[sel.selectedIndex].text;
+                  updateItem(idx);
+                }
+              };
+            });
+
+          configList
+            .querySelectorAll('select[data-field="paper"]')
+            .forEach((sel) => {
+              sel.onchange = () => {
+                const id = sel.getAttribute("data-id");
+                const idx = items.findIndex((x) => x.id === id);
+                if (idx > -1) {
+                  items[idx].paper = sel.value;
+                  updateItem(idx);
+                }
+              };
+            });
+
+          configList
+            .querySelectorAll('input[type="checkbox"][data-field="borderless"]')
+            .forEach((cb) => {
+              cb.onchange = () => {
+                const id = cb.getAttribute("data-id");
+                const idx = items.findIndex((x) => x.id === id);
+                if (idx > -1) {
+                  items[idx].borderless = cb.checked;
+                  updateItem(idx);
+                }
+              };
+            });
+
+          renderOrderSummary();
+        }
+
+        function toggleDetails(id) {
+          const det = document.getElementById("details-" + id);
+          const card = document.getElementById("card-" + id);
+          if (!det) return;
+          const isVisible = det.style.display === "block";
+          det.style.display = isVisible ? "none" : "block";
+          const arr = card.querySelector(".expand-arrow");
+          arr.textContent = isVisible ? "▾" : "▴";
+        }
+
+        function removeItem(id) {
+          const idx = items.findIndex((x) => x.id === id);
+          if (idx > -1) {
+            try {
+              if (items[idx].preview) URL.revokeObjectURL(items[idx].preview);
+            } catch {}
+            items.splice(idx, 1);
+          }
+          renderAll();
+        }
+
+        function updateItem(idx) {
+          items[idx].price = calcPrice(items[idx]);
+          renderAll();
+        }
+
+        function renderOrderSummary() {
+          orderList.innerHTML = "";
+          let total = 0;
+          if (items.length === 0) {
+            orderList.innerHTML = `<p style="color:var(--muted); text-align:center">Chưa tải lên file nào</p>`;
+            orderCount.textContent = "0 ảnh";
+            orderTotal.textContent = "0₫";
+            payBtn.disabled = true;
+            return;
+          }
+
+          items.forEach((it) => {
+            it.price = calcPrice(it);
+            total += it.price;
+            const row = document.createElement("div");
+            row.className = "order-item";
+            row.innerHTML = `
+                    <img class="thumb" src="${it.preview}" alt="">
+                    <div class="o-meta">
+                        <div style="font-weight:600">${shortName(
+                          it.name,
+                          28
+                        )}</div>
+                        <div style="font-size:12px;color:var(--muted); margin-top:6px">${
+                          it.sizeLabel
+                        } • ${it.copies} bản${it.copies > 1 ? "" : ""}<br>${
+              it.paper
+            }${it.borderless ? " • Không viền" : ""}</div>
+                    </div>
+                    <div class="o-price">${fmt(it.price)}</div>
+                `;
+            orderList.appendChild(row);
+          });
+
+          orderCount.textContent = `${items.length} ảnh`;
+          orderTotal.textContent = fmt(total);
+          payBtn.disabled = false;
+          orderList.style.maxHeight = items.length > 4 ? "360px" : "auto";
+          orderList.style.overflowY = items.length > 4 ? "auto" : "visible";
+        }
+
+        // Handler nút "Proceed to payment" — gọi BE tạo đơn ảnh, rồi chuyển trang confirm
+        payBtn.addEventListener(
+          "click",
+          async () => {
+            // 1) Kiểm tra input tối thiểu + định dạng email
+            if (!customerNameInput.value.trim()) {
+              alert("Vui lòng nhập Họ và tên.");
+              return;
+            }
+            if (!customerEmailInput.value.trim()) {
+              alert("Vui lòng nhập Email.");
+              return;
+            }
+            const emailValid = customerEmailInput.checkValidity();
+            if (!emailValid) {
+              alert("Email không hợp lệ. Vui lòng kiểm tra lại.");
+              return;
+            }
+
+            // 2) Chuẩn bị payload cho BE
+            const filesPayload = items.map((it) => ({
+              name: it.name,
+              sizeCode: it.size, // '10x15' | '13x18' | '15x20'
+              paper: it.paper, // 'Glossy' | 'Matte' | 'Premium'
+              borderless: !!it.borderless, // boolean
+              copies: Number(it.copies || 1),
+            }));
+
+            // 3) Gọi API tạo đơn ảnh (cookie đăng nhập kèm theo)
+            let backendOrderId = null;
+            // Trạng thái loading cho nút thanh toán
+            payBtn.disabled = true;
+            const prevText = payBtn.textContent;
+            payBtn.textContent = "Đang tạo đơn...";
+            payBtn.setAttribute("aria-busy", "true");
+
+            try {
+              const res = await fetch("/api/orders/photo", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                  note: notesTextarea.value.trim() || null,
+                  files: filesPayload,
+                }),
+              });
+              if (!res.ok) {
+                if (res.status === 401) {
+                  alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+                  window.location.href = "/login";
+                  return;
+                }
+                const j = await res.json().catch(() => ({}));
+                throw new Error(
+                  j?.message || res.statusText || "CREATE_PHOTO_ORDER_FAILED"
+                );
+              }
+              const data = await res.json();
+              backendOrderId = data?.order?.id || null;
+              if (!backendOrderId) throw new Error("Missing backendOrderId");
+            } catch (err) {
+              console.error("[PrintPhoto] create photo order error:", err);
+              alert("Tạo đơn ảnh thất bại. Vui lòng thử lại.");
+              // Khôi phục nút
+              payBtn.disabled = false;
+              payBtn.textContent = prevText;
+              payBtn.removeAttribute("aria-busy");
+              return;
+            }
+
+            // 4) Lưu dữ liệu hiển thị cho trang xác nhận như hiện tại
+            localStorage.removeItem("printOrderData");
+            // Ưu tiên dùng ID từ backend (fall back nếu thiếu)
+            const orderCode = backendOrderId
+              ? `PHOTO-${backendOrderId}`
+              : `PHOTO-${Date.now().toString().slice(-6)}`;
+            const orderData = {
+              orderCode,
+              customer: {
+                name: customerNameInput.value.trim(),
+                email: customerEmailInput.value.trim(),
+              },
+              files: items.map((item) => ({
+                name: item.name,
+                pages: item.pages,
+                copies: item.copies,
+                size: item.sizeLabel, // label để hiển thị
+                side: "1 mặt",
+                mode: item.paper,
+                type: "Photo",
+                colorPages: "",
+                binding: false,
+                cover: false,
+                price: item.price,
+                borderless: item.borderless,
+              })),
+              specialRequest:
+                (photoDefaults?.note
+                  ? String(photoDefaults.note) +
+                    (notesTextarea.value.trim() ? " — " : "")
+                  : "") + notesTextarea.value.trim(),
+              summary: {
+                fileCount: items.length,
+                totalPrice: items.reduce((sum, item) => sum + item.price, 0),
+              },
+            };
+            localStorage.setItem("printOrderData", JSON.stringify(orderData));
+            localStorage.setItem("currentOrderData", JSON.stringify(orderData));
+            localStorage.setItem("backendOrderId", String(backendOrderId)); // 👈 dùng ở trang /order/confirm
+
+            // 5) Điều hướng tới trang XÁC NHẬN trước
+            window.location.href = "/order/confirm";
+          },
+          { passive: true }
+        );
+
+        // Thu hồi ObjectURL khi rời trang (optional)
+        window.addEventListener("beforeunload", () => {
+          items.forEach((it) => {
+            try {
+              if (it.preview) URL.revokeObjectURL(it.preview);
+            } catch {}
+          });
+        });
+
+        // Drag & drop thêm nhiều ảnh (optional)
+        const uploadArea = document.getElementById("uploadArea");
+        uploadArea?.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          uploadArea.style.borderColor = "#556ee6";
+        });
+        uploadArea?.addEventListener("dragleave", () => {
+          uploadArea.style.borderColor = "";
+        });
+        uploadArea?.addEventListener("drop", (e) => {
+          e.preventDefault();
+          uploadArea.style.borderColor = "";
+          const picked = Array.from(e.dataTransfer.files || []).filter((f) =>
+            (f.type || "").startsWith("image/")
+          );
+          if (!picked.length) return;
+          // Tạo DataTransfer mới để gán files cho input (ổn định hơn trên Safari)
+          const dt = new DataTransfer();
+          picked.forEach((f) => dt.items.add(f));
+          fileInput.files = dt.files;
+          fileInput.dispatchEvent(new Event("change"));
+        });
+
+        // Nút quay lại
+        function goBack() {
+          window.history.back();
+        }
+      </script>
+    </main>
+  </body>
+</html>

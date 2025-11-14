@@ -1,0 +1,109 @@
+
+C:\Users\acer\Downloads\cap1\cap1
+├── config
+│   └── database.js
+├── controllers
+│   ├── orders.controller.js
+│   ├── payments.controller.js
+│   ├── profile.controller.js
+│   └── settings.controller.js
+├── env.example
+├── FE
+│   ├── css
+│   │   ├── Change_Password.css
+│   │   ├── Forgot_Password.css
+│   │   ├── Login.css
+│   │   ├── Register.css
+│   │   ├── Set_New_Password.css
+│   │   └── Verify_OTP.css
+│   ├── html
+│   │   ├── About_us.html
+│   │   ├── Change_Password.html
+│   │   ├── Employee_Dashboard.html
+│   │   ├── Forgot_Password.html
+│   │   ├── Home_customer.html
+│   │   ├── Login.html
+│   │   ├── ManageCustomer_Employee.html
+│   │   ├── Notification.html
+│   │   ├── Order_Details.html
+│   │   ├── Order_History.html
+│   │   ├── Order_Payment.html
+│   │   ├── Order_Status.html
+│   │   ├── Personal_Profile.html
+│   │   ├── PrintDocument.html
+│   │   ├── PrintPhoto.html
+│   │   ├── Print_Order_Confirmation.html
+│   │   ├── Register.html
+│   │   ├── Service_Print.html
+│   │   ├── Setting.html
+│   │   ├── Set_New_Password.html
+│   │   └── Verify_OTP.html
+│   └── js
+│       ├── apiService.js
+│       ├── authHeader.js
+│       ├── i18n.js
+│       ├── order_payment.js
+│       ├── profile.page.js
+│       └── settings.page.js
+├── HUONG_DAN_CHAY.md
+├── middleware
+│   ├── auth.js
+│   ├── upload.js
+│   └── validators.js
+├── models
+│   ├── ColorMode.js
+│   ├── File.js
+│   ├── index.js
+│   ├── Notification.js
+│   ├── Order.js
+│   ├── OrderItem.js
+│   ├── OTP.js
+│   ├── PaperSize.js
+│   ├── PriceRule.js
+│   ├── Side.js
+│   ├── User.js
+│   └── UserSetting.js
+├── mysql-schema.sql
+├── package-lock.json
+├── package.json
+├── README.md
+├── routes
+│   ├── auth-sequelize.js
+│   ├── catalog.js
+│   ├── file-analyzer.js
+│   ├── files.js
+│   ├── notifications.js
+│   ├── orders.js
+│   ├── payments.js
+│   ├── photo-order.js
+│   ├── profile.js
+│   └── settings.routes.js
+├── scripts
+│   ├── create-otps-table.js
+│   ├── seed-mysql.js
+│   └── seed-printnow-data.js
+├── server.js
+├── services
+│   ├── emailService.js
+│   ├── filePageCounter.js
+│   └── printPricingService.js
+├── start-server.bat
+└── uploads
+    ├── avatars
+    │   ├── u2026_1761902812564.png
+    │   ├── u2026_1761902920391.jpg
+    │   ├── u2026_1762006742852.jpg
+    │   ├── u2026_1762024948423.jpg
+    │   ├── u2026_1762051019582.jpg
+    │   ├── u2026_1762051043784.jpg
+    │   ├── u2026_1762052077679.jpg
+    │   ├── u2026_1762054253702.jpg
+    │   ├── u2026_1762054301597.jpg
+    │   ├── u2026_1762054886939.jpg
+    │   ├── u2026_1762356394499.jpg
+    │   ├── u2026_1762534641555.jpg
+    │   ├── u2026_1762591408622.png
+    │   ├── u2026_1762592989147.jpg
+    │   ├── u2026_1762964870653.jpg
+    │   └── u2026_1762975935435.jpg
+    └── temp-analysis

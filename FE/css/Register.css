@@ -1,0 +1,252 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #2e3b4e;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+
+/* HEADER */
+
+.header {
+    width: 100%;
+    background: white;
+    padding: 10px 40px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 40%;
+    background-color: #043873;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-icon i {
+    color: white;
+    font-size: 22px;
+}
+
+.text {
+    line-height: 1.1;
+}
+
+.logo .text h1 {
+    font-size: 25px;
+    font-weight: 600;
+    font-family: 'Times New Roman', serif;
+    font-style: italic;
+    margin: 0;
+}
+
+.logo .text p {
+    font-size: 12px;
+    color: #555;
+}
+
+
+/* FORM CONTAINER */
+
+.container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.form-box {
+    background: #fff;
+    padding: 50px 40px;
+    border-radius: 12px;
+    width: 440px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+.icon-circle {
+    width: 65px;
+    height: 65px;
+    border-radius: 45%;
+    background-color: #043873;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 30px;
+}
+
+.icon-circle i {
+    color: white;
+    font-size: 40px;
+}
+
+h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.highlight {
+    color: #5570F1;
+}
+
+.subtext {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 40px;
+}
+
+
+/* FORM INPUTS */
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+}
+
+.input_box {
+    position: relative;
+    width: 100%;
+    height: 52px;
+}
+
+.input_box input {
+    width: 100%;
+    height: 100%;
+    background-color: #f6f7fb;
+    border: none;
+    border-radius: 10px;
+    outline: none;
+    font-size: 16px;
+    padding: 0 50px 0 50px;
+    color: #000;
+    transition: 0.25s ease;
+}
+
+
+/* placeholder */
+
+.input_box input::placeholder {
+    color: #ABAFB1;
+}
+
+
+/* focus effect */
+
+.input_box input:focus {
+    background-color: #fff;
+    box-shadow: 0 0 8px rgba(85, 112, 241, 0.4);
+}
+
+
+/* ICONS */
+
+/* icon trái và phải */
+.input_box .icon-left {
+  left: 18px;
+  pointer-events: none;
+}
+.input_box .icon-right {
+  right: 18px;
+  cursor: pointer;
+}
+
+
+.input_box i {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: #6E7079;
+}
+
+/* icon phải (mắt password) */
+
+#eye-pass {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: #6E7079;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.25s ease;
+}
+
+#eye-pass.active {
+    color: #5570F1;
+    transform: translateY(-50%) scale(1.2);
+    animation: blink 0.25s ease;
+}
+
+@keyframes blink {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.2;
+    }
+}
+
+
+/* BUTTON */
+
+button {
+    width: 180px;
+    height: 55px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(to right, #977DF1, #56A3EF);
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    opacity: 0.95;
+}
+
+
+/* LOGIN TEXT */
+
+.login-text {
+    margin-top: 35px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #8B8D97;
+}
+
+.login-text a {
+    color: #5570F1;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-text a:hover {
+    text-decoration: underline;
+}

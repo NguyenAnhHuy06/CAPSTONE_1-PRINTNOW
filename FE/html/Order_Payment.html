@@ -1,0 +1,992 @@
+<!--FE/html/Order_Payment.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Payment</title>
+    <!-- Tải Tailwind CSS cho styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      // Cấu hình Tailwind
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              "primary-blue": "#0095FF",
+              "bg-grey": "#f6f7f9",
+              "deposit-bg": "#fff5e8",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: #f6f7f9;
+        color: #333;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 10px 20px;
+      }
+
+      .nav-bar {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 40%;
+        background-color: #043873;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-icon i {
+        color: white;
+        font-size: 22px;
+      }
+
+      .text {
+        line-height: 1.1;
+      }
+
+      .logo .text h1 {
+        font-size: 25px;
+        font-weight: 600;
+        font-family: "Times New Roman", serif;
+        font-style: italic;
+        margin: 0;
+        color: #111827;
+      }
+
+      .logo .text p {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        gap: 60px;
+        font-weight: 500;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: #374151;
+        transition: color 0.2s;
+      }
+
+      .nav-links li a:hover {
+        color: #1a4a8d;
+      }
+
+      .nav-links .service {
+        font-weight: 700;
+        color: #1a4a8d;
+      }
+
+      .nav-links li:last-child {
+        margin-left: 0;
+      }
+
+      .login-btn {
+        text-decoration: none;
+        color: #fff;
+        background-color: #000000;
+        border: 1px solid #000000;
+        border-radius: 6px;
+        padding: 8px 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: background-color 0.2s, opacity 0.2s;
+      }
+
+      .login-btn:hover {
+        opacity: 0.9;
+      }
+
+      .login-btn i {
+        font-size: 1.1em;
+      }
+
+      .main-content-wrapper {
+        flex-grow: 1;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .container {
+        max-width: 1198px !important;
+        width: 100%;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 0 24px 24px 24px;
+      }
+
+      .page-header {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        padding: 20px 0 30px 0;
+      }
+
+      .page-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #111827;
+      }
+
+      .page-header p {
+        color: #6b7280;
+        font-size: 1.05rem;
+        margin-top: 0;
+      }
+
+      .page-header a.btn-back {
+        position: absolute;
+        left: 0;
+        top: 30px;
+        font-size: 1.8rem;
+        color: #374151;
+        transition: color 0.2s ease;
+        text-decoration: none;
+      }
+
+      .page-header a.btn-back:hover {
+        color: #007bff;
+      }
+      /* Content Layout */
+
+      .content-wrapper {
+        display: flex;
+        gap: 24px;
+        flex: 1;
+      }
+      /* Left Panel Styles */
+
+      .left-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .section-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 25px;
+        background: #fff;
+      }
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #111827;
+      }
+      /* Payment Info Block */
+
+      .payment-info-block {
+        background: #f3f4f6;
+        padding: 12px;
+        border-radius: 8px;
+        color: #111827;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .payment-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 15px;
+      }
+
+      .payment-info-row .label {
+        font-weight: 500;
+        color: #6b7280;
+      }
+
+      .payment-info-row .value {
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .payment-info-row:last-child .value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #000;
+      }
+      /* Deposit Notice (50% deposit required) */
+
+      .deposit-notice-card {
+        background-color: #fff5e8;
+        border: 1px solid #ffd3a3;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+        display: none;
+      }
+
+      .deposit-notice-card .title-deposit {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        color: #e59d00;
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+
+      .deposit-notice-card .title-deposit i {
+        font-size: 20px;
+      }
+
+      .deposit-detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+        font-size: 15px;
+        color: #111827;
+      }
+
+      .deposit-detail-row .value {
+        font-weight: 600;
+      }
+
+      .deposit-detail-row.deposit-amount {
+        color: #e59d00;
+      }
+      /* Payment Method Options */
+
+      .payment-option-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .payment-option {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .payment-option.active,
+      .payment-option:hover {
+        border-color: #0095ff;
+        box-shadow: 0 0 0 2px rgba(0, 149, 255, 0.2);
+      }
+
+      .payment-option.opacity-50 {
+        cursor: not-allowed;
+      }
+
+      .payment-option input[type="radio"] {
+        display: none;
+      }
+
+      .payment-option .radio-indicator {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid #ccc;
+        margin-right: 12px;
+        position: relative;
+        transition: border-color 0.2s ease;
+      }
+
+      .payment-option.active .radio-indicator {
+        border-color: #0095ff;
+      }
+
+      .payment-option.active .radio-indicator::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #0095ff;
+      }
+
+      .payment-option .icon {
+        font-size: 24px;
+        color: #374151;
+        margin-right: 10px;
+      }
+
+      .payment-option .info strong {
+        display: block;
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .payment-option .info small {
+        font-size: 13px;
+        color: #6b7280;
+      }
+
+      .payment-option .recommended-tag {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #d1fae5;
+        color: #059669;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+      /* QR Code Block */
+
+      .qr-slot {
+        width: 180px;
+        height: 180px;
+        position: relative;
+      }
+
+      #qrCodePaymentSection {
+        display: none;
+      }
+
+      .qr-code-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .qr-code-img {
+        width: 180px;
+        height: 180px;
+        margin-bottom: 15px;
+        background-color: #ccc;
+        border: 1px solid #ddd;
+      }
+
+      .qr-code-display strong {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 5px;
+      }
+
+      .qr-code-display .amount-value {
+        font-size: 24px;
+        font-weight: 800;
+        color: #000;
+        margin-bottom: 10px;
+      }
+
+      .qr-code-display small {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 10px;
+      }
+
+      /* Right Panel Summary */
+      .right-panel {
+        width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .summary-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        background: #fff;
+      }
+
+      .summary-title {
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #111827;
+        margin-bottom: 15px;
+      }
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 15px;
+        margin-bottom: 5px;
+      }
+
+      .summary-row .label {
+        color: #6b7280;
+      }
+
+      .summary-row .value {
+        font-weight: 600;
+        color: #111827;
+      }
+      /* Cần thêm style cho Order Summary Info Block (N/A) */
+
+      .summary-info-block {
+        background: #f3f4f6;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 15px;
+      }
+
+      .summary-divider {
+        border-top: 1px solid #e5e7eb;
+        margin: 10px 0;
+      }
+
+      .customer-info-box {
+        background: #f3f4f6;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 15px;
+      }
+
+      .customer-info-box strong {
+        display: block;
+        font-weight: 600;
+        color: #111827;
+      }
+
+      .customer-info-box small {
+        display: block;
+        color: #6b7280;
+        line-height: 1.4;
+      }
+
+      .confirm-btn {
+        background: #0095ff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        margin-top: 15px;
+      }
+
+      .confirm-btn:hover {
+        background: #007bff;
+      }
+
+      .service-benefits {
+        font-size: 13px;
+        color: #6b7280;
+        padding-top: 10px;
+      }
+
+      .service-benefits ul {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+      }
+
+      .service-benefits li {
+        position: relative;
+        padding-left: 15px;
+        margin-bottom: 4px;
+      }
+
+      .service-benefits li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: #6b7280;
+      }
+
+      #loadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      /* Responsive */
+
+      @media (max-width: 768px) {
+        .app-header {
+          padding: 10px 15px;
+        }
+        .main-content-wrapper {
+          padding: 15px 10px;
+        }
+        .container {
+          padding: 15px;
+        }
+        .content-wrapper {
+          flex-direction: column;
+          gap: 15px;
+        }
+        .right-panel {
+          width: 100%;
+          order: -1;
+        }
+        .page-header {
+          padding-left: 30px;
+          margin-bottom: 15px;
+          align-items: flex-start;
+          text-align: left;
+        }
+        .page-header a.btn-back {
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+      }
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main role="main">
+      <!-- Loading Overlay -->
+      <div id="loadingOverlay" style="display: none">
+        <svg
+          class="animate-spin -ml-1 mr-3 h-8 w-8 text-primary-blue"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <span class="text-lg text-primary-blue"
+          >Đang tải chi tiết đơn hàng...</span
+        >
+      </div>
+
+      <!-- 1. APPLICATION HEADER (LOGO và LOGIN) - Đã khôi phục giao diện ban đầu -->
+      <div class="header">
+        <nav class="nav-bar">
+          <div class="logo">
+            <div class="logo-icon">
+              <i class="bx bx-printer"></i>
+            </div>
+            <div class="text">
+              <h1>PrintNow</h1>
+              <p>Print service</p>
+            </div>
+          </div>
+
+          <ul class="nav-links">
+            <li><a href="/home" class="home">Home</a></li>
+            <li><a href="/service/print" class="service">Services</a></li>
+            <li><a href="/about-us" class="introduce">About Us</a></li>
+          </ul>
+
+          <div id="authArea" class="auth-area">
+            <a href="/login" class="login-btn">
+              <i class="bx bx-log-in"></i> Login
+            </a>
+          </div>
+        </nav>
+      </div>
+
+      <!-- 2. MAIN CONTENT WRAPPER (Để nội dung kéo dài full screen) -->
+      <div class="main-content-wrapper">
+        <div class="container">
+          <div class="page-header">
+            <!-- Giả sử có trang trước đó, nếu không có, cần xác định URL chính xác -->
+            <a href="#" onclick="history.back(); return false;" class="btn-back"
+              ><i class="bx bx-arrow-back"></i
+            ></a>
+            <h2>Order payment</h2>
+            <p>Choose the appropriate payment method</p>
+          </div>
+
+          <div class="content-wrapper">
+            <div class="left-panel">
+              <!-- Payment Information Section -->
+              <div class="section-card">
+                <h3 class="section-title">
+                  <i class="bx bx-info-circle"></i> Payment Information
+                </h3>
+                <div class="payment-info-block">
+                  <div class="payment-info-row">
+                    <span class="label">Order code:</span>
+                    <span class="value" id="orderCodeDisplay">N/A</span>
+                  </div>
+                  <div class="payment-info-row">
+                    <span class="label">Quantity:</span>
+                    <span class="value" id="fileCountDisplay">0 files</span>
+                  </div>
+                  <div class="payment-info-row">
+                    <span class="label">Total Order Value:</span>
+                    <span class="value" id="totalOrderValueDisplay">0₫</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 50% Deposit Required Notice -->
+              <div class="deposit-notice-card" id="depositRequiredSection">
+                <div class="title-deposit">
+                  <i class="bx bxs-bell-ring"></i> 50% deposit required
+                </div>
+                <p class="text-sm text-gray-700">
+                  Orders over 100.000 VND require 50% prepayment
+                </p>
+                <div class="summary-divider !my-3"></div>
+                <div class="deposit-detail-row deposit-amount">
+                  <span class="label font-bold"
+                    >Amount to be paid immediately:</span
+                  >
+                  <span class="value" id="depositAmountDisplay">0₫</span>
+                </div>
+                <div class="deposit-detail-row">
+                  <span class="label">Cash on delivery:</span>
+                  <span class="value" id="remainingAmountDisplay">0₫</span>
+                </div>
+              </div>
+
+              <!-- Payment Method Section -->
+              <div class="section-card">
+                <h3 class="section-title">
+                  <i class="bx bx-credit-card"></i> Payment method
+                </h3>
+                <div class="payment-option-list">
+                  <!-- Option 1: Pay at store (Đã khôi phục icon store) -->
+                  <div class="payment-option" data-method="store">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      id="payAtStore"
+                      value="store"
+                      checked
+                    />
+                    <div class="radio-indicator"></div>
+                    <!-- Icon Store -->
+                    <i class="bx bxs-store icon"></i>
+                    <div class="info">
+                      <strong>Pay at store</strong>
+                      <small>Pay in person when picking up</small>
+                    </div>
+                  </div>
+
+                  <!-- Option 2: Pay online via VnPay (Đã khôi phục icon card) -->
+                  <div class="payment-option" data-method="vnpay">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      id="payOnlineVnPay"
+                      value="vnpay"
+                    />
+                    <div class="radio-indicator"></div>
+                    <!-- Icon Card/Online -->
+                    <i class="bx bx-credit-card icon"></i>
+                    <div class="info">
+                      <strong id="vnpayTitle">Pay online via VnPay</strong>
+                      <small id="vnpayDescription"
+                        >Pay the entire amount online</small
+                      >
+                    </div>
+                    <span class="recommended-tag">Recommended</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- QR Code Payment Section -->
+              <div class="section-card" id="qrCodePaymentSection">
+                <h3 class="section-title">
+                  <i class="bx bx-qr"></i> QR Code payment
+                </h3>
+
+                <div class="qr-code-display">
+                  <div class="qr-slot relative rounded-md">
+                    <!-- Ảnh QR thật -->
+                    <img
+                      id="vietqrImg"
+                      alt="VietQR"
+                      class="qr-code-img rounded-md"
+                      src="https://placehold.co/180x180/000/fff?text=VNPAY+QR"
+                    />
+                    <!-- WAITING overlay: thay cho QR ngay sau khi nhận 'paid' -->
+                    <div
+                      id="qrWaitingBox"
+                      class="hidden absolute inset-0 rounded-md border flex items-center justify-center"
+                      style="background: #f3f4f6; border-color: #e5e7eb"
+                    >
+                      <!-- spinner/clock -->
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        class="animate-spin text-gray-500"
+                      >
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke-opacity=".25"
+                        ></circle>
+                        <path d="M12 6v6l4 2" stroke-opacity=".8"></path>
+                      </svg>
+                    </div>
+
+                    <!-- Success overlay: thay thế QR khi đã thanh toán -->
+                    <div
+                      id="qrSuccessBox"
+                      class="hidden absolute inset-0 rounded-md border flex items-center justify-center"
+                      style="background: #e8fff0; border-color: #c6f3d6"
+                    >
+                      <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#6AA57B"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M20 6L9 17l-5-5"></path>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- Hàng trạng thái (text) dưới QR – sẽ ẩn trong lúc waiting/success -->
+                  <div
+                    id="qrStateRow"
+                    class="hidden flex items-center gap-2 mt-3"
+                  >
+                    <strong id="qrCodeTitle" class="text-gray-900"
+                      >Waiting for payment...</strong
+                    >
+                  </div>
+
+                  <!-- Số tiền (hiển thị kèm tiền tố “Amount:”) -->
+                  <div class="amount-value" id="qrCodeAmountDisplay">0₫</div>
+
+                  <!-- Dòng hướng dẫn / chuyển hướng -->
+                  <small id="qrHelperText"
+                    >Use banking apps or e-wallets that support VnPay</small
+                  >
+                  <!-- Dòng phụ (chỉ dùng cho trạng thái SUCCESS: Code: #...) -->
+                  <div
+                    id="qrExtraLine"
+                    class="text-sm text-gray-500 mt-1"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Panel: Order Summary & Customer Info -->
+            <div class="right-panel">
+              <div class="summary-card">
+                <div class="summary-title">
+                  <i class="bx bx-list-ul"></i> Order Summary
+                </div>
+
+                <div class="summary-row">
+                  <span class="label">Total:</span>
+                  <span class="value" id="summaryTotalDisplay">0₫</span>
+                </div>
+                <div class="summary-row">
+                  <span class="label">Pay now:</span>
+                  <span
+                    class="value font-bold text-primary-blue"
+                    id="summaryPayNowDisplay"
+                    >0₫</span
+                  >
+                </div>
+                <div class="summary-divider"></div>
+
+                <!-- Customer Info Block - Đã thêm lại nếu có dữ liệu -->
+                <div class="customer-info-box" id="customerInfoSummary">
+                  <strong id="summaryCustomerName">N/A</strong>
+                  <small id="summaryCustomerEmail">N/A</small>
+                </div>
+
+                <!-- Info Block khi chưa có dữ liệu (theo ảnh) -->
+                <div
+                  class="summary-info-block"
+                  id="emptySummaryInfoBlock"
+                  style="display: none"
+                >
+                  <strong class="text-gray-900">N/A</strong>
+                  <small class="text-gray-500">N/A</small>
+                </div>
+
+                <button class="confirm-btn" id="confirmPaymentButton">
+                  Confirm payment at the store
+                </button>
+                <div class="service-benefits">
+                  <ul>
+                    <li>Completion time: 2-5 business days</li>
+                    <li>Email notification upon completion</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+            <script>
+        // Lưu & đồng bộ lựa chọn phương thức thanh toán
+        const optStore = document.querySelector('.payment-option[data-method="store"]');
+        const optVnpay = document.querySelector('.payment-option[data-method="vnpay"]');
+        const qrSection = document.getElementById('qrCodePaymentSection');
+        const confirmBtn = document.getElementById('confirmPaymentButton');
+        const backendOrderId = localStorage.getItem('backendOrderId');
+
+        function saveSelection(method) {
+          // method: "STORE" | "VNPAY"
+          try {
+            localStorage.setItem('paymentSelection', JSON.stringify({ method }));
+            const cur = JSON.parse(localStorage.getItem('currentOrderData') || '{}');
+            cur.paymentMethod = (method === 'VNPAY' ? 'VnPay' : 'At the store');
+            localStorage.setItem('currentOrderData', JSON.stringify(cur));
+          } catch {}
+        }
+        async function pushToServer(method) {
+          if (!backendOrderId) return;
+          try {
+            await fetch(`/api/orders/${backendOrderId}/pay-method`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ method })
+            });
+          } catch {}
+        }
+        function activate(el) {
+         document.querySelectorAll('.payment-option').forEach(x => x.classList.remove('active'));
+         el?.classList.add('active');
+        }
+        // Default: STORE khi vào trang
+       activate(optStore);
+        saveSelection('STORE');
+        qrSection.style.display = 'none';
+        if (confirmBtn) confirmBtn.textContent = 'Confirm payment at the store';
+
+        optStore?.addEventListener('click', async () => {
+          activate(optStore);
+          qrSection.style.display = 'none';
+          if (confirmBtn) confirmBtn.textContent = 'Confirm payment at the store';
+          saveSelection('STORE');
+          await pushToServer('STORE');
+        });
+        optVnpay?.addEventListener('click', async () => {
+          activate(optVnpay);
+          qrSection.style.display = 'block';
+          if (confirmBtn) confirmBtn.textContent = 'I have paid via VnPay';
+         saveSelection('VNPAY');
+          await pushToServer('VNPAY');
+        });
+      </script>
+      <script src="/js/apiService.js"></script>
+      <script src="/js/order_payment.js"></script>
+      <script src="/js/authHeader.js"></script>
+    </main>
+  </body>
+</html>

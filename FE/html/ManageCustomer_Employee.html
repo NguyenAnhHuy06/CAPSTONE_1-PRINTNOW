@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <style>
+         :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #6C757D;
+            --background-color: #F8F9FA;
+            --card-background: #FFFFFF;
+            --text-color: #333333;
+            --light-text-color: #666666;
+            --border-color: #EAEAEA;
+            --completed-color: #28A745;
+            --in-progress-color: #FFC107;
+            --pending-color: #DC3545;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            border-radius: 8px;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 80px;
+            background-color: var(--card-background);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 40%;
+            background-color: #043873;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo i {
+            color: white;
+            font-size: 24px;
+        }
+        
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .nav-item {
+            font-size: 24px;
+            color: var(--secondary-color);
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+        
+        .nav-item:hover {
+            background-color: #EBF2FA;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        .nav-item.customer {
+            color: var(--primary-color);
+            background-color: #EBF2FA;
+        }
+        
+        .main-content {
+            flex-grow: 1;
+            padding: 20px 30px;
+        }
+        
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .breadcrumb {
+            color: var(--light-text-color);
+            font-size: 14px;
+        }
+        
+        .btn-create-order {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-create-order:hover {
+            background-color: #3a7fd4;
+        }
+        
+        .orders-summary h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
+        }
+        
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .card-icon {
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+        
+        .card-info {
+            display: flex;
+            justify-content: space-between;
+            margin-right: 100px;
+        }
+        
+        .card-info .all-customer {
+            display: flex;
+            flex-direction: column;
+            margin-top: 15px;
+            gap: 3px;
+        }
+        
+        .card-info .active {
+            display: flex;
+            flex-direction: column;
+            margin-top: 15px;
+            gap: 3px;
+        }
+        
+        .card-info .in-active {
+            display: flex;
+            flex-direction: column;
+            margin-top: 15px;
+            gap: 3px;
+        }
+        
+        .card-info .in-active .in-active-percent {
+            color: #DC3545;
+        }
+        
+        .card-info .abandoned-cart .card-title {
+            color: #DC3545;
+        }
+        
+        .card-title {
+            font-size: 14px;
+            color: var(--light-text-color);
+        }
+        
+        .card-value {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .percent {
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        
+        .percent.negative {
+            color: #DC3545;
+        }
+        
+        .percent.positive {
+            color: var(--completed-color);
+        }
+        
+        .card-detail {
+            font-size: 12px;
+            color: var(--light-text-color);
+            margin-top: 10px;
+        }
+        
+        .customer-orders-table {
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .customer-orders-table h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: 300px;
+        }
+        
+        .search-bar i {
+            color: var(--light-text-color);
+            margin-right: 10px;
+        }
+        
+        .search-bar input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+        
+        .btn-control {
+            background-color: var(--card-background);
+            color: var(--light-text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            align-items: center;
+            display: flex;
+            position: relative;
+        }
+        
+        .btn-control i {
+            margin-right: 5px;
+            font-size: 16px;
+        }
+        
+        .btn-control:hover {
+            background-color: var(--background-color);
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .orders-table th,
+        .orders-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .orders-table th {
+            color: var(--light-text-color);
+            font-weight: 500;
+        }
+        
+        .status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+            text-align: center;
+            display: flex;
+            min-width: 50px;
+            height: 24px;
+            width: 80px;
+            margin-top: 5px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #status-active {
+            background-color: #D4EDDA;
+            color: var(--completed-color);
+        }
+        
+        #status-in_active {
+            background-color: #F8D7DA;
+            color: var(--pending-color);
+        }
+        
+        .status.in-progress,
+        .status.received {
+            background-color: #FFF3CD;
+            color: var(--in-progress-color);
+        }
+        
+        .status.pending {
+            background-color: #F8D7DA;
+            color: var(--pending-color);
+        }
+        /* Phân trang */
+        
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--light-text-color);
+        }
+        
+        .pagination span:first-child {
+            margin-right: auto;
+        }
+        
+        .page-nav {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--light-text-color);
+        }
+        
+        .btn-control:focus-visible,
+        .page-nav:focus-visible,
+        .btn-create-order:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+        
+        .filter-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            z-index: 10;
+            background: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            margin-top: 10px;
+            display: none !important;
+            text-align: left;
+        }
+        
+        .filter-dropdown.show {
+            display: block !important;
+        }
+        
+        .filter-dropdown h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .filter-section {
+            margin-bottom: 20px;
+        }
+        
+        .filter-section label,
+        .filter-section h5 {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+        
+        .filter-select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-background);
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+        }
+        
+        .amount-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .amount-group input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 20px;
+        }
+        
+        .amount-group p {
+            align-self: center;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+        /* Nút Lọc */
+        
+        .btn-apply-filter {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .btn-apply-filter:hover {
+            background-color: #3a7fd4;
+        }
+        
+        .date-filter-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .date-filter-options label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .date-filter-options input[type="radio"] {
+            margin-right: 5px;
+        }
+        
+        .date-filter-options .date-range-input {
+            grid-column: 1 / span 2;
+        }
+        
+        .date-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            grid-column: 1 / span 2;
+        }
+        
+        .date-input-group input[type="date"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .date-range-details {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .calendar-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            margin-top: 0px;
+            font-size: 14px;
+        }
+        
+        .calendar-navigation select {
+            padding: 5px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin: 0 5px;
+            flex-grow: 1;
+            background-color: var(--card-background);
+            color: var(--text-color);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+        }
+        
+        .calendar-navigation .nav-btn {
+            border: none;
+            background-color: #fff;
+        }
+        
+        .calendar-navigation #monthSelect {
+            border: none;
+        }
+        
+        .calendar-navigation #yearSelect {
+            border: none;
+        }
+        
+        #dateFilterDropdown {
+            width: 320px !important;
+            right: 10px;
+        }
+        /* 2. Định kiểu Nút From/To */
+        
+        .date-range-details .range-inputs-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .date-range-details .btn-range {
+            flex-grow: 1;
+            text-align: center;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: var(--background-color);
+            color: var(--light-text-color);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .date-range-details .btn-range.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .date-range-details .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 5px;
+        }
+        
+        .date-range-details .calendar-header select {
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            flex-grow: 1;
+        }
+        /* 4. Lưới Lịch */
+        
+        #dateRangeDetails.calendar-view {
+            display: flex !important;
+            flex-direction: column;
+            margin-top: 10px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 0.85rem;
+            gap: 2px;
+        }
+        /* 5. Định kiểu các ô ngày */
+        
+        .calendar-grid span {
+            padding: 6px 0;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background-color 0.1s, color 0.1s;
+        }
+        
+        .calendar-grid span:nth-child(-n+7) {
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: default;
+            border-radius: 0;
+        }
+        
+        .calendar-grid .day:not(.empty-day):hover {
+            background-color: #f0f0f0;
+        }
+        
+        .calendar-grid .empty-day {
+            cursor: default;
+            background: none;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .calendar-grid .day.in-range {
+            background-color: #e6e4ff !important;
+            color: var(--text-color);
+            border-radius: 0 !important;
+        }
+        
+        .calendar-grid .day.selected-range {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            font-weight: 700;
+            border-radius: 50% !important;
+        }
+        
+        .calendar-grid .day.start-range {
+            border-top-left-radius: 50% !important;
+            border-bottom-left-radius: 50% !important;
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+        
+        .calendar-grid .day.end-range {
+            border-top-right-radius: 50% !important;
+            border-bottom-right-radius: 50% !important;
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+        }
+        
+        .calendar-grid .day.start-range.end-range {
+            border-radius: 50% !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo"><i class='bx bx-printer'></i></div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item order"><i class="fas fa-box"></i></a>
+                <a href="#" class="nav-item customer"><i class="fas fa-user-friends"></i></a>
+                <a href="#" class="nav-item setting"><i class="fas fa-cog"></i></a>
+                <a href="#" class="nav-item chat"><i class="fas fa-headphones"></i></a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <div class="breadcrumb"><span><i class="fas fa-home"></i> /</span> Customers</div>
+                <button class="btn-create-order">+ Add a New Customer</button>
+            </header>
+
+            <section class="orders-summary">
+                <h2>Customers Summary</h2>
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-row">
+                            <div class="card-icon"><i class="fas fa-box"></i></div>
+                            <select class="btn-control">
+                                <option>This Week</option>
+                                <option>This Month</option>
+                                <option>This Year</option>
+                            </select>
+                        </div>
+                        <div class="card-info">
+                            <div class="all-customer">
+                                <span class="card-title">All Customers</span>
+                                <span class="card-value">1,250<span class="percent positive">+15.80%</span></span>
+                            </div>
+                            <div class="active">
+                                <span class="card-title">Active </span>
+                                <span class="card-value">1,180<span class="percent positive">+85%</span></span>
+                            </div>
+                            <div class="in-active">
+                                <span class="card-title">In-Active </span>
+                                <span class="card-value">70<span
+                                        class="percent positive in-active-percent">-10%</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-row">
+                            <div class="card-icon"><i class="fas fa-ban"></i></div>
+                            <select class="btn-control">
+                                <option>This Week</option>
+                                <option>This Month</option>
+                                <option>This Year</option>
+                            </select>
+                        </div>
+                        <div class="card-info">
+                            <div class="new-customer">
+                                <span class="card-title">New Customers</span>
+                                <span class="card-value">30</span>
+                            </div>
+                            <div class="purchasing">
+                                <span class="card-title">Purchasing </span>
+                                <span class="card-value">657</span>
+                            </div>
+                            <div class="abandoned-cart">
+                                <span class="card-title">Abandoned Carts </span>
+                                <span class="card-value">5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="customer-orders-table">
+                <h3>Customer</h3>
+                <div class="table-controls">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search">
+                    </div>
+                    <div class="actions">
+                        <div class="btn-control" id="generalFilterBtn">
+                            <i class='bx bx-filter'></i> Filter
+                            <div class="filter-dropdown" id="generalFilterDropdown">
+                                <h4>Filter</h4>
+                                <div class="filter-section">
+                                    <h5>Status</h5>
+                                    <select class="filter-select">
+                                        <option>All</option>
+                                        <option>Active</option>
+                                        <option>In-Active</option>
+                                    </select>
+                                </div>
+
+                                <div class="filter-section">
+                                    <h5>Customer</h5>
+                                    <select class="filter-select">
+                                        <option>All</option>
+                                        <option>Nguyễn Việt Anh</option>
+                                        <option>Lê Hùng</option>
+                                    </select>
+                                </div>
+
+                                <div class="filter-section">
+                                    <h5>Amount</h5>
+                                    <div class="amount-group">
+                                        <p>From</p>
+                                        <input type="number" min="0" placeholder="0.00">
+                                        <p>To</p>
+                                        <input type="number" min="0" placeholder="0.00">
+                                    </div>
+                                </div>
+
+                                <button class="btn-apply-filter">Filter</button>
+                            </div>
+                        </div>
+
+                        <div class="btn-control" id="dateFilterBtn">
+                            <i class='bx bx-calendar-alt'></i> Filter
+                            <div class="filter-dropdown" id="dateFilterDropdown" style="right: 120px; width: 300px;">
+                                <h4>By Date</h4>
+
+                                <div class="date-filter-options">
+                                    <label><input type="radio" name="date_range" value="this_week" checked> This
+                                        Week</label>
+                                    <label><input type="radio" name="date_range" value="last_week"> Last Week</label>
+                                    <label><input type="radio" name="date_range" value="this_month"> This Month</label>
+                                    <label><input type="radio" name="date_range" value="last_month"> Last Month</label>
+                                    <label><input type="radio" name="date_range" value="this_year"> This Year</label>
+                                    <label><input type="radio" name="date_range" value="last_year"> Last Year</label>
+
+                                </div>
+
+                                <div class="date-range-details calendar-view" id="dateRangeDetails" style="display: none;">
+                                    <div class="range-inputs-buttons">
+                                        <button class="btn-range from-date selected">From</button>
+                                        <button class="btn-range to-date">To</button>
+                                    </div>
+
+                                    <div class="calendar-navigation">
+                                        <button id="prevMonthBtn" class="nav-btn"><i
+                                                class="fas fa-chevron-left"></i></button>
+
+                                        <select id="monthSelect"></select>
+                                        <select id="yearSelect"></select>
+
+                                        <button id="nextMonthBtn" class="nav-btn"><i
+                                                class="fas fa-chevron-right"></i></button>
+                                    </div>
+
+                                    <div class="calendar-grid">
+                                        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+                                    </div>
+                                </div>
+
+                                <button class="btn-apply-filter">Filter</button>
+                            </div>
+                        </div>
+
+                        <button class="btn-control"><i class='bx bx-share'></i> Share</button>
+                        <select class="btn-control">
+                            <option>Bulk Status</option>
+                            <option>Active</option>
+                            <option>In-Active</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox"></th>
+                                <th>Customer Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Orders</th>
+                                <th>Order Total</th>
+                                <th>Customer Since</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>Nguyễn Việt Anh</td>
+                                <td>12 Oct 2025 - 12:25 am</td>
+                                <td>0769858742</td>
+                                <td>2</td>
+                                <td>25.000VND</td>
+                                <td>12 Oct 2025 - 12:25 am</td>
+                                <td class="status" id="status-active">Active</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>Lê Hùng</td>
+                                <td>hung@gmail.com</td>
+                                <td>0226489324</td>
+                                <td>10</td>
+                                <td>25.000VND</td>
+                                <td>12 Oct 2025 - 12:25 am</td>
+                                <td class="status" id="status-active">Active</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>Janet Adebayo</td>
+                                <td>janet.a@mail.com</td>
+                                <td>04763598744</td>
+                                <td>15</td>
+                                <td>250.000VND</td>
+                                <td>12 Oct 2025 - 12:25 am</td>
+                                <td class="status" id="status-in_active">In-Active</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>Bùi Ngọc Doãn</td>
+                                <td>Vanh123@mail.com</td>
+                                <td>0905687324</td>
+                                <td>10</td>
+                                <td>25.000VND</td>
+                                <td>12 Oct 2025 - 12:25 am</td>
+                                <td class="status" id="status-active">Active</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>Lê Hưng</td>
+                                <td>hungle@mail.com</td>
+                                <td>0231578946</td>
+                                <td>5</td>
+                                <td>25.000VND</td>
+                                <td>12 Oct 2025 - 12:25 am</td>
+                                <td class="status" id="status-in_active">In-Active</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <span>10 items per page</span>
+                    <span>1-10 of 200 items</span>
+                    <span>1 of 44 pages</span>
+                    <button class="page-nav"><i class="fas fa-chevron-left"></i></button>
+                    <button class="page-nav"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- KHAI BÁO BIẾN CHUNG ---
+            const generalFilterBtn = document.getElementById('generalFilterBtn');
+            const generalFilterDropdown = document.getElementById('generalFilterDropdown');
+            const dateFilterBtn = document.getElementById('dateFilterBtn');
+            const dateFilterDropdown = document.getElementById('dateFilterDropdown');
+            const dateRangeDetails = document.getElementById('dateRangeDetails');
+            const dateRangeRadios = document.querySelectorAll('input[name="date_range"]');
+
+            // Khai báo các biến DOM cho Lịch
+            const calendarGrid = document.querySelector('#dateRangeDetails .calendar-grid');
+            const fromDateBtn = document.querySelector('#dateRangeDetails .from-date');
+            const toDateBtn = document.querySelector('#dateRangeDetails .to-date');
+
+            // Biến điều hướng Lịch
+            const prevMonthBtn = document.getElementById('prevMonthBtn');
+            const nextMonthBtn = document.getElementById('nextMonthBtn');
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+
+            // Biến trạng thái Lịch
+            let isSelectingFrom = true;
+            let dateRange = {
+                fromElement: null,
+                toElement: null
+            };
+
+            // TRẠNG THÁI LỊCH HIỆN TẠI
+            const today = new Date();
+            let currentMonth = today.getMonth();
+            let currentYear = today.getFullYear();
+            const currentMaxYear = today.getFullYear(); // Ràng buộc: Năm lớn nhất được chọn
+
+            // --- LOGIC HỖ TRỢ LỊCH ĐỘNG ---
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+            function setupMonthSelect() {
+                monthSelect.innerHTML = '';
+                monthNames.forEach((name, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = name;
+                    monthSelect.appendChild(option);
+                });
+                // Thiết lập sự kiện thay đổi
+                monthSelect.addEventListener('change', (e) => {
+                    currentMonth = parseInt(e.target.value);
+                    renderCalendar(currentMonth, currentYear);
+                });
+            }
+
+            function setupYearSelect() {
+                yearSelect.innerHTML = '';
+                const startYear = currentMaxYear - 10;
+                const endYear = currentMaxYear;
+
+                for (let year = endYear; year >= startYear; year--) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearSelect.appendChild(option);
+                }
+
+                if (currentYear > currentMaxYear) {
+                    currentYear = currentMaxYear; // Tự động về năm hiện tại nếu nó đã vượt quá
+                }
+                yearSelect.value = currentYear;
+                yearSelect.addEventListener('change', (e) => {
+                    currentYear = parseInt(e.target.value);
+                    renderCalendar(currentMonth, currentYear);
+                });
+            }
+
+            // Hàm Tạo Lưới Lịch
+            function renderCalendar(month, year) {
+                // Ràng buộc tháng/năm khi chuyển mũi tên (Nếu đang ở năm hiện tại thì không được chuyển sang tháng sau tháng hiện tại)
+                if (year === currentMaxYear && month > today.getMonth()) {
+                    month = today.getMonth();
+                    currentMonth = month;
+                }
+
+                monthSelect.value = month;
+                yearSelect.value = year;
+
+                // Cập nhật trạng thái nút Prev/Next (Tùy chọn: Vô hiệu hóa nút Next nếu đang ở tháng/năm hiện tại)
+                if (year === currentMaxYear && month === today.getMonth()) {
+                    nextMonthBtn.disabled = true;
+                } else {
+                    nextMonthBtn.disabled = false;
+                }
+
+                while (calendarGrid.children.length > 7) {
+                    calendarGrid.removeChild(calendarGrid.lastChild);
+                }
+
+                const firstDayOfMonth = new Date(year, month, 1).getDay();
+                let startingDayIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                for (let i = 0; i < startingDayIndex; i++) {
+                    const emptyDay = document.createElement('span');
+                    emptyDay.classList.add('day', 'empty-day');
+                    calendarGrid.appendChild(emptyDay);
+                }
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayEl = document.createElement('span');
+                    dayEl.classList.add('day');
+                    dayEl.textContent = i;
+
+                    dayEl.dataset.date = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+
+                    calendarGrid.appendChild(dayEl);
+                }
+
+                highlightSelectedRange();
+            }
+
+            // Xử lý chuyển tháng (khi nhấn mũi tên)
+            function changeMonth(delta) {
+                let newMonth = currentMonth + delta;
+                let newYear = currentYear;
+
+                if (newMonth < 0) {
+                    newMonth = 11;
+                    newYear--;
+                } else if (newMonth > 11) {
+                    newMonth = 0;
+                    newYear++;
+                }
+
+                // Ràng buộc: Không được chuyển tới năm/tháng trong tương lai
+                if (newYear > currentMaxYear || (newYear === currentMaxYear && newMonth > today.getMonth())) {
+                    return; // Dừng lại, không cho phép chuyển
+                }
+
+                currentMonth = newMonth;
+                currentYear = newYear;
+
+                renderCalendar(currentMonth, currentYear);
+            }
+
+            // Lắng nghe sự kiện chuyển tháng
+            if (prevMonthBtn && nextMonthBtn) {
+                prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+                nextMonthBtn.addEventListener('click', () => changeMonth(1));
+            }
+
+            // --- LOGIC LỊCH (Ràng buộc và Highlight) ---
+
+            function updateDateButtons() {
+                fromDateBtn.textContent = 'From';
+                toDateBtn.textContent = 'To';
+
+                fromDateBtn.classList.toggle('selected', isSelectingFrom);
+                toDateBtn.classList.toggle('selected', !isSelectingFrom);
+            }
+
+            function highlightSelectedRange() {
+                document.querySelectorAll('.day').forEach(d => d.classList.remove('start-range', 'end-range', 'in-range', 'selected-range'));
+
+                const fromEl = dateRange.fromElement;
+                const toEl = dateRange.toElement;
+
+                if (fromEl) {
+                    fromEl.classList.add('selected-range', 'start-range');
+                }
+                if (toEl) {
+                    toEl.classList.add('selected-range', 'end-range');
+                }
+
+                if (fromEl && toEl) {
+                    const startDate = new Date(fromEl.dataset.date);
+                    const endDate = new Date(toEl.dataset.date);
+
+                    const minDate = startDate <= endDate ? startDate : endDate;
+                    const maxDate = startDate <= endDate ? endDate : startDate;
+
+                    document.querySelectorAll('.day').forEach(dayEl => {
+                        const dayDateStr = dayEl.dataset.date;
+                        if (dayDateStr) {
+                            const dayDate = new Date(dayDateStr);
+                            const dayTime = dayDate.getTime();
+
+                            if (dayTime > minDate.getTime() && dayTime < maxDate.getTime() && dayDate.getMonth() === currentMonth && dayDate.getFullYear() === currentYear) {
+                                dayEl.classList.add('in-range');
+                            }
+                        }
+                    });
+                }
+            }
+
+            if (calendarGrid) {
+                calendarGrid.addEventListener('click', function(e) {
+                    const clickedDay = e.target;
+
+                    if (clickedDay.classList.contains('day') && !clickedDay.classList.contains('empty-day')) {
+
+                        const clickedDateStr = clickedDay.dataset.date;
+                        const clickedDate = new Date(clickedDateStr);
+
+                        // Ràng buộc: Không cho phép chọn ngày trong tương lai
+                        if (clickedDate.getTime() > today.getTime()) {
+                            alert('Không được chọn ngày trong tương lai!');
+                            return;
+                        }
+
+                        // --- LOGIC RÀNG BUỘC MẠNH (Sử dụng Date Objects) ---
+
+                        if (isSelectingFrom) {
+                            dateRange.fromElement = clickedDay;
+
+                            if (dateRange.toElement) {
+                                const endDate = new Date(dateRange.toElement.dataset.date);
+                                if (clickedDate.getTime() > endDate.getTime()) {
+                                    dateRange.toElement = null;
+                                }
+                            }
+                            isSelectingFrom = false;
+
+                        } else {
+                            if (dateRange.fromElement) {
+                                const startDate = new Date(dateRange.fromElement.dataset.date);
+
+                                if (clickedDate.getTime() < startDate.getTime()) {
+                                    const tempFromEl = dateRange.fromElement;
+                                    dateRange.fromElement = clickedDay;
+                                    dateRange.toElement = tempFromEl;
+                                } else {
+                                    dateRange.toElement = clickedDay;
+                                }
+                            } else {
+                                dateRange.fromElement = clickedDay;
+                                dateRange.toElement = null;
+                            }
+                            isSelectingFrom = true;
+                        }
+
+                        updateDateButtons();
+                        highlightSelectedRange();
+                    }
+                });
+            }
+
+            if (fromDateBtn && toDateBtn) {
+                fromDateBtn.addEventListener('click', () => {
+                    isSelectingFrom = true;
+                    updateDateButtons();
+                });
+
+                toDateBtn.addEventListener('click', () => {
+                    isSelectingFrom = false;
+                    updateDateButtons();
+                });
+            }
+
+            function closeAllDropdowns() {
+                generalFilterDropdown.classList.remove('show');
+                dateFilterDropdown.classList.remove('show');
+            }
+
+            generalFilterBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!generalFilterDropdown.classList.contains('show')) {
+                    dateFilterDropdown.classList.remove('show');
+                }
+                generalFilterDropdown.classList.toggle('show');
+            });
+
+            dateFilterBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!dateFilterDropdown.classList.contains('show')) {
+                    generalFilterDropdown.classList.remove('show');
+                }
+                dateFilterDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                const isClickInsideGeneral = generalFilterDropdown.contains(e.target) || generalFilterBtn.contains(e.target);
+                const isClickInsideDate = dateFilterDropdown.contains(e.target) || dateFilterBtn.contains(e.target);
+
+                if (!isClickInsideGeneral && generalFilterDropdown.classList.contains('show')) {
+                    generalFilterDropdown.classList.remove('show');
+                }
+
+                if (!isClickInsideDate && dateFilterDropdown.classList.contains('show')) {
+                    dateFilterDropdown.classList.remove('show');
+                }
+            });
+
+            generalFilterDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            dateFilterDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Logic Ẩn/Hiện Chi tiết Date Range (ĐÃ SỬA: SỬ DỤNG CLASS HIDDEN)
+            function toggleDateRangeDetails() {
+                const customRangeRadio = document.getElementById('customRangeRadio');
+                if (customRangeRadio.checked) {
+                    dateRangeDetails.style.display = 'block';
+                } else {
+                    dateRangeDetails.style.display = 'none';
+                }
+            }
+
+            dateRangeRadios.forEach(radio => {
+                radio.addEventListener('change', toggleDateRangeDetails);
+            });
+            const tableBody = document.getElementById('ordersTableBody');
+            // --- KHỞI TẠO ---
+            setupMonthSelect();
+            setupYearSelect();
+            renderCalendar(currentMonth, currentYear);
+            updateDateButtons();
+
+            // KHẮC PHỤC LỖI HIỂN THỊ: Đảm bảo ẩn lịch theo trạng thái radio button ban đầu
+            toggleDateRangeDetails();
+        });
+    </script>
+</body>
+
+</html>

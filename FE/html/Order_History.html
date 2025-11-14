@@ -1,0 +1,903 @@
+<!--FE/html/Order_History.html-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order History | PrintNow</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #fff;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+      /* ===== HEADER ===== */
+
+      .header {
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 10px 20px;
+      }
+
+      .nav-bar {
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 40%;
+        background-color: #043873;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-icon i {
+        color: white;
+        font-size: 22px;
+      }
+
+      .text {
+        line-height: 1.1;
+      }
+
+      .logo .text h1 {
+        font-size: 25px;
+        font-weight: 600;
+        font-family: "Times New Roman", serif;
+        font-style: italic;
+        margin: 0;
+        color: #111827;
+      }
+
+      .logo .text p {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        gap: 60px;
+        font-weight: 500;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: #374151;
+        transition: color 0.2s;
+      }
+
+      .nav-links li a:hover {
+        color: #1a4a8d;
+      }
+
+      .nav-links li:last-child {
+        margin-left: 0;
+      }
+
+      /* --- thêm style giống About_us cho nút Login/Avatar --- */
+      .login-btn {
+        text-decoration: none;
+        color: #fff;
+        background-color: #000000;
+        border: 1px solid #000000;
+        border-radius: 6px;
+        padding: 8px 15px;
+        font-weight: 600;
+        display: flex;
+        gap: 5px;
+        transition: background-color 0.2s, opacity 0.2s;
+      }
+      .login-btn:hover {
+        opacity: 0.9;
+      }
+      .login-btn i {
+        font-size: 1.1em;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-right: 30px;
+      }
+
+      .icon-btn {
+        background: #fff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .icon-btn .bell {
+        font-size: 25px;
+        color: #333;
+        margin-top: 10px;
+        margin-right: 5px;
+      }
+
+      .avatar-small {
+        background: #203957;
+        color: #fff;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0px auto;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(20, 30, 60, 0.06);
+        padding: 40px 50px;
+      }
+
+      .page-header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .page-header > div h2 {
+        margin-bottom: 5px !important;
+      }
+
+      .page-header > div p {
+        margin-top: -2px !important;
+        line-height: 1;
+      }
+
+      .page-header h2 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .page-header p {
+        color: #6b7280;
+        font-size: 18px;
+      }
+
+      .btn-back {
+        text-decoration: none;
+        color: #374151;
+        font-size: 1.8rem;
+        transition: color 0.2s ease;
+      }
+
+      .btn-back:hover {
+        color: #007bff;
+      }
+
+      h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+        color: #222;
+      }
+
+      p.subtitle {
+        color: #777;
+        margin: 5px 0 20px 0;
+      }
+
+      .filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .filters button {
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        color: #203957;
+        font-weight: 500;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .filters button.active,
+      .filters button:hover {
+        background-color: #0095ff;
+        color: #fff;
+        border-color: #0095ff;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 14px 18px;
+        border-bottom: 1px solid #e4e6eb;
+        font-size: 14px;
+      }
+
+      th {
+        background-color: #f3f5f7;
+        color: #203957;
+        font-weight: 600;
+      }
+
+      tr:hover td {
+        background-color: #f9fafc;
+      }
+
+      .status {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .completed {
+        background-color: #e3f7e7;
+        color: #2e8540;
+      }
+
+      .processing {
+        background-color: #eaf1ff;
+        color: #2f5de0;
+      }
+
+      .cancelled {
+        background-color: #fde7e7;
+        color: #e02f2f;
+      }
+
+      /* Pending: vàng nhạt */
+      .pending {
+        background-color: #fff7e6;
+        color: #b76e00;
+      }
+
+      /* Nút hành động */
+      .btn-reorder {
+        background-color: #f1f4f9;
+        color: #203957;
+        padding: 6px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: background 0.2s ease;
+        margin-right: 8px;
+      }
+
+      .btn-reorder:hover {
+        background-color: #e2e8f0;
+      }
+
+      .btn-view {
+        background-color: #155dfc;
+        color: #fff;
+        padding: 6px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: background 0.2s ease;
+      }
+
+      .btn-view:hover {
+        background-color: #1a2e46;
+      }
+
+      .btn-cancel {
+        background-color: #fef2f2;
+        color: #b91c1c;
+        padding: 6px 16px;
+        border: 1px solid #fecaca;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-left: 8px;
+      }
+      .btn-cancel:hover {
+        background-color: #fee2e2;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 25px;
+        }
+        table {
+          font-size: 13px;
+        }
+      }
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+      <nav class="nav-bar" role="navigation" aria-label="Primary">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="bx bx-printer" aria-hidden="true"></i>
+          </div>
+          <div class="text">
+            <h1>PrintNow</h1>
+            <p>Print service</p>
+          </div>
+        </div>
+
+        <ul class="nav-links">
+          <li><a href="/home" class="home">Home</a></li>
+          <li>
+            <a href="/service/print" class="service" aria-current="page"
+              >Services</a
+            >
+          </li>
+          <li><a href="/about-us" class="about">About Us</a></li>
+        </ul>
+
+        <div class="header-right">
+          <a
+            href="/notifications"
+            class="icon-btn"
+            aria-label="Notifications"
+            title="Notifications"
+          >
+            <span class="bell"
+              ><i class="bx bx-bell" aria-hidden="true"></i
+            ></span>
+          </a>
+          <div id="authArea" class="auth-area">
+            <a href="/login" class="login-btn">
+              <i class="bx bx-log-in" aria-hidden="true"></i> Login
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <main role="main">
+      <div class="container">
+        <div class="page-header">
+          <a
+            href="#"
+            class="btn-back"
+            onclick="window.history.back()"
+            aria-label="Go back"
+            title="Go back"
+          >
+            <i
+              class="bx bx-arrow-back"
+              aria-hidden="true"
+              style="color: #000000"
+            ></i>
+          </a>
+
+          <div>
+            <h2>Order History</h2>
+            <p>View your past orders and check their status easily</p>
+          </div>
+        </div>
+
+        <div class="filters">
+          <button type="button" class="active">All</button>
+          <button type="button">Pending</button>
+          <button type="button">Completed</button>
+          <button type="button">Processing</button>
+          <button type="button">Cancelled</button>
+        </div>
+
+        <div style="overflow-x: auto">
+          <table>
+            <caption class="sr-only">
+              Your order history with status and totals
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Order ID</th>
+                <th scope="col">Date</th>
+                <th scope="col">Status</th>
+                <th scope="col">Total</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody id="orders">
+              <tr data-status="completed">
+                <th scope="row">#ORD-2025-001</th>
+                <td>26 Oct 2025</td>
+                <td><span class="status completed">Completed</span></td>
+                <td>150,000 VND</td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn-view"
+                    onclick="window.location.href='/Order_Details.html'"
+                  >
+                    View
+                  </button>
+                  <button type="button" class="btn-reorder">Reorder</button>
+                </td>
+              </tr>
+              <tr data-status="processing">
+                <th scope="row">#ORD-2025-002</th>
+                <td>25 Oct 2025</td>
+                <td><span class="status processing">Processing</span></td>
+                <td>200,000 VND</td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn-view"
+                    onclick="window.location.href='/Order_Details.html'"
+                  >
+                    View
+                  </button>
+                  <button type="button" class="btn-reorder">Reorder</button>
+                </td>
+              </tr>
+              <tr data-status="cancelled">
+                <th scope="row">#ORD-2025-003</th>
+                <td>23 Oct 2025</td>
+                <td><span class="status cancelled">Cancelled</span></td>
+                <td>90,000 VND</td>
+                <td>
+                  <button
+                    type="button"
+                    class="btn-view"
+                    onclick="window.location.href='/Order_Details.html'"
+                  >
+                    View
+                  </button>
+                  <button type="button" class="btn-reorder">Reorder</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <script>
+        // --- Bộ lọc dùng chung ---
+        const getActiveFilter = () =>
+          document
+            .querySelector(".filters .active")
+            ?.textContent.trim()
+            .toLowerCase() || "all";
+        function applyFilter() {
+          const val = getActiveFilter();
+          document.querySelectorAll("#orders tr").forEach((tr) => {
+            const show = val === "all" || tr.dataset.status === val;
+            tr.style.display = show ? "" : "none";
+          });
+        }
+        // Bấm nút filter -> đổi active + lọc
+        document.querySelectorAll(".filters button").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document
+              .querySelector(".filters .active")
+              ?.classList.remove("active");
+            btn.classList.add("active");
+            applyFilter();
+          });
+        });
+      </script>
+      <!-- kích hoạt tab Cancelled khi mở trang lịch sử -->
+            <script>
+        (function () {
+          const def = sessionStorage.getItem("orders.defaultTab");
+          if (def) {
+            sessionStorage.removeItem("orders.defaultTab");
+            const btn = [...document.querySelectorAll(".filters button")]
+              .find(b => b.textContent.trim().toLowerCase() === def);
+            if (btn) {
+              document.querySelector(".filters .active")?.classList.remove("active");
+              btn.classList.add("active");
+            }
+          }
+          if (typeof applyFilter === "function") applyFilter();
+        })();
+      </script>
+    </main>
+    <script src="/js/authHeader.js"></script>
+    <script>
+      (async function () {
+        const tbody = document.getElementById("orders");
+
+        const fmtMoney = (n) =>
+          (Number(n) || 0).toLocaleString("vi-VN") + " VND";
+        const statusClass = (s) => {
+          s = String(s || "").toLowerCase();
+          if (s === "completed") return "completed";
+          if (s === "cancelled") return "cancelled";
+          if (s === "pending") return "pending";
+          return "processing";
+        };
+
+        // Chuẩn hóa trạng thái thô của BE về 3 nhóm hiển thị/filter
+        const normalizeForFilter = (raw) => {
+          const s = String(raw || "PROCESSING").toUpperCase();
+          // Pending group: NEW, PENDING
+          if (["PENDING", "NEW"].includes(s)) return "pending";
+          // Cancelled
+          if (["CANCELLED", "CANCELED"].includes(s)) return "cancelled";
+          // Completed
+          if (["COMPLETED", "DONE", "FINISHED"].includes(s)) return "completed";
+          // Processing group: PAID, READY, PROCESSING (các trạng thái đang làm)
+          if (["PAID", "READY", "PROCESSING"].includes(s)) return "processing";
+          // fallback
+          return "processing";
+        };
+
+        try {
+          const url = `/api/orders?page=1&pageSize=100&t=${Date.now()}`;
+          const res = await fetch(url, {
+            credentials: "include",
+            cache: "no-store",
+          });
+          if (!res.ok) {
+            console.error(
+              "[OH] /api/orders not ok:",
+              res.status,
+              res.statusText
+            );
+            return; // giữ mock nếu API fail
+          }
+          const payload = await res.json();
+          const list = payload?.data ?? payload?.orders ?? payload?.items ?? [];
+          console.log(
+            "[OH] render list =",
+            Array.isArray(list) ? list.length : 0
+          );
+
+          // clear mock rows
+          tbody.innerHTML = "";
+
+          for (const o of list) {
+            const tr = document.createElement("tr");
+            tr.dataset.status = normalizeForFilter(o.status);
+            tr.innerHTML = `
+        <th scope="row">${o.code || "#" + o.id}</th>
+        <td>${new Date(o.createdAt).toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })}</td>
+            <td>
+        <span class="status ${statusClass(o.status)}"
+              title="${
+                tr.dataset.status === "cancelled" && o.note
+                  ? o.note.replace(/"/g, "&quot;")
+                  : ""
+              }">
+          ${String(o.status || "Processing").replace(/^\w/, (c) =>
+            c.toUpperCase()
+          )}
+        </span>
+      </td>
+        <td>${fmtMoney(o.totalAmount)}</td>
+        <td>
+          <button type="button" class="btn-view" data-id="${o.id}">View</button>
+          <button type="button" class="btn-reorder" data-id="${
+            o.id
+          }">Reorder</button>
+          ${
+            o.cancellable
+              ? `<button type="button" class="btn-cancel" data-code="${o.code}">Cancel</button>`
+              : ""
+          }
+        </td>
+    `;
+            tbody.appendChild(tr);
+          }
+          // Áp dụng filter hiện tại (ví dụ đang ở 'Pending')
+          applyFilter();
+
+          // điều hướng sang details
+          tbody.addEventListener("click", (e) => {
+            const btn = e.target.closest(".btn-view");
+            if (!btn) return;
+            const id = btn.getAttribute("data-id");
+            // dùng pretty URL nếu server hỗ trợ, fallback giữ nguyên file nếu cần
+            const to = "/Order_Details.html?id=" + encodeURIComponent(id);
+            window.location.href = to;
+          });
+
+          // Sự kiện Reorder: điều hướng về trang in gốc theo loại đơn
+          tbody.addEventListener("click", async (e) => {
+            const btn = e.target.closest(".btn-reorder");
+            if (!btn) return;
+
+            const tr = btn.closest("tr");
+            const status = (tr?.dataset?.status || "").toLowerCase();
+            // Chỉ chặn đơn đã hủy
+            if (status === "cancelled") {
+              alert("Đơn đã bị hủy không thể Reorder.");
+              return;
+            }
+
+            const id = btn.getAttribute("data-id");
+            try {
+              const r = await fetch(`/api/orders/${encodeURIComponent(id)}`, {
+                credentials: "include",
+                cache: "no-store",
+              });
+              if (r.status === 401) {
+                alert("Vui lòng đăng nhập lại để Reorder.");
+                window.location.href = "/login";
+                return;
+              }
+              const js = await r.json();
+              if (!r.ok || !js?.success) throw new Error("FETCH_ORDER_FAILED");
+
+              // Linh hoạt đọc payload trả về từ BE
+              const order = js.data || js.order || js.payload || null;
+              if (!order) throw new Error("EMPTY_ORDER");
+              const items = Array.isArray(order.items)
+                ? order.items
+                : Array.isArray(js.items)
+                ? js.items
+                : [];
+              if (items.length === 0) {
+                alert("Không tìm thấy item trong đơn để Reorder.");
+                return;
+              }
+
+              // Nhận diện chắc chắn hơn về loại sản phẩm
+              const detectType = (it) => {
+                const t = String(it.printType || "")
+                  .trim()
+                  .toUpperCase();
+                if (t === "PHOTO" || t === "DOCUMENT") return t;
+
+                const ex = it.extraOptions || {};
+                // Dấu hiệu ảnh
+                if (["sizeCode", "paper", "borderless"].some((k) => k in ex))
+                  return "PHOTO";
+                // Dấu hiệu tài liệu
+                if (
+                  [
+                    "colorPages",
+                    "twoSides",
+                    "docType",
+                    "size",
+                    "side",
+                    "binding",
+                    "coverPage",
+                  ].some((k) => k in ex)
+                )
+                  return "DOCUMENT";
+
+                return "UNKNOWN";
+              };
+
+              const typesAll = items.map(detectType);
+              const uniqueKnown = new Set(
+                typesAll.filter((t) => t === "PHOTO" || t === "DOCUMENT")
+              );
+
+              // Có cả PHOTO lẫn DOCUMENT -> hỏi người dùng muốn reorder loại nào
+              if (uniqueKnown.size > 1) {
+                const itemsByType = {
+                  PHOTO: items.filter((it) => detectType(it) === "PHOTO"),
+                  DOCUMENT: items.filter((it) => detectType(it) === "DOCUMENT"),
+                };
+
+                // Nếu muốn UI tối giản, dùng confirm 2 bước:
+                // B1: hỏi có muốn Reorder Ảnh không? (OK = Ảnh, Cancel = hỏi tiếp Tài liệu)
+                let chosen = null;
+                if (
+                  itemsByType.PHOTO.length &&
+                  window.confirm(
+                    "Đơn này có cả Ảnh và Tài liệu.\nBạn muốn Reorder phần Ảnh không?"
+                  )
+                ) {
+                  chosen = "PHOTO";
+                } else if (
+                  itemsByType.DOCUMENT.length &&
+                  window.confirm("Bạn có muốn Reorder phần Tài liệu không?")
+                ) {
+                  chosen = "DOCUMENT";
+                } else {
+                  // Không chọn gì
+                  return;
+                }
+
+                // Lập preset theo loại đã chọn rồi điều hướng
+                if (chosen === "PHOTO") {
+                  const preset = {
+                    type: "PHOTO",
+                    note: order.note || "",
+                    items: itemsByType.PHOTO.map((it) => ({
+                      sizeCode: it.extraOptions?.sizeCode || "10x15",
+                      paper: it.extraOptions?.paper || "Glossy",
+                      borderless: !!it.extraOptions?.borderless,
+                      copies: Number(it.quantity || 1),
+                      name: it.extraOptions?.fileName || "photo",
+                    })),
+                  };
+                  localStorage.setItem("reorderPreset", JSON.stringify(preset));
+                  window.location.href = "/PrintPhoto.html";
+                } else if (chosen === "DOCUMENT") {
+                  const preset = {
+                    type: "DOCUMENT",
+                    note: order.note || "",
+                    items: itemsByType.DOCUMENT.map((it) => ({
+                      copies: Number(it.quantity || 1),
+                      mode: it.extraOptions?.mode || "Black & White",
+                      colorPages: it.extraOptions?.colorPages || "",
+                      type: it.extraOptions?.docType || "Regular",
+                      binding: !!it.extraOptions?.binding,
+                      coverPage: !!it.extraOptions?.coverPage,
+                      size: it.extraOptions?.size || "A4",
+                      side: it.extraOptions?.side || "1 side",
+                      name: it.extraOptions?.fileName || "document",
+                    })),
+                  };
+                  localStorage.setItem("reorderPreset", JSON.stringify(preset));
+                  window.location.href = "/PrintDocument.html";
+                }
+                return;
+              }
+
+              const onlyType =
+                uniqueKnown.size === 1 ? [...uniqueKnown][0] : "DOCUMENT"; // fallback an toàn
+
+              let preset = null;
+              if (onlyType === "PHOTO") {
+                preset = {
+                  type: "PHOTO",
+                  note: order.note || "",
+                  items: items.map((it) => ({
+                    sizeCode: it.extraOptions?.sizeCode || "10x15",
+                    paper: it.extraOptions?.paper || "Glossy",
+                    borderless: !!it.extraOptions?.borderless,
+                    copies: Number(it.quantity || 1),
+                    name: it.extraOptions?.fileName || "photo",
+                  })),
+                };
+                localStorage.setItem("reorderPreset", JSON.stringify(preset));
+                window.location.href = "/PrintPhoto.html"; // quay về trang in ảnh
+              } else if (onlyType === "DOCUMENT") {
+                preset = {
+                  type: "DOCUMENT",
+                  note: order.note || "",
+                  items: items.map((it) => ({
+                    copies: Number(it.quantity || 1),
+                    mode: it.extraOptions?.mode || "Black & White",
+                    colorPages: it.extraOptions?.colorPages || "",
+                    type: it.extraOptions?.docType || "Regular",
+                    binding: !!it.extraOptions?.binding,
+                    coverPage: !!it.extraOptions?.coverPage,
+                    size: it.extraOptions?.size || "A4",
+                    side: it.extraOptions?.side || "1 side",
+                    name: it.extraOptions?.fileName || "document",
+                  })),
+                };
+                localStorage.setItem("reorderPreset", JSON.stringify(preset));
+                window.location.href = "/PrintDocument.html"; // quay về trang in tài liệu
+              }
+            } catch (err) {
+              console.error("Reorder error:", err);
+              alert("Không thể Reorder. Vui lòng thử lại.");
+            }
+          });
+
+          // Sự kiện Cancel
+          tbody.addEventListener("click", async (e) => {
+            const btn = e.target.closest(".btn-cancel");
+            if (!btn) return;
+            const orderCode = btn.getAttribute("data-code");
+            if (!orderCode) return;
+            if (!confirm("Bạn chắc chắn muốn hủy đơn này?")) return;
+            try {
+              const reason = prompt("Lý do hủy (tuỳ chọn):", "") || "";
+              const res = await fetch(
+                `/api/orders/${encodeURIComponent(orderCode)}/cancel`,
+                {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ reason }),
+                }
+              );
+              const js = await res.json();
+              if (!res.ok || !js?.success)
+                throw new Error(js?.message || "Hủy đơn thất bại");
+              alert("Đã hủy đơn.");
+              // Cập nhật nhanh UI: đổi status và ẩn nút cancel
+              const tr = btn.closest("tr");
+              const statusSpan = tr.querySelector(".status");
+
+              // Bỏ hết class màu cũ, kể cả 'pending'
+              statusSpan.classList.remove("completed", "processing", "pending");
+              statusSpan.classList.add("cancelled");
+              statusSpan.textContent = "Cancelled";
+
+              // Cập nhật dataset để bộ lọc hoạt động đúng
+              tr.dataset.status = "cancelled";
+
+              // Nếu đang đứng ở tab Pending thì chuyển sang Cancelled để nhìn thấy dòng vừa hủy
+              const active = document.querySelector(".filters .active");
+              if (
+                active &&
+                active.textContent.trim().toLowerCase() === "pending"
+              ) {
+                const cancelledBtn = [
+                  ...document.querySelectorAll(".filters button"),
+                ].find(
+                  (b) => b.textContent.trim().toLowerCase() === "cancelled"
+                );
+                if (cancelledBtn) {
+                  active.classList.remove("active");
+                  cancelledBtn.classList.add("active");
+                }
+              }
+              // Chạy lại filter để ẩn dòng khỏi Pending (hoặc hiện trong Cancelled)
+              applyFilter();
+
+              // Ẩn nút cancel
+              btn.remove();
+            } catch (err) {
+              console.error("Cancel order error:", err);
+              alert("Không thể hủy đơn. Vui lòng thử lại.");
+            }
+          });
+        } catch (err) {
+          console.error("[OH] fatal:", err);
+        }
+
+        // filter đã có sẵn — không cần đổi code filter
+      })();
+    </script>
+  </body>
+</html>

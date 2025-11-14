@@ -1,0 +1,186 @@
+<!-- FE/html/Login.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | PrintNow</title>
+
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link rel="stylesheet" href="../css/Login.css" />
+
+    <style>
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+
+      /* Center submit button inside the login form */
+      #loginForm .btn {
+        display: block; /* tách khỏi inline để margin auto hoạt động */
+        margin: 16px auto 0; /* canh giữa ngang */
+        width: auto; /* tránh bị kéo full-width nếu CSS cũ đặt 100% */
+        min-width: 180px; /* dễ bấm hơn */
+        text-align: center; /* đề phòng style kế thừa */
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="bx bx-printer" aria-hidden="true"></i>
+        </div>
+        <div class="text">
+          <h1>PrintNow</h1>
+          <p>Print service</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="form-box">
+        <div class="form-icon">
+          <div class="icon-circle">
+            <i class="bx bx-printer" aria-hidden="true"></i>
+          </div>
+        </div>
+
+        <h2>Welcome back!</h2>
+        <p class="subtext">Login to your account</p>
+
+        <form id="loginForm" action="/api/auth/login" method="post" novalidate>
+          <div class="input_box">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Email Address"
+              required
+              autocomplete="email"
+              inputmode="email"
+            />
+            <i class="bx bx-envelope icon-left" aria-hidden="true"></i>
+          </div>
+
+          <div class="input_box">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Password"
+              required
+              autocomplete="current-password"
+              minlength="8"
+            />
+            <i class="bx bx-lock-alt icon-left" aria-hidden="true"></i>
+            <i
+              id="eye-pass"
+              class="bx bx-eye-closed icon-right"
+              role="button"
+              tabindex="0"
+              aria-label="Toggle password visibility"
+            ></i>
+          </div>
+
+          <div
+            id="form-message"
+            role="status"
+            aria-live="polite"
+            class="sr-only"
+          ></div>
+          <button type="submit" class="btn">Login</button>
+        </form>
+        <a class="recover-pass" href="/forgot-password">Recover Password</a>
+        <p class="login-text">
+          Don't have an account? <a href="/register">Sign Up</a>
+        </p>
+      </div>
+    </main>
+
+    <script>
+      const passwordInput = document.getElementById("password");
+      const eyeIcon = document.getElementById("eye-pass");
+      const loginForm = document.getElementById("loginForm");
+      const msg = document.getElementById("form-message");
+
+      function setMsg(text = "", ok = false) {
+        if (!text) {
+          msg.textContent = "";
+          msg.classList.add("sr-only");
+          return;
+        }
+        msg.classList.remove("sr-only");
+        msg.textContent = text;
+        msg.style.color = ok ? "#2e7d32" : "#c62828";
+      }
+
+      // Toggle password visibility
+      eyeIcon.addEventListener("click", () => {
+        const isPassword = passwordInput.type === "password";
+        passwordInput.type = isPassword ? "text" : "password";
+        eyeIcon.classList.toggle("active", isPassword);
+        if (isPassword) {
+          eyeIcon.classList.replace("bx-eye-closed", "bx-eye");
+        } else {
+          eyeIcon.classList.replace("bx-eye", "bx-eye-closed");
+        }
+      });
+      eyeIcon.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " " || e.code === "Space") {
+          e.preventDefault();
+          eyeIcon.click();
+        }
+      });
+
+      // Submit
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = loginForm.querySelector(".btn");
+        btn.disabled = true;
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        setMsg("");
+        try {
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await response.json();
+          if (response.ok && data.success) {
+            setMsg("Đăng nhập thành công!", true);
+            setTimeout(() => {
+              window.location.href = "/home";
+            }, 800);
+          } else {
+            setMsg(data.message || "Đăng nhập thất bại");
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          setMsg("Lỗi kết nối. Vui lòng thử lại.");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

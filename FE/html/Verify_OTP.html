@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Verification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link rel="stylesheet" href="../css/Verify_OTP.css" />
+    <link
+      href="https://cdn.boxicons.com/fonts/basic/boxicons.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main role="main">
+      <div class="container">
+        <div class="icon"><i class="bxr bx-envelope"></i></div>
+        <h2>Email Verification</h2>
+        <p>Enter the 6-digit code sent to your email</p>
+
+        <div class="otp-field">
+          <input type="text" maxlength="1" inputmode="numeric" />
+          <input type="text" maxlength="1" inputmode="numeric" />
+          <input type="text" maxlength="1" inputmode="numeric" />
+          <input type="text" maxlength="1" inputmode="numeric" />
+          <input type="text" maxlength="1" inputmode="numeric" />
+          <input type="text" maxlength="1" inputmode="numeric" />
+        </div>
+
+        <div class="resend">Resend Code</div>
+        <button id="verifyBtn">Verify</button>
+        <div class="error" id="error" style="display: none">
+          Invalid code. Please try again.
+        </div>
+      </div>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const inputs = document.querySelectorAll(".otp-field input");
+          const verifyBtn = document.getElementById("verifyBtn");
+          const errorMsg = document.getElementById("error");
+          const resendBtn = document.querySelector(".resend");
+
+          // Nhận email & mode
+          const urlParams = new URLSearchParams(window.location.search);
+          const email =
+            urlParams.get("email") ||
+            sessionStorage.getItem("resetEmail") || // flow reset
+            localStorage.getItem("registrationEmail") || // flow đăng ký
+            "";
+          const mode = (urlParams.get("mode") || "").toLowerCase(); // '' | 'reset'
+
+          if (email) {
+            document.querySelector(
+              "p"
+            ).innerHTML = `Enter the 6-digit code sent to <strong>${email}</strong>`;
+          }
+
+          // UX inputs
+          inputs.forEach((input, index) => {
+            input.addEventListener("input", (e) => {
+              let v = e.target.value.replace(/\D/g, "");
+              if (v.length > 1) v = v.slice(-1);
+              e.target.value = v;
+              if (v && index < inputs.length - 1) inputs[index + 1].focus();
+            });
+            input.addEventListener("keydown", (e) => {
+              if (e.key === "Backspace" && !input.value && index > 0)
+                inputs[index - 1].focus();
+              if (e.key === "Enter") verifyBtn.click();
+            });
+            input.addEventListener("paste", (e) => {
+              e.preventDefault();
+              const pasted = e.clipboardData
+                .getData("text")
+                .replace(/\D/g, "")
+                .slice(0, inputs.length);
+              pasted.split("").forEach((c, i) => {
+                if (inputs[i]) inputs[i].value = c;
+              });
+              (
+                inputs[Math.min(pasted.length, inputs.length) - 1] || inputs[0]
+              ).focus();
+            });
+          });
+
+          // Verify
+          verifyBtn.addEventListener("click", async () => {
+            const otp = Array.from(inputs)
+              .map((i) => i.value.trim())
+              .join("");
+            if (!/^\d{6}$/.test(otp)) {
+              showErr("Vui lòng nhập đầy đủ 6 chữ số");
+              return;
+            }
+            if (!email) {
+              showErr("Không tìm thấy email. Vui lòng thao tác lại.");
+              return;
+            }
+
+            try {
+              const endpoint =
+                mode === "reset"
+                  ? "/api/auth/verify-reset-otp"
+                  : "/api/auth/verify-otp";
+              const res = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp }),
+              });
+              const data = await res.json();
+
+              if (res.ok && data.success) {
+                errorMsg.style.display = "none";
+
+                if (mode === "reset") {
+                  // Nhận resetToken và chuyển trang đặt mật khẩu
+                  if (data.resetToken)
+                    sessionStorage.setItem("resetToken", data.resetToken);
+                  sessionStorage.setItem("resetEmail", email);
+                  window.location.href = "/reset-password";
+                } else {
+                  localStorage.removeItem("registrationEmail");
+                  alert("Xác thực thành công! Bạn đã có thể đăng nhập.");
+                  window.location.href = "/login";
+                }
+              } else {
+                showErr(data.message || "Mã OTP không đúng. Vui lòng thử lại.");
+                inputs.forEach((i) => (i.value = ""));
+                inputs[0].focus();
+              }
+            } catch (e) {
+              console.error("Verification error:", e);
+              showErr("Có lỗi xảy ra. Vui lòng thử lại.");
+            }
+          });
+
+          // Resend
+          resendBtn.addEventListener("click", async () => {
+            if (!email)
+              return alert("Không tìm thấy email. Vui lòng thao tác lại.");
+            try {
+              const endpoint =
+                mode === "reset"
+                  ? "/api/auth/resend-reset-otp"
+                  : "/api/auth/resend-otp";
+              const res = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+              });
+              const data = await res.json();
+              if (res.ok && data.success) {
+                alert("Mã OTP mới đã được gửi.");
+                errorMsg.style.display = "none";
+              } else {
+                alert(
+                  data.message || "Không thể gửi lại mã OTP. Vui lòng thử sau."
+                );
+              }
+            } catch (e) {
+              console.error("Resend OTP error:", e);
+              alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
+            }
+          });
+
+          function showErr(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = "block";
+          }
+        });
+      </script>
+    </main>
+  </body>
+</html>

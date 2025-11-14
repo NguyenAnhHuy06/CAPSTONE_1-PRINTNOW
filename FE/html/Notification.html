@@ -1,0 +1,649 @@
+<!--Fe/html/Notification.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification | PrintNow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background: #fff;
+        color: #222;
+      }
+      /* ===== HEADER ===== */
+
+      .header {
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 10px 20px;
+      }
+
+      .nav-bar {
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 40%;
+        background-color: #043873;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-icon i {
+        color: white;
+        font-size: 22px;
+      }
+
+      .text {
+        line-height: 1.1;
+      }
+
+      .logo .text h1 {
+        font-size: 25px;
+        font-weight: 600;
+        font-family: "Times New Roman", serif;
+        font-style: italic;
+        margin: 0;
+        color: #111827;
+      }
+
+      .logo .text p {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        gap: 60px;
+        font-weight: 500;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: #374151;
+        transition: color 0.2s;
+      }
+
+      .nav-links li a:hover {
+        color: #1a4a8d;
+      }
+
+      .nav-links li:last-child {
+        margin-left: 0;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-right: 30px;
+      }
+
+      .icon-btn {
+        background: #fff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .icon-btn .bell {
+        font-size: 25px;
+        color: #333;
+        margin-top: 10px;
+        margin-right: 5px;
+      }
+
+      /* nút Login tạm khi chưa đăng nhập (authHeader sẽ thay thế sau) */
+      .login-btn {
+        text-decoration: none;
+        color: #fff;
+        background: #000;
+        border: 1px solid #000;
+        border-radius: 6px;
+        padding: 8px 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .login-btn:hover {
+        opacity: 0.9;
+      }
+
+      /* PAGE HEADER */
+      .notification-page {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+      }
+
+      .page-header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .page-header > div h2 {
+        margin-bottom: 5px !important;
+      }
+
+      .page-header > div p {
+        margin-top: -2px !important;
+        line-height: 1;
+      }
+
+      .page-header h2 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .page-header p {
+        color: #6b7280;
+        font-size: 20px;
+      }
+
+      .btn-back {
+        text-decoration: none;
+        color: #374151;
+        font-size: 1.6rem;
+        transition: color 0.2s ease;
+      }
+
+      .btn-back:hover {
+        color: #007bff;
+      }
+
+      h2 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        color: #222;
+      }
+
+      p.subtitle {
+        color: #777;
+        margin: 5px 0 20px 0;
+      }
+
+      .right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .unread-count {
+        background: #f2f2f2;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 13px;
+        color: #333;
+      }
+
+      .btn-light,
+      .btn-danger {
+        border: none;
+        border-radius: 6px;
+        padding: 8px 14px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .btn-light {
+        background: #f4f4f4;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 15px;
+        line-height: 1;
+      }
+
+      .btn-danger {
+        background: #e94d4d;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-size: 15px;
+        line-height: 1;
+      }
+      /* NOTIFICATION CARD */
+
+      .notif-card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+      }
+
+      .notif-card.success {
+        background: #f3fbf6;
+      }
+
+      .notif-card.processing {
+        background: #f7faff;
+      }
+
+      .notif-card.info {
+        background: #f8faff;
+      }
+
+      .notif-card.neutral {
+        background: #fafafa;
+      }
+
+      .notif-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+      }
+
+      .title .icon {
+        font-size: 20px;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+      }
+
+      .dot {
+        width: 6px;
+        height: 6px;
+        background: #007aff;
+        border-radius: 50%;
+      }
+
+      .tag.important {
+        background: #ff4d4d;
+        color: #fff;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 6px;
+      }
+
+      .message {
+        margin: 10px 0;
+        font-size: 14px;
+        color: #444;
+      }
+
+      .link {
+        font-size: 13px;
+        color: #007aff;
+        text-decoration: none;
+      }
+
+      .notif-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 14px;
+      }
+
+      .time {
+        color: #777;
+        font-size: 13px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-text {
+        background: none;
+        border: none;
+        color: #007aff;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .btn-text.delete {
+        color: #e94d4d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-size: 15px;
+        line-height: 1;
+      }
+
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- HEADER -->
+    <div class="header">
+      <nav class="nav-bar" role="navigation" aria-label="Primary">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="bx bx-printer" aria-hidden="true"></i>
+          </div>
+          <div class="text">
+            <h1>PrintNow</h1>
+            <p>Print service</p>
+          </div>
+        </div>
+
+        <ul class="nav-links">
+          <li><a href="/home" class="home">Home</a></li>
+          <li><a href="/service/print" class="service">Services</a></li>
+          <li><a href="/about-us" class="about">About Us</a></li>
+        </ul>
+
+        <div class="header-right">
+          <a
+            href="/notifications"
+            class="icon-btn"
+            aria-label="Notifications"
+            title="Notifications"
+          >
+            <span class="bell"
+              ><i class="bx bx-bell" aria-hidden="true"></i
+            ></span>
+          </a>
+          <!-- Avatar động / menu user sẽ được inject vào đây bởi /js/authHeader.js -->
+          <div id="authArea" class="auth-area">
+            <a href="/login" class="login-btn">
+              <i class="bx bx-log-in" aria-hidden="true"></i> Login
+            </a>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+    <main class="notification-page">
+      <div class="header-row">
+        <div class="page-header">
+          <a
+            href="#"
+            class="btn-back"
+            onclick="window.history.back()"
+            aria-label="Go back"
+            title="Go back"
+          >
+            <i
+              class="bx bx-arrow-back"
+              aria-hidden="true"
+              style="color: #000000"
+            ></i>
+          </a>
+
+          <div>
+            <h2>Notification</h2>
+            <p>Track order status and important notifications</p>
+          </div>
+        </div>
+        <div class="right">
+          <span class="unread-count" aria-live="polite">0 unread</span>
+          <button id="mark-all-read" class="btn-light">
+            <i
+              class="bx bx-check"
+              aria-hidden="true"
+              style="color: #000000"
+            ></i>
+            Mark all read
+          </button>
+          <button id="delete-read" class="btn-danger">
+            <i class="bx bx-trash" aria-hidden="true"></i> Delete read
+          </button>
+        </div>
+      </div>
+
+      <!-- NOTIFICATION LIST (dynamic) -->
+      <div id="notifList" aria-live="polite"></div>
+    </main>
+    <script>
+      const listEl = document.getElementById("notifList");
+      const unreadBadge = document.querySelector(".unread-count");
+      const btnMarkAll = document.getElementById("mark-all-read");
+      const btnDeleteRead = document.getElementById("delete-read");
+
+      const ICONS = {
+        success: {
+          cls: "bx bx-check-circle",
+          color: "#5bb542",
+          card: "success",
+        },
+        processing: { cls: "bx bx-time", color: "#155dfc", card: "processing" },
+        info: { cls: "bx bx-info-circle", color: "#155dfc", card: "info" },
+        neutral: {
+          cls: "bx bx-error-circle",
+          color: "#626775",
+          card: "neutral",
+        },
+        error: {
+          cls: "bx bx-x-circle",
+          color: "#e94d4d",
+          card: "neutral",
+        },
+      };
+
+      const fmtRel = (ts) => {
+        const d = new Date(ts);
+        const diff = (Date.now() - d.getTime()) / 1000;
+        if (diff < 60) return "just now";
+        if (diff < 3600) return Math.floor(diff / 60) + " minutes ago";
+        if (diff < 86400) return Math.floor(diff / 3600) + " hours ago";
+        return Math.floor(diff / 86400) + " days ago";
+      };
+
+      function cardHTML(n) {
+        const t = (n.type || "neutral").toLowerCase();
+        const meta = ICONS[t] || ICONS.neutral;
+        const dot = n.isRead ? "" : '<span class="dot"></span>';
+        const orderLink = n?.data?.orderCode
+          ? `/order/status?orderCode=${encodeURIComponent(n.data.orderCode)}`
+          : n?.data?.link || "#"; // fallback sang link do BE trả về
+        const tag =
+          n?.data?.important || n?.data?.tag === "important"
+            ? '<span class="tag important">Important</span>'
+            : "";
+        const bodySafe = n.body ? n.body : "";
+        return `
+          <div class="notif-card ${meta.card}" data-id="${n.id}" role="status">
+            <div class="notif-header">
+              <div class="title">
+                <span class="icon"><i class="${
+                  meta.cls
+                }" aria-hidden="true" style="color:${meta.color}"></i></span>
+                <strong>${n.title}</strong>
+                ${dot}
+              </div>
+              ${tag}
+            </div>
+            ${bodySafe ? `<p class="message">${bodySafe}</p>` : ""}
+            ${
+              n?.data?.linkText
+                ? `<a class="link" href="${orderLink}">${n.data.linkText} →</a>`
+                : ""
+            }
+            <div class="notif-footer">
+              <span class="time">${fmtRel(n.createdAt)}</span>
+              <div class="actions">
+                ${
+                  n.isRead
+                    ? ""
+                    : `<button class="btn-text mark-read">✓ Mark read</button>`
+                }
+                <button class="btn-text delete"><i class="bx bx-trash" aria-hidden="true" style="color:#cf123e"></i>Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      async function fetchList() {
+        const res = await fetch("/api/notifications?limit=100", {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          listEl.innerHTML =
+            '<p style="color:#777">Cannot load notifications.</p>';
+          return;
+        }
+        const j = await res.json();
+        const arr = j.notifications || [];
+        listEl.innerHTML = arr.length
+          ? arr.map(cardHTML).join("")
+          : '<p style="color:#777">No notifications yet.</p>';
+        updateUnread(j.unreadCount ?? arr.filter((x) => !x.isRead).length);
+      }
+
+      function updateUnread(n) {
+        if (unreadBadge) unreadBadge.textContent = `${n} unread`;
+      }
+
+      // Event delegation for actions
+      listEl.addEventListener("click", async (e) => {
+        const card = e.target.closest(".notif-card");
+        if (!card) return;
+        const id = card.getAttribute("data-id");
+        if (e.target.closest(".mark-read")) {
+          const res = await fetch(`/api/notifications/${id}/read`, {
+            method: "PUT",
+            credentials: "include",
+          });
+          if (res.ok) {
+            // update UI on the fly
+            const dot = card.querySelector(".dot");
+            if (dot) dot.remove();
+            const btn = card.querySelector(".mark-read");
+            if (btn) btn.remove();
+            // decrease badge
+            const current =
+              parseInt((unreadBadge.textContent || "0").replace(/\D/g, "")) ||
+              0;
+            updateUnread(Math.max(0, current - 1));
+          }
+        }
+        if (e.target.closest(".delete")) {
+          const res = await fetch(`/api/notifications/${id}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          if (res.ok) {
+            card.remove();
+            // if it had a dot, decrease badge
+            const hadDot = !!card.querySelector(".dot");
+            if (hadDot) {
+              const current =
+                parseInt((unreadBadge.textContent || "0").replace(/\D/g, "")) ||
+                0;
+              updateUnread(Math.max(0, current - 1));
+            }
+            if (!listEl.children.length)
+              listEl.innerHTML =
+                '<p style="color:#777">No notifications yet.</p>';
+          }
+        }
+      });
+
+      // Mark all read
+      btnMarkAll?.addEventListener("click", async () => {
+        const res = await fetch("/api/notifications/mark-all-read", {
+          method: "PUT",
+          credentials: "include",
+        });
+        if (res.ok) {
+          listEl
+            .querySelectorAll(".notif-card .dot")
+            .forEach((d) => d.remove());
+          listEl
+            .querySelectorAll(".notif-card .mark-read")
+            .forEach((b) => b.remove());
+          updateUnread(0);
+        }
+      });
+
+      // Delete all read
+      btnDeleteRead?.addEventListener("click", async () => {
+        const res = await fetch("/api/notifications/read", {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (res.ok) {
+          listEl.querySelectorAll(".notif-card").forEach((card) => {
+            if (!card.querySelector(".dot")) card.remove();
+          });
+          if (!listEl.children.length)
+            listEl.innerHTML =
+              '<p style="color:#777">No notifications yet.</p>';
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", fetchList);
+    </script>
+    <!-- Load script avatar/menu dùng chung (giống About_us) -->
+    <script src="/js/authHeader.js"></script>
+  </body>
+</html>

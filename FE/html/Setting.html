@@ -1,0 +1,460 @@
+<!--FE/html/Setting.html-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Setting | PrintNow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background: #fff;
+        color: #222;
+      }
+
+      /* ===== HEADER ===== */
+
+      .header {
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 10px 20px;
+      }
+
+      .nav-bar {
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 40%;
+        background-color: #043873;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-icon i {
+        color: white;
+        font-size: 22px;
+      }
+
+      .text {
+        line-height: 1.1;
+      }
+
+      .logo .text h1 {
+        font-size: 25px;
+        font-weight: 600;
+        font-family: "Times New Roman", serif;
+        font-style: italic;
+        margin: 0;
+        color: #111827;
+      }
+
+      .logo .text p {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        gap: 60px;
+        font-weight: 500;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: #374151;
+        transition: color 0.2s;
+      }
+
+      .nav-links li a:hover {
+        color: #1a4a8d;
+      }
+
+      .nav-links li:last-child {
+        margin-left: 0;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-right: 30px;
+      }
+
+      .icon-btn {
+        background: #fff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .icon-btn .bell {
+        font-size: 25px;
+        color: #333;
+        margin-top: 10px;
+        margin-right: 5px;
+      }
+
+      .avatar-small {
+        background: #203957;
+        color: #fff;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      /* MAIN */
+
+      .setting-page {
+        max-width: 1200px;
+        margin: 0px auto;
+        padding: 20px 40px;
+        background-color: #fff;
+      }
+
+      .page-header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .page-header > div h2 {
+        margin-bottom: 5px !important;
+      }
+
+      .page-header > div p {
+        margin-top: -2px !important;
+        line-height: 1;
+      }
+
+      .page-header h2 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .page-header p {
+        color: #6b7280;
+        font-size: 18px;
+      }
+
+      .btn-back {
+        text-decoration: none;
+        color: #374151;
+        font-size: 1.6rem;
+        transition: color 0.2s ease;
+      }
+
+      .btn-back:hover {
+        color: #007bff;
+      }
+
+      h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+        color: #222;
+      }
+
+      p.subtitle {
+        color: #777;
+        margin: 5px 0 20px 0;
+      }
+
+      .card {
+        border: 1px solid #dcdcdc;
+        border-radius: 10px;
+        padding: 26px 30px;
+        margin-bottom: 28px;
+      }
+
+      .card h2 {
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .card .desc {
+        font-size: 14px;
+        color: #777;
+        margin-bottom: 20px;
+      }
+
+      /* FORM */
+
+      .form label {
+        font-size: 14px;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .form input {
+        width: 100%;
+        padding: 10px 15px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        margin-bottom: 18px;
+        outline: none;
+        font-size: 14px;
+      }
+
+      .form input:focus {
+        border-color: #007aff;
+      }
+
+      .btn-primary {
+        width: 100%;
+        background: #007aff;
+        color: #fff;
+        padding: 14px 0;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 16px;
+        line-height: 1;
+      }
+
+      .btn-primary i {
+        color: #fff;
+        font-size: 18px;
+      }
+
+      .btn-primary:hover {
+        background: #0066d8;
+      }
+
+      /* LANGUAGE */
+
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        outline: none;
+        margin-bottom: 8px;
+      }
+
+      .note {
+        font-size: 12px;
+        color: #888;
+      }
+
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+      <nav class="nav-bar" role="navigation" aria-label="Primary">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="bx bx-printer" aria-hidden="true"></i>
+          </div>
+          <div class="text">
+            <h1>PrintNow</h1>
+            <p>Print service</p>
+          </div>
+        </div>
+
+        <ul class="nav-links">
+          <li><a href="./Home_customer.html" class="home">Home</a></li>
+          <li><a href="./Service_Print.html" class="service">Services</a></li>
+          <li><a href="./About_us.html" class="about">About Us</a></li>
+        </ul>
+
+        <div id="authArea" class="auth-area">
+          <a href="/login" class="login-btn">
+            <i class="bx bx-log-in" aria-hidden="true"></i> Login
+          </a>
+        </div>
+      </nav>
+    </div>
+
+    <main class="setting-page" role="main">
+      <div class="page-header">
+        <a
+          href="#"
+          class="btn-back"
+          onclick="window.history.back()"
+          aria-label="Go back"
+          title="Go back"
+        >
+          <i
+            class="bx bx-arrow-back"
+            aria-hidden="true"
+            style="color: #000000"
+          ></i>
+        </a>
+
+        <div>
+          <h2 data-i18n="title.setting">Setting</h2>
+          <p data-i18n="subtitle.setting">
+            Manage account and interface preferences
+          </p>
+        </div>
+      </div>
+
+      <section class="card">
+        <h2>
+          <i class="bx bx-lock" aria-hidden="true" style="color: #000000"></i>
+          <span data-i18n="section.password.title">Change Password</span>
+        </h2>
+        <p class="desc" data-i18n="section.password.desc">
+          Update your password to secure your account
+        </p>
+
+        <form class="form">
+          <label data-i18n="label.current_password">Current password</label>
+          <input
+            type="password"
+            data-i18n-placeholder="placeholder.current_password"
+            placeholder="Enter current password"
+          />
+
+          <label data-i18n="label.new_password">New password</label>
+          <input
+            type="password"
+            data-i18n-placeholder="placeholder.new_password"
+            placeholder="Enter new password (minimum 6 characters)"
+          />
+
+          <label data-i18n="label.confirm_password">Confirm new password</label>
+          <input
+            type="password"
+            data-i18n-placeholder="placeholder.confirm_password"
+            placeholder="Re-enter new password"
+          />
+
+          <button type="submit" class="btn-primary">
+            <i class="bx bx-lock"></i>
+            <span data-i18n="btn.change_password">Change Password</span>
+          </button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>
+          <i class="bx bx-globe" aria-hidden="true" style="color: #000000"></i>
+          <span data-i18n="section.language.title">Language</span>
+        </h2>
+        <p class="desc" data-i18n="section.language.desc">
+          Select interface display language
+        </p>
+
+        <label data-i18n="label.language">Language</label>
+        <select id="language">
+          <option value="vi">🇻🇳 Vietnamese</option>
+          <option value="en">🇬🇧 English</option>
+        </select>
+        <p class="note" data-i18n="note.language_applied">
+          Language changes will be applied immediately.
+        </p>
+        <button class="btn-primary" id="btnSaveSettings" type="button">
+          <i class="bx bx-save" aria-hidden="true"></i>
+          <span data-i18n="btn.save_settings">Save Settings</span>
+        </button>
+      </section>
+      <script src="/js/i18n.js"></script>
+      <script src="/js/settings.page.js"></script>
+      <script>
+        document
+          .querySelector(".card .form")
+          ?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const [cur, nw, cf] = e.target.querySelectorAll(
+              'input[type="password"]'
+            );
+            if (nw.value !== cf.value) {
+              alert(i18n.t("alert.pw_mismatch"));
+              return;
+            }
+            if (nw.value.length < 6) {
+              alert(i18n.t("alert.pw_minlen"));
+              return;
+            }
+
+            const res = await fetch("/api/profile/change-password", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                currentPassword: cur.value,
+                newPassword: nw.value,
+              }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              alert(i18n.t("alert.pw_ok"));
+              e.target.reset();
+            } else {
+              alert(data.message || i18n.t("alert.pw_fail"));
+            }
+          });
+      </script>
+      <script src="/js/authHeader.js"></script>
+    </main>
+  </body>
+</html>

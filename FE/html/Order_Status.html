@@ -1,0 +1,1008 @@
+<!--FE/html/Order_Status.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Status</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: #f6f7f9;
+        margin: 0;
+        padding: 0px;
+        color: #333;
+      }
+
+      .header {
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 10px 20px;
+      }
+
+      .nav-bar {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 40%;
+        background-color: #043873;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-icon i {
+        color: white;
+        font-size: 22px;
+      }
+
+      .text {
+        line-height: 1.1;
+      }
+
+      .logo .text h1 {
+        font-size: 25px;
+        font-weight: 600;
+        font-family: "Times New Roman", serif;
+        font-style: italic;
+        margin: 0;
+        color: #111827;
+      }
+
+      .logo .text p {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        gap: 60px;
+        font-weight: 500;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: #374151;
+        transition: color 0.2s;
+      }
+
+      .nav-links li a:hover {
+        color: #1a4a8d;
+      }
+
+      .nav-links li a.active {
+        font-weight: 700;
+        color: #1a4a8d;
+      }
+
+      .nav-links li:last-child {
+        margin-left: 0;
+      }
+
+      .login-btn {
+        text-decoration: none;
+        color: #fff;
+        background-color: #000000;
+        border: 1px solid #000000;
+        border-radius: 6px;
+        padding: 8px 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: background-color 0.2s, opacity 0.2s;
+      }
+
+      .login-btn:hover {
+        opacity: 0.9;
+      }
+
+      .login-btn i {
+        font-size: 1.1em;
+      }
+
+      .order-status-container {
+        max-width: 1120px;
+        width: 100%;
+        background: #fff;
+        border-radius: 12px;
+        padding: 40px 50px;
+        box-shadow: 0 6px 20px rgba(20, 30, 60, 0.06);
+        margin: 30px auto;
+      }
+
+      .page-header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .page-header > div h2 {
+        margin-bottom: 5px !important;
+      }
+
+      .page-header > div p {
+        margin-top: -2px !important;
+        line-height: 1;
+      }
+
+      .page-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .page-header p {
+        color: #6b7280;
+        font-size: 0.95rem;
+      }
+
+      /* Icon-only back button (không nền/viền/padding mặc định) */
+      .btn-back {
+        background: transparent;
+        border: none;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        color: #374151;
+        font-size: 1.4rem; /* kích thước icon */
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: none;
+        -webkit-appearance: none;
+        appearance: none;
+        transition: color 0.2s ease;
+      }
+
+      .btn-back i {
+        line-height: 1;
+      }
+
+      .btn-back:hover {
+        color: #1a4a8d;
+      }
+      .btn-back:active {
+        transform: translateY(1px);
+      }
+      /* Giữ outline khi focus để a11y, nhưng không có nền/viền */
+      .btn-back:focus-visible {
+        outline: 3px solid #1a4a8d;
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+      /* Firefox: bỏ inner padding mặc định của button */
+      .btn-back::-moz-focus-inner {
+        border: 0;
+        padding: 0;
+      }
+
+      /* Tuỳ chọn: tăng hit-area nhưng vẫn không có viền/nền */
+      .btn-back {
+        padding: 6px;
+        margin-left: -6px; /* giữ layout y như cũ */
+        border-radius: 6px; /* để outline nhìn mềm hơn */
+      }
+
+      h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+        color: #222;
+      }
+
+      p.subtitle {
+        color: #777;
+        margin: 5px 0 20px 0;
+      }
+
+      .order-main {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+
+      .progress-section {
+        flex: 1.5;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e7e8ea;
+        padding: 20px 24px;
+      }
+
+      .summary-section {
+        flex: 0.7;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e7e8ea;
+        padding: 20px 24px;
+        align-self: flex-start;
+      }
+
+      .summary-section h4 {
+        margin-top: 0;
+        margin-bottom: 14px;
+        font-size: 20px;
+      }
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 18px;
+        color: #333;
+      }
+
+      .summary-row .paidmoney {
+        color: #00c851;
+        font-weight: 600;
+      }
+
+      .summary-row .remainingmoney {
+        color: #000000;
+        font-weight: 600;
+      }
+
+      .summary-row.code {
+        margin-top: 10px;
+        font-size: 18px;
+        color: #666;
+        border-top: 1px solid #e5e7eb;
+        margin: 18px 0;
+        padding-top: 18px;
+      }
+
+      .summary-row.code .ordercode {
+        font-weight: 600;
+        color: #111827;
+        font-size: 18px;
+      }
+
+      .progress-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        font-size: 20px;
+      }
+
+      .progress-bar {
+        height: 6px;
+        background: #eee;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: #007bff;
+        border-radius: 6px;
+        transition: width 0.3s ease;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .progress-fill {
+          transition: none;
+        }
+      }
+
+      .steps {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .step {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .step .icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 13px;
+        line-height: 20px;
+        font-weight: bold;
+      }
+
+      .step.completed .icon {
+        background: #00c951;
+        color: #fff;
+      }
+
+      .step.active .icon {
+        background: #111;
+        color: #fff;
+      }
+
+      .step.inactive .icon {
+        border: 2px solid #ddd;
+        color: #aaa;
+      }
+
+      .step-info h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .step-info p {
+        margin: 2px 0 0;
+        font-size: 15px;
+        color: #666;
+      }
+
+      .details {
+        border: 1px solid #e4e7eb;
+        border-radius: 10px;
+        padding: 28px 32px;
+        margin-top: 20px;
+        background: #fff;
+        max-width: 730px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .details h4 {
+        margin-top: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 22px;
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 20px;
+        column-gap: 80px;
+      }
+
+      .detail-grid p {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+      .detail-grid strong {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 3px;
+      }
+
+      .detail-grid span {
+        font-weight: 600;
+        color: #111827;
+        font-size: 15px;
+      }
+
+      .btn-back:focus-visible,
+      .login-btn:focus-visible,
+      .nav-links a:focus-visible {
+        outline: 3px solid #1a4a8d;
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main role="main">
+      <!-- 1. APPLICATION HEADER (LOGO và LOGIN) -->
+      <div class="header">
+        <nav class="nav-bar">
+          <div class="logo">
+            <div class="logo-icon">
+              <i class="bx bx-printer"></i>
+            </div>
+            <div class="text">
+              <h1>PrintNow</h1>
+              <p>Print service</p>
+            </div>
+          </div>
+
+          <ul class="nav-links">
+            <li><a href="/home" class="home">Home</a></li>
+            <li><a href="/service/print" class="service">Services</a></li>
+            <li><a href="/about-us" class="about">About Us</a></li>
+          </ul>
+
+          <div id="authArea" class="auth-area">
+            <a href="/login" class="login-btn">
+              <i class="bx bx-log-in"></i> Login
+            </a>
+          </div>
+        </nav>
+      </div>
+
+      <div class="order-status-container">
+        <div class="page-header">
+          <button type="button" class="btn-back" aria-label="Go back">
+            <i class="bx bx-arrow-back" aria-hidden="true"></i>
+          </button>
+          <div>
+            <h2 id="orderProgressHeading">Order status</h2>
+            <p>Track the progress of your order</p>
+          </div>
+        </div>
+
+        <div class="order-main">
+          <div
+            class="progress-section"
+            role="region"
+            aria-labelledby="orderProgressHeading"
+          >
+            <div class="progress-header">
+              <span>Order progress</span>
+              <span
+                id="orderProgressPercent"
+                class="progress-percent"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              ></span>
+            </div>
+
+            <div class="progress-bar">
+              <div class="progress-fill" aria-hidden="true"></div>
+            </div>
+
+            <div class="steps" role="list">
+              <div class="step" role="listitem">
+                <div class="icon" aria-hidden="true">✔</div>
+                <div class="step-info">
+                  <h4>Order received</h4>
+                  <p>The order has been received and confirmed.</p>
+                </div>
+              </div>
+
+              <div class="step" role="listitem">
+                <div class="icon" aria-hidden="true">✔</div>
+                <div class="step-info">
+                  <h4>Processing</h4>
+                  <p>Preparing files and checking quality</p>
+                </div>
+              </div>
+
+              <div class="step" role="listitem">
+                <div class="icon" aria-hidden="true">✔</div>
+                <div class="step-info">
+                  <h4>Printing</h4>
+                  <p>Printing on demand in progress</p>
+                </div>
+              </div>
+
+              <div class="step" role="listitem">
+                <div class="icon" aria-hidden="true">✔</div>
+                <div class="step-info">
+                  <h4>Quality Control</h4>
+                  <p>Final Product Quality Control</p>
+                </div>
+              </div>
+
+              <div class="step" role="listitem">
+                <div class="icon" aria-hidden="true">●</div>
+                <div class="step-info">
+                  <h4>Ready to ship/receive</h4>
+                  <p>Product is completed, ready to ship</p>
+                </div>
+              </div>
+
+              <div class="step" role="listitem">
+                <div class="icon" aria-hidden="true">○</div>
+                <div class="step-info">
+                  <h4>Completed</h4>
+                  <p>Order successfully completed</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-section">
+            <h4>Order Summary</h4>
+            <div class="summary-row">
+              <span>Total:</span>
+              <span
+                id="summaryTotal"
+                aria-live="polite"
+                aria-atomic="true"
+              ></span>
+            </div>
+            <div class="summary-row">
+              <span>Paid:</span>
+              <span
+                id="summaryPaid"
+                class="paidmoney"
+                aria-live="polite"
+                aria-atomic="true"
+              ></span>
+            </div>
+            <div class="summary-row">
+              <span>Remaining Amount:</span>
+              <span
+                id="summaryRemaining"
+                class="remainingmoney"
+                aria-live="polite"
+                aria-atomic="true"
+              ></span>
+            </div>
+            <div class="summary-row code">
+              <span>Order code</span>
+              <span id="summaryOrderCode" class="ordercode"></span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="details"
+          role="region"
+          aria-labelledby="orderDetailsHeading"
+        >
+          <h4 id="orderDetailsHeading">Order details</h4>
+          <div class="detail-grid">
+            <div>
+              <p><strong>Order code</strong></p>
+              <p id="detailOrderCode"></p>
+            </div>
+            <div>
+              <p><strong>Order date</strong></p>
+              <p id="detailOrderDate"></p>
+            </div>
+            <div>
+              <p><strong>Services</strong></p>
+              <p id="detailService"></p>
+            </div>
+            <div>
+              <p><strong>Expected completion</strong></p>
+              <p id="detailExpectedCompletion"></p>
+            </div>
+            <div>
+              <p><strong>Quantity</strong></p>
+              <p id="detailQuantity"></p>
+            </div>
+            <div>
+              <p><strong>Payment method</strong></p>
+              <p id="detailPaymentMethod"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        // Hàm định dạng tiền tệ
+        function formatCurrency(amount) {
+          const n = Number(amount);
+          if (!isFinite(n)) return "0₫";
+          return Math.round(n).toLocaleString("vi-VN") + "₫";
+        }
+
+        // Hàm lấy tham số từ URL
+        function getQueryParam(param) {
+          const urlParams = new URLSearchParams(window.location.search);
+          return urlParams.get(param);
+        }
+
+        // Hàm đặt trạng thái active cho liên kết
+        function setActiveNavLink() {
+          const currentPath =
+            window.location.pathname.replace(/\/+$/, "") || "/";
+          const navLinks = document.querySelectorAll(".nav-links a");
+
+          navLinks.forEach((link) => {
+            link.classList.remove("active");
+            const href = link.getAttribute("href");
+            if (
+              href === "/home" &&
+              (currentPath === "/" || currentPath === "/home")
+            ) {
+              link.classList.add("active");
+            } else if (
+              href === "/service/print" &&
+              (currentPath.startsWith("/service/print") ||
+                currentPath.startsWith("/order/"))
+            ) {
+              link.classList.add("active");
+            } else if (
+              href === "/about-us" &&
+              currentPath.startsWith("/about-us")
+            ) {
+              link.classList.add("active");
+            }
+          });
+        }
+
+        // Hàm cập nhật trạng thái đơn hàng
+        function updateOrderStatus(data) {
+          // Đặt aria-busy trong khi cập nhật
+          const region = document.querySelector(
+            '.progress-section[role="region"]'
+          );
+          if (region) {
+            region.setAttribute("aria-busy", "true");
+            const pp = document.getElementById("orderProgressPercent");
+            if (pp) pp.textContent = "Loading…";
+            // đồng bộ lại tiêu đề nếu có
+            const heading = document.getElementById("orderProgressHeading");
+            if (heading && !region.hasAttribute("aria-labelledby")) {
+              region.setAttribute("aria-labelledby", "orderProgressHeading");
+            }
+          }
+
+          const fillEl = document.querySelector(".progress-fill");
+          const barEl = document.querySelector(".progress-bar"); // container
+          const progressPercent = document.getElementById(
+            "orderProgressPercent"
+          );
+          const steps = document.querySelectorAll(".step");
+
+          // Bảo vệ
+          if (!fillEl || !barEl || !progressPercent || steps.length === 0) {
+            if (region) region.setAttribute("aria-busy", "false");
+            return;
+          }
+
+          // Chuẩn hoá stages theo DOM để tránh lệch
+          const stepTitles = [...steps].map(
+            (s, i) =>
+              s.querySelector(".step-info h4")?.textContent?.trim() ||
+              `Step ${i + 1}`
+          );
+          const stages =
+            Array.isArray(data.stages) && data.stages.length === steps.length
+              ? data.stages
+              : stepTitles;
+
+          const norm = (s) =>
+            String(s ?? "")
+              .trim()
+              .toLowerCase();
+          // 1) Cập nhật phần trăm tiến độ (clamp 0–100)
+          const prog = Math.max(0, Math.min(100, Number(data.progress) || 0));
+          fillEl.style.width = prog + "%";
+          progressPercent.textContent = prog + "%";
+          progressPercent.title = prog + "% completed";
+          // Thêm label cho SR
+          progressPercent.setAttribute("aria-label", `${prog}% completed`);
+
+          // 2) Reset class cũ
+          steps.forEach((step) => {
+            step.classList.remove("completed", "active", "inactive");
+            step.removeAttribute("aria-current");
+          });
+
+          // 3) Xác định vị trí stage hiện tại (có fallback, dùng prog để nhất quán)
+          let currentIndex = stages.map(norm).indexOf(norm(data.currentStage));
+          if (currentIndex === -1) {
+            // nếu không khớp, lấy theo phần trăm
+            currentIndex = Math.min(
+              steps.length - 1,
+              Math.max(0, Math.round((prog / 100) * (steps.length - 1)))
+            );
+          }
+
+          // 4) Tô class cho từng bước + aria-current
+          steps.forEach((step, index) => {
+            if (index < currentIndex) step.classList.add("completed");
+            else if (index === currentIndex) {
+              step.classList.add("active");
+              step.setAttribute("aria-current", "step");
+            } else step.classList.add("inactive");
+          });
+
+          // 4.1) Thêm ARIA label cho từng step
+          steps.forEach((step, index) => {
+            const name = stepTitles[index];
+            step.setAttribute(
+              "aria-label",
+              `${name} ${
+                index < currentIndex
+                  ? "(completed)"
+                  : index === currentIndex
+                  ? "(in progress)"
+                  : "(pending)"
+              }`
+            ); // ⬅️ thêm
+          });
+
+          // 5) ARIA cho progressbar (đặt trên container)
+          if (barEl) {
+            barEl.setAttribute("role", "progressbar");
+            barEl.setAttribute("aria-orientation", "horizontal");
+            barEl.setAttribute("aria-valuemin", "0");
+            barEl.setAttribute("aria-valuemax", "100");
+            barEl.setAttribute("aria-valuenow", String(prog));
+            barEl.setAttribute("aria-valuetext", `${prog}% completed`);
+            barEl.setAttribute("aria-describedby", "orderProgressPercent");
+            barEl.setAttribute("aria-label", `Order progress`);
+          }
+
+          // Xoá aria-busy sau khi cập nhật xong
+          if (region) region.setAttribute("aria-busy", "false");
+        }
+
+        function formatDate(v) {
+          if (v == null) return "N/A";
+          const d = typeof v === "number" ? new Date(v) : new Date(String(v));
+          return isNaN(d) ? "N/A" : d.toLocaleString("vi-VN");
+        }
+
+        // Helper fetch JSON
+        async function fetchJson(url, opts) {
+          const r = await fetch(url, {
+            credentials: "include",
+            cache: "no-store",
+            ...(opts || {}),
+          });
+          if (!r.ok) throw new Error(`HTTP_${r.status}`);
+          return r.json();
+        }
+
+        // Fallback: lấy đơn theo orderCode qua API mới /by-code (ưu tiên) hoặc list->detail
+        async function fetchOrderDataByCode(orderCode) {
+          if (!orderCode) return null;
+          try {
+            // Ưu tiên endpoint gọn
+            const js = await fetchJson(
+              `/api/orders/by-code/${encodeURIComponent(orderCode)}`
+            );
+            if (js?.success && js?.data) return js.data;
+          } catch {}
+          try {
+            // Fallback list -> tìm id -> detail
+            const list = await fetchJson(
+              `/api/orders?page=1&pageSize=100&t=${Date.now()}`
+            );
+            const items = list?.data ?? [];
+            const hit = items.find(
+              (o) =>
+                String(o.code || "").toUpperCase() ===
+                String(orderCode).toUpperCase()
+            );
+            if (!hit?.id) return null;
+            const detail = await fetchJson(
+              `/api/orders/${encodeURIComponent(hit.id)}`
+            );
+            return detail?.data ?? null;
+          } catch {
+            return null;
+          }
+        }
+
+        // === Payment helpers (read from localStorage / API & map label) ===
+        function readPaymentSelection() {
+          try {
+            return JSON.parse(localStorage.getItem("paymentSelection") || "{}");
+          } catch {
+            return {};
+          }
+        }
+        function labelPayment(method) {
+          const m = String(method || "")
+            .trim()
+            .toUpperCase();
+          if (m === "VNPAY" || m === "ONLINE") return "VnPay";
+          if (m === "STORE" || m === "CASH" || m === "PAY_AT_STORE")
+            return "At the store";
+          return method || "At the store";
+        }
+
+        // Hàm tải và hiển thị dữ liệu đơn hàng
+        async function loadOrderData() {
+          const orderCode = getQueryParam("orderCode");
+          const savedOrder = localStorage.getItem("currentOrderData");
+          let orderData = null;
+
+          if (savedOrder) {
+            try {
+              orderData = JSON.parse(savedOrder);
+              // Nếu có orderCode trên URL thì mới kiểm tra khớp
+              if (
+                orderCode &&
+                orderData?.orderCode &&
+                orderData.orderCode !== orderCode
+              ) {
+                orderData = null;
+              }
+            } catch (e) {
+              console.error("Lỗi khi phân tích currentOrderData:", e);
+            }
+          }
+
+          if (!orderData) {
+            // Fallback về API
+            const apiData = await fetchOrderDataByCode(orderCode);
+            if (!apiData) {
+              console.error(
+                "Không tìm thấy dữ liệu đơn hàng trong localStorage & API"
+              );
+              alert(
+                "Không tìm thấy dữ liệu đơn hàng! Vui lòng quay lại trang xác nhận."
+              );
+              return;
+            }
+            // Chuẩn hoá thành cấu trúc currentOrderData để render thống nhất
+            orderData = {
+              orderCode: apiData.code || orderCode,
+              service: "Print Documents",
+              fileCount: Array.isArray(apiData.items)
+                ? apiData.items.length
+                : 0,
+              // Lấy method từ API (nếu có) hoặc localStorage.paymentSelection
+              paymentMethod: labelPayment(
+                apiData.paymentMethod ||
+                  apiData.payment_method ||
+                  apiData.payMethod ||
+                  readPaymentSelection().method ||
+                  null
+              ),
+              paidAmount: 0, // BE chưa trả tổng paid => để 0 hoặc suy luận riêng
+              remainingAmount: Number(apiData.totalAmount || 0),
+              orderDate: apiData.createdAt,
+              expectedCompletion: new Date(
+                Date.now() + 2 * 24 * 60 * 60 * 1000
+              ).toISOString(),
+              summary: {
+                totalPrice: Number(apiData.totalAmount || 0),
+                fileCount: Array.isArray(apiData.items)
+                  ? apiData.items.length
+                  : 0,
+              },
+            };
+            // Lưu lại để lần sau không phải gọi API nữa
+            try {
+              localStorage.setItem(
+                "currentOrderData",
+                JSON.stringify(orderData)
+              );
+            } catch {}
+          }
+
+          // Cập nhật summary
+          const totalRaw = Number(
+            orderData?.finalTotal ?? orderData?.summary?.totalPrice ?? 0
+          );
+          const total = Number.isFinite(totalRaw) ? Math.max(0, totalRaw) : 0;
+          const paidRaw = Number(orderData?.paidAmount ?? 0);
+          const paid = Number.isFinite(paidRaw) ? Math.max(0, paidRaw) : 0;
+          const calcRemain = total - paid;
+          const remainingRaw = orderData?.remainingAmount;
+          const remainingNum = Number(remainingRaw);
+          const remaining = Number.isFinite(remainingNum)
+            ? Math.max(0, remainingNum) // vẫn clamp ≥ 0 cho chắc
+            : Math.max(0, calcRemain);
+
+          document.getElementById("summaryTotal").textContent =
+            formatCurrency(total);
+          document.getElementById("summaryPaid").textContent =
+            formatCurrency(paid);
+          document.getElementById("summaryRemaining").textContent =
+            formatCurrency(remaining);
+          document.getElementById("summaryOrderCode").textContent =
+            orderData.orderCode;
+
+          // Cập nhật detail-grid
+          document.getElementById("detailOrderCode").textContent =
+            orderData.orderCode;
+          document.getElementById("detailOrderDate").textContent = formatDate(
+            orderData.orderDate
+          );
+          document.getElementById("detailService").textContent =
+            orderData.service || "Print Documents";
+          document.getElementById("detailExpectedCompletion").textContent =
+            formatDate(orderData.expectedCompletion);
+          const fileCount =
+            orderData.fileCount ??
+            orderData?.summary?.fileCount ??
+            orderData?.files?.length ??
+            0;
+          document.getElementById(
+            "detailQuantity"
+          ).textContent = `${fileCount} file${fileCount > 1 ? "s" : ""}`;
+          document.getElementById("detailPaymentMethod").textContent =
+            orderData.paymentMethod || "At the store";
+
+          // Giả lập tiến độ đơn hàng
+          const progressData = {
+            progress: 83,
+            currentStage: "Ready to ship/receive",
+            stages: [
+              "Order received",
+              "Processing",
+              "Printing",
+              "Quality Control",
+              "Ready to ship/receive",
+              "Completed",
+            ],
+          };
+
+          updateOrderStatus(progressData);
+
+          // Mô phỏng cập nhật sau 3s (tôn trọng prefers-reduced-motion)
+          const prefersReduced = window.matchMedia?.(
+            "(prefers-reduced-motion: reduce)"
+          )?.matches;
+          if (!prefersReduced) {
+            setTimeout(() => {
+              const newData = {
+                ...progressData,
+                progress: 100,
+                currentStage: "Completed",
+              };
+              updateOrderStatus(newData);
+            }, 3000);
+          }
+          const fillElForMotion = document.querySelector(".progress-fill");
+          if (prefersReduced && fillElForMotion) {
+            fillElForMotion.style.transition = "none";
+          }
+        }
+
+        // Chạy khi trang tải
+        document.addEventListener("DOMContentLoaded", async () => {
+          setActiveNavLink();
+          const pp = document.getElementById("orderProgressPercent");
+          if (pp && !pp.textContent) {
+            pp.textContent = "0%";
+            pp.title = "0% completed";
+          }
+          await loadOrderData();
+        });
+
+        // Nút quay lại
+        document.querySelector(".btn-back")?.addEventListener("click", () => {
+          if (window.history.length > 1) window.history.back();
+          else window.location.href = "/home"; // ⬅️ fallback nếu không có lịch sử
+        });
+      </script>
+    </main>
+    <script src="/js/authHeader.js"></script>
+  </body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Details | PrintNow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f6f7f9;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+
+      /* ===== HEADER ===== */
+
+      .header {
+        background-color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        padding: 10px 20px;
+      }
+
+      .nav-bar {
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .logo-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 40%;
+        background-color: #043873;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-icon i {
+        color: white;
+        font-size: 22px;
+      }
+
+      .text {
+        line-height: 1.1;
+      }
+
+      .logo .text h1 {
+        font-size: 25px;
+        font-weight: 600;
+        font-family: "Times New Roman", serif;
+        font-style: italic;
+        margin: 0;
+        color: #111827;
+      }
+
+      .logo .text p {
+        font-size: 12px;
+        color: #6b7280;
+        margin: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        padding: 0;
+        margin: 0 auto;
+        gap: 60px;
+        font-weight: 500;
+      }
+
+      .nav-links li a {
+        text-decoration: none;
+        color: #374151;
+        transition: color 0.2s;
+      }
+
+      .nav-links li a:hover {
+        color: #1a4a8d;
+      }
+
+      .nav-links li:last-child {
+        margin-left: 0;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-right: 30px;
+      }
+
+      .icon-btn {
+        background: #fff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .icon-btn .bell {
+        font-size: 25px;
+        color: #333;
+        margin-top: 10px;
+        margin-right: 5px;
+      }
+
+      .avatar-small {
+        background: #203957;
+        color: #fff;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 20px auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 6px 18px rgba(20, 30, 60, 0.06);
+        padding: 40px 50px;
+      }
+
+      h1 {
+        font-size: 24px;
+        color: #000000;
+        margin-bottom: 6px;
+      }
+
+      p.subtitle {
+        color: #666;
+        margin-bottom: 15px;
+        margin-top: 5px;
+        font-size: 14px;
+      }
+
+      .order-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .info-box {
+        flex: 1;
+        min-width: 250px;
+      }
+
+      .info-box h3 {
+        font-size: 16px;
+        color: #203957;
+        margin-bottom: 8px;
+      }
+
+      .info-box p {
+        margin: 4px 0;
+        font-size: 14px;
+        color: #555;
+      }
+
+      .status {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      .completed {
+        background-color: #e3f7e7;
+        color: #2e8540;
+      }
+
+      .processing {
+        background-color: #eaf1ff;
+        color: #2f5de0;
+      }
+
+      .cancelled {
+        background-color: #fde7e7;
+        color: #e02f2f;
+      }
+
+      .pending {
+        background-color: #fff7e6;
+        color: #b76e00;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 14px 18px;
+        border-bottom: 1px solid #e4e6eb;
+        font-size: 14px;
+      }
+
+      td:nth-child(2),
+      th:nth-child(2) {
+        text-align: center;
+      }
+
+      th {
+        background-color: #f3f5f7;
+        color: #203957;
+        font-weight: 600;
+      }
+
+      tr:hover td {
+        background-color: #f9fafc;
+      }
+
+      .summary {
+        text-align: right;
+        margin-top: 25px;
+        font-size: 15px;
+        color: #333;
+      }
+
+      .summary p {
+        margin: 6px 0;
+      }
+
+      .summary p.total {
+        font-weight: 600;
+        color: #203957;
+        font-size: 17px;
+      }
+
+      .actions {
+        margin-top: 35px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 550;
+        transition: background 0.2s ease;
+      }
+
+      .btn-primary {
+        background-color: #0095ff;
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        background-color: #1a2e46;
+      }
+
+      .btn-secondary {
+        background-color: #ccc;
+        color: #203957;
+      }
+
+      .btn-secondary:hover {
+        background-color: #b9b9b9;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 25px;
+        }
+
+        .order-info {
+          flex-direction: column;
+        }
+      }
+
+      /* A11y helper: văn bản chỉ dành cho screen reader */
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+      <nav class="nav-bar" role="navigation" aria-label="Primary">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="bx bx-printer" aria-hidden="true"></i>
+          </div>
+          <div class="text">
+            <h1>PrintNow</h1>
+            <p>Print service</p>
+          </div>
+        </div>
+
+        <ul class="nav-links">
+          <li><a href="/home" class="home">Home</a></li>
+          <li><a href="/service/print" class="service">Services</a></li>
+          <li><a href="/about-us" class="about">About Us</a></li>
+        </ul>
+
+        <div class="header-right">
+          <a
+            href="/notifications"
+            class="icon-btn"
+            aria-label="Notifications"
+            title="Notifications"
+          >
+            <span class="bell"
+              ><i class="bx bx-bell" aria-hidden="true"></i
+            ></span>
+          </a>
+
+          <!-- Auth / Avatar -->
+          <div id="authArea" class="auth-area"></div>
+        </div>
+      </nav>
+    </div>
+    <main role="main">
+      <div class="container">
+        <h1>Order Details</h1>
+        <p class="subtitle">Review full information of your order.</p>
+
+        <div class="order-info">
+          <div class="info-box">
+            <h3>Order Info</h3>
+            <p><strong>Order ID:</strong> #ORD-2025-001</p>
+            <p><strong>Date:</strong> 26 Oct 2025</p>
+            <p>
+              <strong>Status:</strong>
+              <span class="status completed">Completed</span>
+            </p>
+          </div>
+
+          <div class="info-box">
+            <h3>Customer</h3>
+            <p><strong>Name:</strong> Nguyễn Văn A</p>
+            <p><strong>Email:</strong> nguyenvana@example.com</p>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Poster A3 - Matte</td>
+              <td>2</td>
+              <td>50,000 VND</td>
+              <td>100,000 VND</td>
+            </tr>
+            <tr>
+              <td>Business Card - Premium</td>
+              <td>1</td>
+              <td>50,000 VND</td>
+              <td>50,000 VND</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="summary">
+          <p>Subtotal: 150,000 VND</p>
+          <p class="total">Total: 150,000 VND</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="btnReorder">Reorder</button>
+          <button
+            class="btn btn-secondary"
+            id="btnCancel"
+            style="display: none"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-secondary" onclick="window.history.back()">
+            Return
+          </button>
+        </div>
+      </div>
+    </main>
+    <script>
+      (function () {
+        const qs = new URLSearchParams(location.search);
+        const id = qs.get("id");
+        if (!id) return;
+
+        const fmtMoney = (n) =>
+          (Number(n) || 0).toLocaleString("vi-VN") + " VND";
+        const statusHtml = (s) => {
+          const map = {
+            completed: "completed",
+            processing: "processing",
+            cancelled: "cancelled",
+            pending: "pending",
+          };
+          const cls = map[s] || "processing";
+          const label = (s || "").replace(/^\w/, (c) => c.toUpperCase());
+          return `<span class="status ${cls}">${label}</span>`;
+        };
+
+        fetch("/api/orders/" + encodeURIComponent(id), {
+          credentials: "include",
+        })
+          .then((r) => r.json())
+          .then(({ success, data }) => {
+            if (!success || !data) return;
+            const btnCancel = document.getElementById("btnCancel");
+            const btnReorder = document.getElementById("btnReorder");
+
+            // Fill header info
+            document.querySelector(".container h1").textContent =
+              "Order Details";
+            document.querySelector(".subtitle").textContent =
+              "Review full information of your order.";
+
+            const infoBoxes = document.querySelectorAll(".info-box");
+            infoBoxes[0].innerHTML = `
+        <h3>Order Info</h3>
+        <p><strong>Order ID:</strong> ${data.code || "#" + data.id}</p>
+        <p><strong>Date:</strong> ${new Date(data.createdAt).toLocaleDateString(
+          "vi-VN",
+          { day: "2-digit", month: "short", year: "numeric" }
+        )}</p>
+                <p><strong>Status:</strong> ${statusHtml(data.status)}</p>
+        ${
+          data.status === "cancelled" || data.note
+            ? `<p><strong>Reason:</strong> ${(data.note || "").replace(
+                /User cancel:\s*/i,
+                ""
+              )}</p>`
+            : ""
+        }
+      `;
+            infoBoxes[1].innerHTML = `
+        <h3>Customer</h3>
+        <p><strong>Name:</strong> ${data.user?.fullName || ""}</p>
+        <p><strong>Email:</strong> ${data.user?.email || ""}</p>
+      `;
+
+            // Items table
+            const tbody = document.querySelector("table tbody");
+            tbody.innerHTML = "";
+            // helper: ghép tên nếu thiếu productName
+            const prettyName = (it) => {
+              if (it.productName) return it.productName;
+              const ex = it.extraOptions || {};
+              if (ex.productName) return ex.productName;
+              if (ex.fileName) return ex.fileName;
+              if (ex.name) return ex.name;
+              const type = String(it.printType || "").toUpperCase();
+              if (type === "DOCUMENT") {
+                const size = ex.size || "A4";
+                const side = ex.side || (ex.twoSides ? "2 sides" : "1 side");
+                const mode = ex.mode || ex.docType || "Black & White";
+              }
+              if (type === "PHOTO") {
+                const size = ex.sizeCode || "10x15";
+                const paper = ex.paper || "Glossy";
+                const bl = ex.borderless ? " • Borderless" : "";
+                return `Photo • ${size} • ${paper}${bl}`;
+              }
+              return it.printType || "Item";
+            };
+
+            (data.items || []).forEach((it) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+          <td>${prettyName(it)}</td>
+          <td style="text-align:center">${it.quantity}</td>
+          <td>${fmtMoney(it.unitPrice)}</td>
+          <td>${fmtMoney(it.totalPrice)}</td>
+        `;
+              tbody.appendChild(tr);
+            });
+
+            // Summary (Subtotal trước giảm, Discount nếu có, Total = totalAmount sau giảm)
+            const sum = document.querySelector(".summary");
+            const items = Array.isArray(data.items) ? data.items : [];
+            const subtotal = items.reduce(
+              (acc, it) => acc + Number(it.totalPrice || it.lineTotal || 0),
+              0
+            );
+            const total = Number(data.totalAmount || 0);
+            const discount = Math.max(0, subtotal - total);
+
+            let html = "";
+            html += `<p>Subtotal: ${fmtMoney(subtotal)}</p>`;
+            if (discount > 0)
+              html += `<p>Adjustment: -${fmtMoney(discount)}</p>`;
+            html += `<p class="total">Total: ${fmtMoney(total)}</p>`;
+            sum.innerHTML = html;
+
+            // === Cancel button ===
+            if (data.cancellable) {
+              btnCancel.style.display = "";
+              btnCancel.onclick = async () => {
+                // Hỏi xác nhận giống trang lịch sử
+                if (!confirm("Bạn chắc chắn muốn hủy đơn này?")) return;
+
+                try {
+                  const reason = prompt("Lý do hủy (tuỳ chọn):", "") || "";
+
+                  // dùng order code nếu có (giống OH dùng data-code)
+                  const orderCode =
+                    data.code ||
+                    "#ORD-" +
+                      new Date(data.createdAt).getFullYear() +
+                      "-" +
+                      String(data.id).padStart(3, "0");
+
+                  const res = await fetch(
+                    `/api/orders/${encodeURIComponent(orderCode)}/cancel`,
+                    {
+                      method: "POST",
+                      credentials: "include",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ reason }),
+                    }
+                  );
+                  const js = await res.json();
+                  if (!res.ok || !js?.success)
+                    throw new Error(js?.message || "Hủy đơn thất bại");
+
+                  alert("Đã hủy đơn.");
+
+                  // Cập nhật nhanh UI: đổi status -> Cancelled & ẩn nút (y hệt cách làm ở OH)
+                  const st = document.querySelector(".info-box .status");
+                  st?.classList.remove("completed", "processing", "pending");
+                  st?.classList.add("cancelled");
+                  st.textContent = "Cancelled";
+                  btnCancel.style.display = "none";
+
+                  // Mở trang lịch sử với tab Cancelled được chọn sẵn
+                  sessionStorage.setItem("orders.defaultTab", "cancelled");
+                  window.location.href = "/order/history";
+                } catch (err) {
+                  console.error("cancel error", err);
+                  alert("Không thể hủy đơn. Vui lòng thử lại.");
+                }
+              };
+            }
+          })
+          .catch(console.error);
+      })();
+    </script>
+    <script src="/js/authHeader.js"></script>
+  </body>
+</html>
