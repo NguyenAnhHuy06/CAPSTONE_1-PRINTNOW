@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrintNow Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root {
+            --primary-color: #043873;
+            --secondary-blue: #4d59ff;
+            --text-color: #333333;
+            --sub-text-color: #718096;
+            --background-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --success-color: #48bb78;
+            --error-color: #f56565; 
+            --sidebar-width-collapsed: 70px;
+            --sidebar-width-expanded: 220px;
+            --sidebar-padding-x: 10px;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width-collapsed);
+            background-color: var(--card-bg);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            transition: width var(--transition-speed) ease-in-out;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 10;
+        }
+        .sidebar:hover {
+            width: var(--sidebar-width-expanded);
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 0 10px 30px var(--sidebar-padding-x);
+            white-space: nowrap;
+        }
+        .sidebar-header i{
+            margin-left: 18px;
+        }
+        .logo-icon {
+            font-size: 30px;
+            color: var(--primary-color);
+            min-width: 50px;
+        }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+            font-size: 14px;
+        }
+        .logo-text strong {
+            font-size: 18px;
+            color: var(--text-color);
+        }
+        .logo-text span {
+            color: var(--sub-text-color);
+        }
+        .sidebar-nav {
+            flex-grow: 1;
+        }
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+        }
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 15px 10px;
+            text-decoration: none;
+            color: var(--sub-text-color);
+            transition: background-color 0.2s, color 0.2s;
+            border-radius: 8px;
+            margin: 0 var(--sidebar-padding-x);
+            position: relative;
+        }
+        .sidebar-nav a:hover:not(.active a) {
+            background-color: var(--background-color);
+        }
+        .nav-item .icon {
+            min-width: 50px;
+            text-align: center;
+            font-size: 20px;
+        }
+        .nav-text {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s;
+            transition-delay: var(--transition-speed);
+        }
+        .sidebar:hover .nav-text {
+            opacity: 1;
+            pointer-events: all;
+            transition-delay: 0s;
+        }
+        .nav-item.active a {
+            background-color: var(--secondary-blue);
+            color: var(--card-bg);
+            box-shadow: 0 4px 10px rgba(93, 92, 255, 0.4);
+        }
+        .nav-item.active .icon {
+            color: var(--card-bg);
+        }
+        .badge {
+            margin-left: auto;
+            background-color: #f7a530;
+            color: var(--card-bg);
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            display: block;
+        }
+        .sidebar:hover .badge {
+            position: relative;
+            top: auto;
+            right: auto;
+            margin-left: auto;
+        }
+        .sidebar-footer {
+            padding: 20px 0;
+            border-top: 1px solid #f0f0f0;
+        }
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            padding: 10px 10px;
+            margin: 5px var(--sidebar-padding-x);
+            text-decoration: none;
+            color: var(--sub-text-color);
+            white-space: nowrap;
+            border-radius: 8px;
+        }
+        .contact-support {
+            background-color: rgba(93, 92, 255, 0.1);
+            color: var(--primary-color) !important;
+            border-radius: 8px;
+        }
+        .logout {
+            color: var(--error-color) !important;
+        }
+        .logout .icon {
+            color: var(--sub-text-color);
+        }
+        .sidebar:hover .logout .icon {
+            color: var(--error-color);
+        }
+        .sidebar:not(:hover) .logout .nav-text,
+        .sidebar:not(:hover) .contact-support .nav-text {
+            display: none;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 0 30px 30px 30px;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            background-color: var(--background-color);
+            z-index: 5;
+        }
+        .top-header h2 {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            font-size: 24px;
+        }
+        .top-header h2 .bx-home {
+            font-size: 18px;
+            color: var(--sub-text-color);
+            margin-right: 15px;
+        }
+        .user-actions .icon {
+            font-size: 24px;
+            margin-right: 15px;
+            color: var(--sub-text-color);
+        }
+        .user-avatar {
+            font-size: 30px;
+            color: var(--primary-color);
+            vertical-align: middle;
+        }
+        .dashboard-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .kpi-card .card-header {
+            margin-bottom: 0; 
+            padding: 0;
+            width: 100%;
+        }
+
+        .kpi-card {
+            background-color: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column; 
+            align-items: flex-start; 
+            justify-content: space-between;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .kpi-card > .card-header { 
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px; 
+        }
+
+        .kpi-card .kpi-icon-container {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+        }
+        
+        .kpi-card.sales-kpi .kpi-icon-container { background-color: #f0f0ff; color: var(--primary-color); } 
+        .kpi-card.customer-kpi .kpi-icon-container { background-color: #fce4ce; color: #f5a623; } 
+        .kpi-card.orders-kpi .kpi-icon-container { background-color: #f4f0ff; color: #7f56d9; } 
+        .kpi-metrics-group {
+            display: flex;
+            gap: 20px; 
+            width: 100%; 
+        }
+        
+        .kpi-metric {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kpi-title {
+            font-size: 12px;
+            color: var(--sub-text-color);
+            margin-bottom: 5px;
+        }
+
+        .kpi-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .kpi-change {
+            font-size: 11px;
+            font-weight: normal;
+            margin-left: 5px;
+        }
+        .success {
+            color: var(--success-color);
+        }
+        .time-filter {
+            font-size: 14px;
+            color: var(--sub-text-color);
+            cursor: pointer;
+        }
+
+        .main-content-split { 
+            display: flex;
+            gap: 20px;
+            align-items: stretch; 
+        }
+
+        .left-section { 
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .marketing-product-group {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+            flex-grow: 1; 
+        }
+
+        .marketing-col-left {
+            flex: 1; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-cart-col-right {
+            flex: 1; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px; 
+            background-color: transparent; 
+            box-shadow: none;
+            border: none;
+        }
+
+        .kpi-top-row {
+            display: flex;
+            gap: 20px;
+            flex-shrink: 0; 
+        }
+        .kpi-top-row .kpi-card {
+            flex: 1; 
+        }
+
+        .right-section { 
+            flex: 1; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .marketing-card {
+            flex-grow: 1; 
+            min-height: 250px; 
+            display: flex;
+            flex-direction: column;
+        }
+        .marketing-card .card-header {
+            margin-bottom: 10px;
+        }
+
+        .marketing-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1; 
+        }
+
+        .chart-legend {
+            font-size: 12px;
+            color: var(--sub-text-color);
+            margin-bottom: 10px;
+        }
+        .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 3px;
+            margin-left: 10px;
+        }
+        .dot:first-child { margin-left: 0; }
+        .acquisition { background-color: #5570F1; }
+        .purchase { background-color: #97A5EB; } 
+        .retention { background-color: #f7a530; }
+
+        .donut-chart-placeholder {
+            width: 200px;
+            height: 200px;
+            background-color: transparent;
+            border-radius: 50%;
+            border: 30px solid #f7a530; 
+            border-left-color: #5d5cff; 
+            border-top-color: #5d5cff; 
+            box-shadow: inset 0 0 0 10px var(--card-bg);
+            margin: 10px auto;
+        }
+
+        .product-cart-row {
+            display: none; 
+        }
+
+        .product-card {
+            background-color: var(--secondary-blue);
+            color: var(--card-bg);
+            flex: none; 
+            width: 100%; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column; 
+            justify-content: space-between; 
+        }
+
+        .product-card .card-header {
+            justify-content: flex-start; 
+            margin-bottom: 15px;
+        }
+        .product-card h3 {
+            margin-left: 10px;
+        }
+
+        .product-card .icon-lg {
+            font-size: 24px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            margin-right: 0; 
+        }
+
+        .product-metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 10px;
+        }
+
+        .product-metrics-grid > div p:first-child {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        .product-metrics-grid .kpi-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--card-bg);
+            margin-top: 5px; 
+        }
+        .product-card .kpi-change {
+            color: #a8ffcc;
+        }
+
+        .cart-card {
+            background-color: var(--card-bg);
+            flex: none; 
+            width: 100%; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .cart-card .card-header {
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .cart-card .card-header h3 {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .cart-card .icon {
+            font-size: 24px;
+            color: #f7a530;
+            padding: 10px;
+            background-color: #fff9f0;
+            border-radius: 8px;
+        }
+
+        .cart-details {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 10px;
+        }
+
+        .error-text {
+            color: var(--error-color);
+            font-size: 14px !important;
+        }
+        
+        .cart-details p:last-child { 
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-color);
+            margin-top: 5px;
+        }
+        
+        .cart-card .kpi-change {
+            color: var(--success-color);
+        }
+
+        .recent-orders-card {
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recent-orders-card h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .no-orders-state {
+            text-align: center;
+            padding: 50px 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .large-bag-icon {
+            font-size: 60px;
+            color: #e2e8f0;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--card-bg);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        /* Summary Chart */
+        .summary-section {
+            width: 100%; 
+            margin-top: 20px; 
+        }
+
+        .summary-card .card-header {
+            justify-content: flex-start;
+            gap: 20px;
+        }
+        .summary-card .card-header h3 {
+            flex-grow: 1;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .summary-card .dropdown {
+            font-weight: bold;
+            color: var(--text-color);
+            background-color: #e2e8f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .summary-card .time-filter {
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--sub-text-color);
+        }
+
+        .summary-chart-placeholder {
+            display: flex;
+            gap: 10px;
+            height: 250px;
+            padding-top: 10px;
+        }
+
+        .y-axis {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: right;
+            font-size: 12px;
+            color: var(--sub-text-color);
+            padding-right: 10px;
+            border-right: 1px solid #e2e8f0;
+            height: 90%;
+            transform: translateY(5%);
+        }
+        
+        .bar-chart-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            padding-bottom: 10px;
+        }
+
+        .bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .bar {
+            width: 25px;
+            background-color: var(--primary-color);
+            border-radius: 5px 5px 0 0;
+            transition: height 0.5s;
+            margin-bottom: 5px;
+        }
+
+        .bar-chart-area .bar:nth-child(2n) {
+            background-color: #e2e8f0; 
+        }
+
+        .x-label {
+            font-size: 12px;
+            color: var(--sub-text-color);
+            margin-top: 5px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content-split {
+                flex-direction: column;
+            }
+            .kpi-top-row {
+                flex-direction: column; 
+            }
+            .kpi-top-row .kpi-card {
+                flex: auto; 
+            }
+            .right-section {
+                flex: auto; 
+            }
+            .marketing-product-group {
+                flex-direction: column; 
+            }
+            .marketing-col-left, .product-cart-col-right {
+                flex: auto;
+            }
+            .product-card, .cart-card {
+                margin-top: 0;
+            }
+            .summary-section {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class='bx bxs-printer logo-icon'></i>
+                <div class="logo-text">
+                    <strong>PrintNow</strong>
+                    <span>Print service</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active">
+                        <a href="#">
+                            <i class='bx bxs-dashboard icon'></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item has-badge">
+                        <a href="#">
+                            <i class='bx bx-notepad icon'></i>
+                            <span class="nav-text">Orders</span>
+                            <span class="badge">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#">
+                            <i class='bx bx-group icon'></i>
+                            <span class="nav-text">Customers</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#">
+                            <i class='bx bx-package icon'></i>
+                            <span class="nav-text">Inventory</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#">
+                            <i class='bx bx-cog icon'></i>
+                            <span class="nav-text">Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" class="contact-support">
+                    <i class='bx bx-headphone icon'></i>
+                    <span class="nav-text">Contact Support</span>
+                </a>
+                <a href="#" class="logout">
+                    <i class='bx bx-log-out icon'></i>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h2><i class='bx bx-home'></i>Dashboard</h2>
+                <div class="user-actions">
+                    <i class='bx bx-bell icon'></i>
+                    <i class='bx bxs-user-circle user-avatar'></i>
+                </div>
+            </header>
+            
+            <div class="dashboard-body">
+                
+                <section class="main-content-split">
+                    
+                    <div class="left-section">
+                        
+                        <div class="kpi-top-row">
+                            <div class="card kpi-card sales-kpi">
+                                <div class="card-header">
+                                    <div class="kpi-icon-container">
+                                        <i class='bx bx-trending-up icon'></i>
+                                    </div>
+                                    <div class="time-filter">This Week <i class='bx bx-chevron-down'></i></div>
+                                </div>
+                                <div class="kpi-metrics-group">
+                                    <div class="kpi-metric">
+                                        <p class="kpi-title">Sales</p>
+                                        <p class="kpi-value">₦0.00 <span class="kpi-change success">+0.00%</span></p>
+                                    </div>
+                                    <div class="kpi-metric">
+                                        <p class="kpi-title">Volume</p>
+                                        <p class="kpi-value">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card kpi-card customer-kpi">
+                                <div class="card-header">
+                                    <div class="kpi-icon-container">
+                                        <i class='bx bx-group icon'></i>
+                                    </div>
+                                    <div class="time-filter">This Week <i class='bx bx-chevron-down'></i></div>
+                                </div>
+                                <div class="kpi-metrics-group">
+                                    <div class="kpi-metric">
+                                        <p class="kpi-title">Customers</p>
+                                        <p class="kpi-value">0 <span class="kpi-change success">+0.00%</span></p>
+                                    </div>
+                                    <div class="kpi-metric">
+                                        <p class="kpi-title">Active</p>
+                                        <p class="kpi-value">0 <span class="kpi-change success">+0.00%</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="marketing-product-group">
+                            <div class="marketing-col-left">
+                                <div class="card marketing-card">
+                                    <div class="card-header">
+                                        <h3>Marketting</h3>
+                                        <div class="time-filter">This Week <i class='bx bx-chevron-down'></i></div>
+                                    </div>
+                                    <div class="marketing-content">
+                                        <div class="chart-legend">
+                                            <span class="dot acquisition"></span>Acquisition
+                                            <span class="dot purchase"></span>Purchase
+                                            <span class="dot retention"></span>Retention
+                                        </div>
+                                        <div class="donut-chart-placeholder"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="product-cart-col-right">
+                                <div class="card product-card">
+                                    <div class="card-header">
+                                        <i class='bx bx-copy icon-lg'></i>
+                                    </div>
+                                    <div class="product-metrics-grid">
+                                        <div>
+                                            <p>All Products</p>
+                                            <p class="kpi-value">0 <span class="kpi-change">+0.00%</span></p>
+                                        </div>
+                                        <div>
+                                            <p>Active</p>
+                                            <p class="kpi-value">0 <span class="kpi-change">+0.00%</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card cart-card">
+                                    <div class="card-header">
+                                        <i class='bx bx-cart icon'></i>
+                                        <div class="time-filter">This Week <i class='bx bx-chevron-down'></i></div>
+                                    </div>
+                                    <div class="cart-details">
+                                        <div>
+                                            <p class="error-text">Abandoned Cart</p>
+                                            <p class="kpi-value">0% <span class="kpi-change success">+0.00%</span></p>
+                                        </div>
+                                        <div>
+                                            <p>Customers</p>
+                                            <p class="kpi-value">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <section class="summary-section">
+                            <div class="card summary-card">
+                                <div class="card-header">
+                                    <h3>Summary</h3>
+                                    <div class="dropdown">Sales <i class='bx bx-chevron-down'></i></div>
+                                    <div class="time-filter">Last 7 Days <i class='bx bx-chevron-down'></i></div>
+                                </div>
+                                <div class="summary-chart-placeholder">
+                                    <div class="y-axis">
+                                        <p>100K</p><p>80K</p><p>60K</p><p>40K</p><p>20K</p>
+                                    </div>
+                                    <div class="bar-chart-area">
+                                        <div class="bar-group">
+                                            <div class="bar" style="height: 0%;"></div>
+                                            <p class="x-label">Sept 10</p>
+                                        </div>
+                                        <div class="bar-group">
+                                            <div class="bar" style="height: 0%;"></div>
+                                            <p class="x-label">Sept 11</p>
+                                        </div>
+                                        <div class="bar-group">
+                                            <div class="bar" style="height: 0%;"></div>
+                                            <p class="x-label">Sept 12</p>
+                                        </div>
+                                        <div class="bar-group">
+                                            <div class="bar" style="height: 0%;"></div>
+                                            <p class="x-label">Sept 13</p>
+                                        </div>
+                                        <div class="bar-group">
+                                            <div class="bar" style="height: 0%;"></div>
+                                            <p class="x-label">Sept 14</p>
+                                        </div>
+                                        <div class="bar-group">
+                                            <div class="bar" style="height: 0%;"></div>
+                                            <p class="x-label">Sept 15</p>
+                                        </div>
+                                        <div class="bar-group">
+                                            <div class="bar" style="height: 0%;"></div>
+                                            <p class="x-label">Sept 16</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
+                    
+                    <div class="right-section">
+
+                        <div class="card kpi-card orders-kpi">
+                            <div class="card-header">
+                                <div class="kpi-icon-container">
+                                    <i class='bx bx-shopping-bag icon'></i>
+                                </div>
+                                <div class="time-filter">This Week <i class='bx bx-chevron-down'></i></div>
+                            </div>
+                            <div class="kpi-metrics-group">
+                                <div class="kpi-metric">
+                                    <p class="kpi-title">All Orders</p>
+                                    <p class="kpi-value">0</p>
+                                </div>
+                                <div class="kpi-metric">
+                                    <p class="kpi-title">Pending</p>
+                                    <p class="kpi-value">0</p>
+                                </div>
+                                <div class="kpi-metric">
+                                    <p class="kpi-title">Completed</p>
+                                    <p class="kpi-value">0 <span class="kpi-change success">+0.00%</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card recent-orders-card">
+                            <h3>Recent Orders</h3>
+                            <div class="no-orders-state">
+                                <i class='bx bx-shopping-bag large-bag-icon'></i>
+                                <h4>No Orders Yet?</h4>
+                                <p>Add products to your store and start selling to see orders here.</p>
+                                <button class="btn-primary">+ New Product</button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </section>
+                
+            </div>
+        </main>
+    </div>
+</body>
+</html>
