@@ -1,3 +1,4 @@
+// cap1/models/Side.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 

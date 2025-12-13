@@ -505,19 +505,28 @@
           </div>
           <div class="text">
             <h1>PrintNow</h1>
-            <p>Print service</p>
+            <p data-i18n="nav.tagline">Print service</p>
           </div>
         </div>
 
         <ul class="nav-links">
-          <li><a href="/home" class="home">Home</a></li>
-          <li><a href="/service/print" class="service">Services</a></li>
-          <li><a href="/about-us" class="introduce">About Us</a></li>
+          <li><a href="/home" class="home" data-i18n="nav.home">Home</a></li>
+          <li>
+            <a href="/service/print" class="service" data-i18n="nav.services">
+              Services
+            </a>
+          </li>
+          <li>
+            <a href="/about-us" class="introduce" data-i18n="nav.about">
+              About Us
+            </a>
+          </li>
         </ul>
 
         <div id="authArea" class="auth-area">
           <a href="/login" class="login-btn">
-            <i class="bx bx-log-in" aria-hidden="true"></i> Login
+            <i class="bx bx-log-in" aria-hidden="true"></i>
+            <span data-i18n="nav.login">Login</span>
           </a>
         </div>
       </nav>
@@ -526,8 +535,10 @@
     <main role="main">
       <section class="section intro-section">
         <div class="container">
-          <h1>PrintNow - Comprehensive Printing Solutions</h1>
-          <p class="subtitle">
+          <h1 data-i18n="about.hero_title">
+            PrintNow - Comprehensive Printing Solutions
+          </h1>
+          <p class="subtitle" data-i18n="about.hero_subtitle">
             With over 50 years of experience in the printing industry, we pride
             ourselves on being a trusted partner for all your printing needs.
             From custom designs to mass production, we are committed to
@@ -544,28 +555,52 @@
 
       <section class="section achievements-section">
         <div class="container">
-          <h2>Our Achievements</h2>
-          <p class="subtitle">Impressive numbers affirm prestige and quality</p>
+          <h2 data-i18n="about.achievements_title">Our Achievements</h2>
+          <p class="subtitle" data-i18n="about.achievements_subtitle">
+            Impressive numbers affirm prestige and quality
+          </p>
           <div class="achievement-grid">
             <div class="achievement-card">
               <i class="fas fa-lightbulb icon-blue" aria-hidden="true"></i>
-              <h3>10+ Years of Experience</h3>
-              <p>Providing specialized services</p>
+              <h3>
+                <span id="metric-years" data-fallback="10+">10+</span>
+                <span data-i18n="about.metric_years_label">
+                  Years of Experience
+                </span>
+              </h3>
+              <p data-i18n="about.metric_years_desc">
+                Providing specialized services
+              </p>
             </div>
             <div class="achievement-card">
               <i class="fas fa-users icon-blue" aria-hidden="true"></i>
-              <h3>9,000+ Valued Customers</h3>
-              <p>From large enterprises to individuals</p>
+              <h3>
+                <span id="metric-customers" data-fallback="9,000+">
+                  9,000+
+                </span>
+                <span data-i18n="about.metric_customers_label">
+                  Valued Customers
+                </span>
+              </h3>
+              <p data-i18n="about.metric_customers_desc">
+                From large enterprises to individuals
+              </p>
             </div>
             <div class="achievement-card">
               <i class="fas fa-cogs icon-blue" aria-hidden="true"></i>
-              <h3>Modern Tech System</h3>
-              <p>Applying the newest equipment</p>
+              <h3 data-i18n="about.metric_tech_label">Modern Tech System</h3>
+              <p data-i18n="about.metric_tech_desc">
+                Applying the newest equipment
+              </p>
             </div>
             <div class="achievement-card">
               <i class="fas fa-award icon-blue" aria-hidden="true"></i>
-              <h3>Commitment to Quality</h3>
-              <p>Absolute confidence and satisfaction</p>
+              <h3 data-i18n="about.metric_quality_label">
+                Commitment to Quality
+              </h3>
+              <p data-i18n="about.metric_quality_desc">
+                Absolute confidence and satisfaction
+              </p>
             </div>
           </div>
         </div>
@@ -573,78 +608,112 @@
 
       <section class="section services-section">
         <div class="container">
-          <h2>Detailed Services</h2>
-          <p class="subtitle">Explore our professional services</p>
+          <h2 data-i18n="about.services_title">Detailed Services</h2>
+          <p class="subtitle" data-i18n="about.services_subtitle">
+            Explore our professional services
+          </p>
           <div class="services-grid">
             <div class="service-card">
-              <h4>Print Documents</h4>
-              <p>Reports, school documents, and theses with high quality</p>
+              <h4 data-i18n="about.service_doc_title">Print Documents</h4>
+              <p data-i18n="about.service_doc_desc">
+                Reports, school documents, and theses with high quality
+              </p>
               <ul>
                 <li>
                   <i class="bx bx-check-circle" aria-hidden="true"></i>
-                  Beautiful & color printing
-                </li>
-                <li>
-                  <i class="bx bx-check-circle" aria-hidden="true"></i> Diverse
-                  paper choices
+                  <span data-i18n="about.service_doc_bullet1">
+                    Beautiful & color printing
+                  </span>
                 </li>
                 <li>
                   <i class="bx bx-check-circle" aria-hidden="true"></i>
-                  Professional finishing
+                  <span data-i18n="about.service_doc_bullet2">
+                    Diverse paper choices
+                  </span>
+                </li>
+                <li>
+                  <i class="bx bx-check-circle" aria-hidden="true"></i>
+                  <span data-i18n="about.service_doc_bullet3">
+                    Professional finishing
+                  </span>
                 </li>
               </ul>
             </div>
             <div class="service-card">
-              <h4>Print Photo</h4>
-              <p>Memories, decorative photos, art photos with vivid colors</p>
+              <h4 data-i18n="about.service_photo_title">Print Photo</h4>
+              <p data-i18n="about.service_photo_desc">
+                Memories, decorative photos, art photos with vivid colors
+              </p>
               <ul>
                 <li>
-                  <i class="bx bx-check-circle" aria-hidden="true"></i> Various
-                  photo sizes
-                </li>
-                <li>
-                  <i class="bx bx-check-circle" aria-hidden="true"></i> Color
-                  correction
+                  <i class="bx bx-check-circle" aria-hidden="true"></i>
+                  <span data-i18n="about.service_photo_bullet1">
+                    Various photo sizes
+                  </span>
                 </li>
                 <li>
                   <i class="bx bx-check-circle" aria-hidden="true"></i>
-                  Impressive frame
+                  <span data-i18n="about.service_photo_bullet2">
+                    Color correction
+                  </span>
+                </li>
+                <li>
+                  <i class="bx bx-check-circle" aria-hidden="true"></i>
+                  <span data-i18n="about.service_photo_bullet3">
+                    Impressive frame
+                  </span>
                 </li>
               </ul>
             </div>
             <div class="service-card">
-              <h4>Print Business Card</h4>
-              <p>Unique design and professional printing from your design</p>
+              <h4 data-i18n="about.service_card_title">Print Business Card</h4>
+              <p data-i18n="about.service_card_desc">
+                Unique design and professional printing from your design
+              </p>
               <ul>
                 <li>
-                  <i class="bx bx-check-circle" aria-hidden="true"></i> Diverse
-                  materials
+                  <i class="bx bx-check-circle" aria-hidden="true"></i>
+                  <span data-i18n="about.service_card_bullet1">
+                    Diverse materials
+                  </span>
                 </li>
                 <li>
-                  <i class="bx bx-check-circle" aria-hidden="true"></i> Design
-                  support
+                  <i class="bx bx-check-circle" aria-hidden="true"></i>
+                  <span data-i18n="about.service_card_bullet2">
+                    Design support
+                  </span>
                 </li>
                 <li>
-                  <i class="bx bx-check-circle" aria-hidden="true"></i> High
-                  quality
+                  <i class="bx bx-check-circle" aria-hidden="true"></i>
+                  <span data-i18n="about.service_card_bullet3">
+                    High quality
+                  </span>
                 </li>
               </ul>
             </div>
             <div class="service-card">
-              <h4>Print Cups</h4>
-              <p>Logos and custom designs on paper cups and plastic cups</p>
+              <h4 data-i18n="about.service_cup_title">Print Cups</h4>
+              <p data-i18n="about.service_cup_desc">
+                Logos and custom designs on paper cups and plastic cups
+              </p>
               <ul>
                 <li>
-                  <i class="bx bx-check-circle" aria-hidden="true"></i> Diverse
-                  sizes
+                  <i class="bx bx-check-circle" aria-hidden="true"></i>
+                  <span data-i18n="about.service_cup_bullet1">
+                    Diverse sizes
+                  </span>
                 </li>
                 <li>
-                  <i class="bx bx-check-circle" aria-hidden="true"></i> Sharp
-                  colors
+                  <i class="bx bx-check-circle" aria-hidden="true"></i>
+                  <span data-i18n="about.service_cup_bullet2">
+                    Sharp colors
+                  </span>
                 </li>
                 <li>
-                  <i class="bx bx-check-circle" aria-hidden="true"></i> Minimum
-                  print
+                  <i class="bx bx-check-circle" aria-hidden="true"></i>
+                  <span data-i18n="about.service_cup_bullet3">
+                    Minimum print
+                  </span>
                 </li>
               </ul>
             </div>
@@ -654,35 +723,51 @@
 
       <section class="section contact-section">
         <div class="container">
-          <h2>Contact Information</h2>
-          <p class="subtitle">Visit our store or contact us</p>
+          <h2 data-i18n="about.contact_title">Contact Information</h2>
+          <p class="subtitle" data-i18n="about.contact_subtitle">
+            Visit our store or contact us
+          </p>
           <div class="contact-grid">
             <div class="contact-info">
-              <h3>Address & Contact</h3>
+              <h3 data-i18n="about.contact_block_title">Address & Contact</h3>
               <div class="info-group">
-                <strong>Store address</strong>
-                <p>123 Nguyen Van Linh, Da Nang, Viet Nam</p>
+                <strong data-i18n="about.contact_store_label">
+                  Store address
+                </strong>
+                <p data-i18n="about.contact_store_value">
+                  123 Nguyen Van Linh, Da Nang, Viet Nam
+                </p>
               </div>
               <div class="info-group">
-                <strong>Hotline</strong>
-                <p>0236 3888 888</p>
+                <strong data-i18n="about.contact_hotline_label">
+                  Hotline
+                </strong>
+                <p data-i18n="about.contact_hotline_value">0236 3888 888</p>
               </div>
               <div class="info-group">
-                <strong>Email</strong>
-                <p>info@printnow.com</p>
+                <strong data-i18n="about.contact_email_label">Email</strong>
+                <p data-i18n="about.contact_email_value">info@printnow.com</p>
               </div>
               <div class="info-group">
-                <strong>Working Hours</strong>
-                <p>Monday - Friday: 08:00 - 18:00</p>
-                <p>Saturday: 09:00 - 14:00</p>
-                <p>Sunday: Closed</p>
+                <strong data-i18n="about.contact_working_label">
+                  Working Hours
+                </strong>
+                <p data-i18n="about.contact_working_monfri">
+                  Monday - Friday: 08:00 - 18:00
+                </p>
+                <p data-i18n="about.contact_working_sat">
+                  Saturday: 09:00 - 14:00
+                </p>
+                <p data-i18n="about.contact_working_sun">Sunday: Closed</p>
               </div>
             </div>
             <div class="location-map">
-              <h3>Location Map</h3>
+              <h3 data-i18n="about.location_map">Location Map</h3>
               <div class="map-placeholder">
-                <p>Google Maps</p>
-                <p>[Maps API Integration]</p>
+                <p data-i18n="about.map_title_inner">Google Maps</p>
+                <p data-i18n="about.map_subtitle_inner">
+                  [Maps API Integration]
+                </p>
               </div>
             </div>
           </div>
@@ -691,13 +776,15 @@
 
       <section class="section testimonials-section">
         <div class="container">
-          <h2>What Customers Say</h2>
-          <p class="subtitle">Genuine reviews from customers</p>
+          <h2 data-i18n="about.testimonials_title">What Customers Say</h2>
+          <p class="subtitle" data-i18n="about.testimonials_subtitle">
+            Genuine reviews from customers
+          </p>
           <div class="testimonial-grid">
             <div class="testimonial-card">
               <div class="stars" aria-hidden="true">★★★★★</div>
               <span class="sr-only">5 out of 5 stars</span>
-              <p>
+              <p data-i18n="about.testimonial_1">
                 "Great service and high quality prints. Highly recommend for any
                 business."
               </p>
@@ -705,7 +792,7 @@
             <div class="testimonial-card">
               <div class="stars" aria-hidden="true">★★★★★</div>
               <span class="sr-only">5 out of 5 stars</span>
-              <p>
+              <p data-i18n="about.testimonial_2">
                 "I came here to print some photos, and I'm very satisfied with
                 the colors and quality."
               </p>
@@ -713,7 +800,7 @@
             <div class="testimonial-card">
               <div class="stars" aria-hidden="true">★★★★★</div>
               <span class="sr-only">5 out of 5 stars</span>
-              <p>
+              <p data-i18n="about.testimonial_3">
                 "Fast delivery, professional staff. I will continue to use the
                 service here."
               </p>
@@ -724,14 +811,18 @@
 
       <section class="section cta-section">
         <div class="container">
-          <h2>Ready to Experience the Service?</h2>
-          <p>
+          <h2 data-i18n="about.cta_title">Ready to Experience the Service?</h2>
+          <p data-i18n="about.cta_subtitle">
             Let us help you realize your printing ideas with the best quality
             and professional service.
           </p>
           <div class="cta-buttons">
-            <a href="#" class="btn btn-primary">Order now</a>
-            <a href="#" class="btn btn-secondary">Inquire now</a>
+            <a href="#" class="btn btn-primary" data-i18n="about.cta_order"
+              >Order now</a
+            >
+            <a href="#" class="btn btn-secondary" data-i18n="about.cta_inquire"
+              >Inquire now</a
+            >
           </div>
         </div>
       </section>
@@ -739,9 +830,60 @@
 
     <footer class="footer">
       <div class="container">
-        <p>&copy; 2024 PrintNow. All rights reserved.</p>
+        <p data-i18n="footer.copyright">
+          © 2024 PrintNow. All rights reserved.
+        </p>
       </div>
     </footer>
     <script src="/js/authHeader.js"></script>
+
+    <!-- Dynamic metrics for About Us page -->
+    <script>
+      (async function loadAboutMetrics() {
+        try {
+          const res = await fetch("/api/metrics/about");
+          if (!res.ok) return;
+          const data = await res.json();
+
+          // years of experience
+          if (data.yearsOfExperience != null) {
+            const yearsEl = document.getElementById("metric-years");
+            if (yearsEl) {
+              yearsEl.textContent = data.yearsOfExperience + "+";
+            }
+          }
+
+          // total customers
+          if (data.totalCustomers != null) {
+            const customersEl = document.getElementById("metric-customers");
+            if (customersEl) {
+              customersEl.textContent =
+                data.totalCustomers.toLocaleString("en-US") + "+";
+            }
+          }
+        } catch (e) {
+          // Nếu lỗi API, giữ nguyên text fallback trong HTML
+        }
+      })();
+    </script>
+    <script src="/js/i18n.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.i18n) {
+          // đảm bảo áp dụng ngay text theo ngôn ngữ đã lưu
+          i18n.translateDom();
+
+          // nếu đang login → đọc language từ server
+          fetch("/api/settings/me", { credentials: "include" })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data?.success && data.setting?.language) {
+                i18n.setLang(data.setting.language);
+              }
+            })
+            .catch(() => {});
+        }
+      });
+    </script>
   </body>
 </html>

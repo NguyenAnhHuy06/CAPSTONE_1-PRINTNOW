@@ -22,6 +22,7 @@
         padding: 0;
         color: #333;
       }
+
       /* ===== HEADER ===== */
 
       .header {
@@ -114,9 +115,11 @@
         gap: 5px;
         transition: background-color 0.2s, opacity 0.2s;
       }
+
       .login-btn:hover {
         opacity: 0.9;
       }
+
       .login-btn i {
         font-size: 1.1em;
       }
@@ -338,6 +341,7 @@
         font-size: 13px;
         margin-left: 8px;
       }
+
       .btn-cancel:hover {
         background-color: #fee2e2;
       }
@@ -346,10 +350,12 @@
         .container {
           padding: 25px;
         }
+
         table {
           font-size: 13px;
         }
       }
+
       /* A11y helper: văn bản chỉ dành cho screen reader */
       .sr-only {
         position: absolute !important;
@@ -374,18 +380,27 @@
           </div>
           <div class="text">
             <h1>PrintNow</h1>
-            <p>Print service</p>
+            <p data-i18n="nav.tagline">Print service</p>
           </div>
         </div>
 
         <ul class="nav-links">
-          <li><a href="/home" class="home">Home</a></li>
+          <li><a href="/home" class="home" data-i18n="nav.home">Home</a></li>
           <li>
-            <a href="/service/print" class="service" aria-current="page"
-              >Services</a
+            <a
+              href="/service/print"
+              class="service"
+              aria-current="page"
+              data-i18n="nav.services"
             >
+              Services
+            </a>
           </li>
-          <li><a href="/about-us" class="about">About Us</a></li>
+          <li>
+            <a href="/about-us" class="about" data-i18n="nav.about">
+              About Us
+            </a>
+          </li>
         </ul>
 
         <div class="header-right">
@@ -393,7 +408,7 @@
             href="/notifications"
             class="icon-btn"
             aria-label="Notifications"
-            title="Notifications"
+            data-i18n-title="notif.bell_title"
           >
             <span class="bell"
               ><i class="bx bx-bell" aria-hidden="true"></i
@@ -401,7 +416,8 @@
           </a>
           <div id="authArea" class="auth-area">
             <a href="/login" class="login-btn">
-              <i class="bx bx-log-in" aria-hidden="true"></i> Login
+              <i class="bx bx-log-in" aria-hidden="true"></i>
+              <span data-i18n="nav.login">Login</span>
             </a>
           </div>
         </div>
@@ -416,7 +432,7 @@
             class="btn-back"
             onclick="window.history.back()"
             aria-label="Go back"
-            title="Go back"
+            data-i18n-title="notif.back_title"
           >
             <i
               class="bx bx-arrow-back"
@@ -426,54 +442,108 @@
           </a>
 
           <div>
-            <h2>Order History</h2>
-            <p>View your past orders and check their status easily</p>
+            <h2 data-i18n="order_history.title">Order History</h2>
+            <p data-i18n="order_history.subtitle">
+              View your past orders and check their status easily
+            </p>
           </div>
         </div>
 
         <div class="filters">
-          <button type="button" class="active">All</button>
-          <button type="button">Pending</button>
-          <button type="button">Completed</button>
-          <button type="button">Processing</button>
-          <button type="button">Cancelled</button>
+          <button
+            type="button"
+            class="active"
+            data-filter="all"
+            data-i18n="order_history.filter_all"
+          >
+            All
+          </button>
+          <button
+            type="button"
+            data-filter="pending"
+            data-i18n="order_history.filter_pending"
+          >
+            Pending
+          </button>
+          <button
+            type="button"
+            data-filter="completed"
+            data-i18n="order_history.filter_completed"
+          >
+            Completed
+          </button>
+          <button
+            type="button"
+            data-filter="processing"
+            data-i18n="order_history.filter_processing"
+          >
+            Processing
+          </button>
+          <button
+            type="button"
+            data-filter="cancelled"
+            data-i18n="order_history.filter_cancelled"
+          >
+            Cancelled
+          </button>
         </div>
 
         <div style="overflow-x: auto">
           <table>
-            <caption class="sr-only">
+            <caption class="sr-only" data-i18n="order_history.caption">
               Your order history with status and totals
             </caption>
             <thead>
               <tr>
-                <th scope="col">Order ID</th>
-                <th scope="col">Date</th>
-                <th scope="col">Status</th>
-                <th scope="col">Total</th>
-                <th scope="col">Action</th>
+                <th scope="col" data-i18n="order_history.th_order_id">
+                  Order ID
+                </th>
+                <th scope="col" data-i18n="order_history.th_date">Date</th>
+                <th scope="col" data-i18n="order_history.th_status">Status</th>
+                <th scope="col" data-i18n="order_history.th_total">Total</th>
+                <th scope="col" data-i18n="order_history.th_action">Action</th>
               </tr>
             </thead>
             <tbody id="orders">
               <tr data-status="completed">
                 <th scope="row">#ORD-2025-001</th>
                 <td>26 Oct 2025</td>
-                <td><span class="status completed">Completed</span></td>
+                <td>
+                  <span
+                    class="status completed"
+                    data-i18n="order.status_completed"
+                    >Completed</span
+                  >
+                </td>
                 <td>150,000 VND</td>
                 <td>
                   <button
                     type="button"
                     class="btn-view"
                     onclick="window.location.href='/Order_Details.html'"
+                    data-i18n="order_history.btn_view"
                   >
                     View
                   </button>
-                  <button type="button" class="btn-reorder">Reorder</button>
+                  <button
+                    type="button"
+                    class="btn-reorder"
+                    data-i18n="order_history.btn_reorder"
+                  >
+                    Reorder
+                  </button>
                 </td>
               </tr>
               <tr data-status="processing">
                 <th scope="row">#ORD-2025-002</th>
                 <td>25 Oct 2025</td>
-                <td><span class="status processing">Processing</span></td>
+                <td>
+                  <span
+                    class="status processing"
+                    data-i18n="order.status_processing"
+                    >Processing</span
+                  >
+                </td>
                 <td>200,000 VND</td>
                 <td>
                   <button
@@ -483,23 +553,42 @@
                   >
                     View
                   </button>
-                  <button type="button" class="btn-reorder">Reorder</button>
+                  <button
+                    type="button"
+                    class="btn-reorder"
+                    data-i18n="order_history.btn_reorder"
+                  >
+                    Reorder
+                  </button>
                 </td>
               </tr>
               <tr data-status="cancelled">
                 <th scope="row">#ORD-2025-003</th>
                 <td>23 Oct 2025</td>
-                <td><span class="status cancelled">Cancelled</span></td>
+                <td>
+                  <span
+                    class="status cancelled"
+                    data-i18n="order.status_cancelled"
+                    >Cancelled</span
+                  >
+                </td>
                 <td>90,000 VND</td>
                 <td>
                   <button
                     type="button"
                     class="btn-view"
                     onclick="window.location.href='/Order_Details.html'"
+                    data-i18n="order_history.btn_view"
                   >
                     View
                   </button>
-                  <button type="button" class="btn-reorder">Reorder</button>
+                  <button
+                    type="button"
+                    class="btn-reorder"
+                    data-i18n="order_history.btn_reorder"
+                  >
+                    Reorder
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -509,10 +598,7 @@
       <script>
         // --- Bộ lọc dùng chung ---
         const getActiveFilter = () =>
-          document
-            .querySelector(".filters .active")
-            ?.textContent.trim()
-            .toLowerCase() || "all";
+          document.querySelector(".filters .active")?.dataset.filter || "all";
         function applyFilter() {
           const val = getActiveFilter();
           document.querySelectorAll("#orders tr").forEach((tr) => {
@@ -532,15 +618,18 @@
         });
       </script>
       <!-- kích hoạt tab Cancelled khi mở trang lịch sử -->
-            <script>
+      <script>
         (function () {
           const def = sessionStorage.getItem("orders.defaultTab");
           if (def) {
             sessionStorage.removeItem("orders.defaultTab");
-            const btn = [...document.querySelectorAll(".filters button")]
-              .find(b => b.textContent.trim().toLowerCase() === def);
+            const btn = [...document.querySelectorAll(".filters button")].find(
+              (b) => (b.dataset.filter || "").toLowerCase() === def
+            );
             if (btn) {
-              document.querySelector(".filters .active")?.classList.remove("active");
+              document
+                .querySelector(".filters .active")
+                ?.classList.remove("active");
               btn.classList.add("active");
             }
           }
@@ -548,9 +637,30 @@
         })();
       </script>
     </main>
+    <script src="/js/i18n.js"></script>
+    <script>
+      // Áp dụng i18n & sync language từ server
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.i18n) {
+          i18n.translateDom();
+          fetch("/api/settings/me", { credentials: "include" })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data?.success && data.setting?.language) {
+                i18n.setLang(data.setting.language);
+              }
+            })
+            .catch(() => {});
+        }
+      });
+    </script>
     <script src="/js/authHeader.js"></script>
     <script>
       (async function () {
+        const tt = (key) =>
+          window.i18n && typeof window.i18n.t === "function"
+            ? window.i18n.t(key)
+            : key;
         const tbody = document.getElementById("orders");
 
         const fmtMoney = (n) =>
@@ -604,7 +714,15 @@
 
           for (const o of list) {
             const tr = document.createElement("tr");
-            tr.dataset.status = normalizeForFilter(o.status);
+            const norm = normalizeForFilter(o.status);
+            tr.dataset.status = norm;
+
+            const labelMap = {
+              completed: tt("order.status_completed"),
+              processing: tt("order.status_processing"),
+              cancelled: tt("order.status_cancelled"),
+              pending: tt("order.status_pending"),
+            };
             tr.innerHTML = `
         <th scope="row">${o.code || "#" + o.id}</th>
         <td>${new Date(o.createdAt).toLocaleDateString("vi-VN", {
@@ -612,27 +730,29 @@
           month: "short",
           year: "numeric",
         })}</td>
-            <td>
-        <span class="status ${statusClass(o.status)}"
-              title="${
-                tr.dataset.status === "cancelled" && o.note
-                  ? o.note.replace(/"/g, "&quot;")
-                  : ""
-              }">
-          ${String(o.status || "Processing").replace(/^\w/, (c) =>
-            c.toUpperCase()
-          )}
-        </span>
-      </td>
+        <td>
+          <span class="status ${statusClass(o.status)}"
+                title="${
+                  norm === "cancelled" && o.note
+                    ? o.note.replace(/"/g, "&quot;")
+                    : ""
+                }">
+            ${labelMap[norm] || String(o.status || "Processing")}
+          </span>
+        </td>
         <td>${fmtMoney(o.totalAmount)}</td>
         <td>
-          <button type="button" class="btn-view" data-id="${o.id}">View</button>
-          <button type="button" class="btn-reorder" data-id="${
-            o.id
-          }">Reorder</button>
+          <button type="button" class="btn-view" data-id="${o.id}">
+            ${tt("order_history.btn_view")}
+          </button>
+          <button type="button" class="btn-reorder" data-id="${o.id}">
+            ${tt("order_history.btn_reorder")}
+          </button>
           ${
             o.cancellable
-              ? `<button type="button" class="btn-cancel" data-code="${o.code}">Cancel</button>`
+              ? `<button type="button" class="btn-cancel" data-code="${
+                  o.code
+                }">${tt("order_history.btn_cancel")}</button>`
               : ""
           }
         </td>
@@ -661,7 +781,7 @@
             const status = (tr?.dataset?.status || "").toLowerCase();
             // Chỉ chặn đơn đã hủy
             if (status === "cancelled") {
-              alert("Đơn đã bị hủy không thể Reorder.");
+              alert(tt("order_history.reorder_not_allowed_cancelled"));
               return;
             }
 
@@ -672,7 +792,7 @@
                 cache: "no-store",
               });
               if (r.status === 401) {
-                alert("Vui lòng đăng nhập lại để Reorder.");
+                alert(tt("order_history.reorder_login_required"));
                 window.location.href = "/login";
                 return;
               }
@@ -688,7 +808,7 @@
                 ? js.items
                 : [];
               if (items.length === 0) {
-                alert("Không tìm thấy item trong đơn để Reorder.");
+                alert(tt("order_history.reorder_no_items"));
                 return;
               }
 
@@ -828,7 +948,7 @@
               }
             } catch (err) {
               console.error("Reorder error:", err);
-              alert("Không thể Reorder. Vui lòng thử lại.");
+              alert(tt("order_history.reorder_failed"));
             }
           });
 
@@ -838,9 +958,10 @@
             if (!btn) return;
             const orderCode = btn.getAttribute("data-code");
             if (!orderCode) return;
-            if (!confirm("Bạn chắc chắn muốn hủy đơn này?")) return;
+            if (!confirm(tt("order.cancel_confirm"))) return;
             try {
-              const reason = prompt("Lý do hủy (tuỳ chọn):", "") || "";
+              const reason =
+                prompt(tt("order.cancel_reason_placeholder"), "") || "";
               const res = await fetch(
                 `/api/orders/${encodeURIComponent(orderCode)}/cancel`,
                 {
@@ -852,8 +973,8 @@
               );
               const js = await res.json();
               if (!res.ok || !js?.success)
-                throw new Error(js?.message || "Hủy đơn thất bại");
-              alert("Đã hủy đơn.");
+                throw new Error(js?.message || "CANCEL_FAILED");
+              alert(tt("order.cancel_success"));
               // Cập nhật nhanh UI: đổi status và ẩn nút cancel
               const tr = btn.closest("tr");
               const statusSpan = tr.querySelector(".status");
@@ -861,7 +982,7 @@
               // Bỏ hết class màu cũ, kể cả 'pending'
               statusSpan.classList.remove("completed", "processing", "pending");
               statusSpan.classList.add("cancelled");
-              statusSpan.textContent = "Cancelled";
+              statusSpan.textContent = tt("order.status_cancelled");
 
               // Cập nhật dataset để bộ lọc hoạt động đúng
               tr.dataset.status = "cancelled";
@@ -889,7 +1010,7 @@
               btn.remove();
             } catch (err) {
               console.error("Cancel order error:", err);
-              alert("Không thể hủy đơn. Vui lòng thử lại.");
+              alert(tt("order.cancel_failed"));
             }
           });
         } catch (err) {

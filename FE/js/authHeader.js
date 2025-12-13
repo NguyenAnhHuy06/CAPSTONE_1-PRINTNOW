@@ -1,6 +1,7 @@
 // /js/authHeader.js
 (() => {
     // --- cache-bust helper (để tránh dính ảnh cũ) ---
+    // (no i18n impact)
     let __AVATAR_TS__ = Date.now();
     // --- cache-bust URL helper ---
     const bust = (url) => {
@@ -107,7 +108,14 @@
                 elImg = slot.querySelector("img");
                 if (!elImg) {
                     elImg = document.createElement("img");
-                    elImg.alt = String(name || "User");
+                    // alt fallback có i18n
+                    try {
+                        elImg.alt = String(
+                            name || (window.i18n ? i18n.t("header.fallback_user") : "User")
+                        );
+                    } catch {
+                        elImg.alt = String(name || "User");
+                    }
                     elImg.loading = "lazy";
                     elImg.decoding = "async";
                     slot.prepend(elImg);
@@ -119,23 +127,40 @@
         const menuImg = menuWrap?.querySelector("img") || null;
         const menuIni = menuWrap?.querySelector(".menu-initials") || null;
         // Tính initials
-        const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+        const parts = String(name || "")
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
         const first = parts[0]?.[0] || "";
-        const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] || "") : "";
+        const last = parts.length > 1 ? parts[parts.length - 1]?.[0] || "" : "";
         const ini = (first + last || "NA").toUpperCase();
 
         // --- Khi có URL ảnh ---
         if (hasUrl) {
             // Header
             if (elImg) {
-                elImg.onerror = () => { elImg.removeAttribute("src"); elImg.style.display = "none"; if (elInitials) { elInitials.style.display = "flex"; elInitials.textContent = ini; } };
+                elImg.onerror = () => {
+                    elImg.removeAttribute("src");
+                    elImg.style.display = "none";
+                    if (elInitials) {
+                        elInitials.style.display = "flex";
+                        elInitials.textContent = ini;
+                    }
+                };
                 elImg.src = bust(url);
                 elImg.style.display = "block";
             }
             if (elInitials) elInitials.style.display = "none";
             // Dropdown
             if (menuImg) {
-                menuImg.onerror = () => { menuImg.removeAttribute("src"); menuImg.style.display = "none"; if (menuIni) { menuIni.textContent = ini; menuIni.style.display = "flex"; } };
+                menuImg.onerror = () => {
+                    menuImg.removeAttribute("src");
+                    menuImg.style.display = "none";
+                    if (menuIni) {
+                        menuIni.textContent = ini;
+                        menuIni.style.display = "flex";
+                    }
+                };
                 menuImg.src = bust(url);
                 menuImg.style.display = "block";
             }
@@ -144,10 +169,22 @@
         }
 
         // --- Khi KHÔNG có URL ảnh (hiển thị initials) ---
-        if (elImg) { elImg.removeAttribute("src"); elImg.style.display = "none"; }
-        if (elInitials) { elInitials.textContent = ini; elInitials.style.display = "flex"; }
-        if (menuImg) { menuImg.removeAttribute("src"); menuImg.style.display = "none"; }
-        if (menuIni) { menuIni.textContent = ini; menuIni.style.display = "flex"; }
+        if (elImg) {
+            elImg.removeAttribute("src");
+            elImg.style.display = "none";
+        }
+        if (elInitials) {
+            elInitials.textContent = ini;
+            elInitials.style.display = "flex";
+        }
+        if (menuImg) {
+            menuImg.removeAttribute("src");
+            menuImg.style.display = "none";
+        }
+        if (menuIni) {
+            menuIni.textContent = ini;
+            menuIni.style.display = "flex";
+        }
     }
 
     // Định nghĩa các đường dẫn chuẩn (pretty URL)
@@ -206,7 +243,14 @@
 
             container.innerHTML = `
   <div class="avatar-menu">
-    <button type="button" class="avatar-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="${menuId}" aria-label="User menu">
+        <button
+      type="button"
+      class="avatar-btn"
+      aria-haspopup="menu"
+      aria-expanded="false"
+      aria-controls="${menuId}"
+      data-i18n-aria-label="header.user_menu"
+      aria-label="User menu">
       <span class="avatar" title="${display}">
         <img alt="${display}" />
         <span class="initials">${initials}</span>
@@ -229,25 +273,33 @@
 
       <!-- Items có icon -->
         <!-- sửa lại path đúng thư mục -->
-        <!-- Items có icon -->
       <a href="${PATHS.profile
                 }" class="menu-item" role="menuitem" tabindex="-1">
-        <i class='bx bx-user' aria-hidden="true"></i> <span>Profile</span>
+        <i class='bx bx-user' aria-hidden="true"></i>
+        <span data-i18n="header.profile">Profile</span>
       </a>
       <a href="${PATHS.history
                 }" class="menu-item" role="menuitem" tabindex="-1">
-        <i class='bx bx-receipt' aria-hidden="true"></i> <span>Order history</span>
+        <i class='bx bx-receipt' aria-hidden="true"></i>
+        <span data-i18n="header.order_history">Order history</span>
       </a>
       <a href="${PATHS.settings
                 }" class="menu-item" role="menuitem" tabindex="-1">
-        <i class='bx bx-cog' aria-hidden="true"></i> <span>Setting</span>
+        <i class='bx bx-cog' aria-hidden="true"></i>
+        <span data-i18n="header.settings">Setting</span>
       </a>
       <button type="button" id="logoutBtn" class="menu-item" role="menuitem" tabindex="-1">
-        <i class='bx bx-log-out' aria-hidden="true"></i> <span>Log Out</span>
+                <i class='bx bx-log-out' aria-hidden="true"></i>
+        <span data-i18n="header.logout">Log Out</span>
       </button>
     </div>
   </div>
 `;
+
+            // dịch các label ngay sau khi inject
+            try {
+                if (window.i18n) i18n.translateDom(container);
+            } catch { }
 
             // 1) set ngay từ localStorage nếu có (ưu tiên new nhất)
             try {
@@ -454,6 +506,14 @@
     }
 
     document.addEventListener("DOMContentLoaded", initAuthHeader);
+
+    // Re-translate khi đổi ngôn ngữ (menu đã render)
+    window.addEventListener("lang-changed", () => {
+        try {
+            const container = document.getElementById("authArea");
+            if (container && window.i18n) i18n.translateDom(container);
+        } catch { }
+    });
 
     // --- Lắng nghe tín hiệu avatar đổi (cùng tab & tab khác) ---
     window.addEventListener("avatar-updated", (e) => {

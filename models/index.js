@@ -8,6 +8,12 @@ const OrderItem = require("./OrderItem");
 const User = require("./User"); // User đã tự require sequelize từ config/database (ổn)
 const UserSettingFactory = require("./UserSetting");
 
+// Catalog models
+const PaperSize = require("./PaperSize");
+const ColorMode = require("./ColorMode");
+const Side = require("./Side");
+const PriceRule = require("./PriceRule");
+
 const UserSetting = UserSettingFactory(sequelize, DataTypes);
 
 // Associations (đồng bộ với UserSetting.associate nếu cần)
@@ -39,10 +45,66 @@ if (!OrderItem.associations?.order) {
   OrderItem.belongsTo(Order, { as: "order", foreignKey: "orderId" });
 }
 
+// ========= CATALOG ASSOCIATIONS =========
+// PriceRule ↔ PaperSize
+if (!PriceRule.associations?.paperSize) {
+  PriceRule.belongsTo(PaperSize, {
+    as: "paperSize",
+    foreignKey: "paperSizeId",
+    targetKey: "id",
+    onDelete: "RESTRICT",
+    onUpdate: "CASCADE",
+  });
+}
+if (!PaperSize.associations?.priceRules) {
+  PaperSize.hasMany(PriceRule, {
+    as: "priceRules",
+    foreignKey: "paperSizeId",
+  });
+}
+
+// PriceRule ↔ ColorMode
+if (!PriceRule.associations?.colorMode) {
+  PriceRule.belongsTo(ColorMode, {
+    as: "colorMode",
+    foreignKey: "colorModeId",
+    targetKey: "id",
+    onDelete: "RESTRICT",
+    onUpdate: "CASCADE",
+  });
+}
+if (!ColorMode.associations?.priceRules) {
+  ColorMode.hasMany(PriceRule, {
+    as: "priceRules",
+    foreignKey: "colorModeId",
+  });
+}
+
+// PriceRule ↔ Side
+if (!PriceRule.associations?.side) {
+  PriceRule.belongsTo(Side, {
+    as: "side",
+    foreignKey: "sideId",
+    targetKey: "id",
+    onDelete: "RESTRICT",
+    onUpdate: "CASCADE",
+  });
+}
+if (!Side.associations?.priceRules) {
+  Side.hasMany(PriceRule, {
+    as: "priceRules",
+    foreignKey: "sideId",
+  });
+}
+
 module.exports = {
   sequelize,
   User,
   UserSetting,
   Order,
   OrderItem,
+  PaperSize,
+  ColorMode,
+  Side,
+  PriceRule,
 };

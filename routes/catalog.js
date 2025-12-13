@@ -1,8 +1,11 @@
+// cap1/routes/catalog.js
 const express = require('express');
-const PaperSize = require('../models/PaperSize');
-const ColorMode = require('../models/ColorMode');
-const Side = require('../models/Side');
-const PriceRule = require('../models/PriceRule');
+const {
+  PaperSize,
+  ColorMode,
+  Side,
+  PriceRule,
+} = require("../models");
 
 const router = express.Router();
 
@@ -79,10 +82,20 @@ router.get('/price-rules', async (req, res) => {
         if (colorModeId) whereClause.colorModeId = colorModeId;
         if (sideId) whereClause.sideId = sideId;
 
-        const priceRules = await PriceRule.findAll({
-            where: whereClause,
-            order: [['basePricePerPage', 'ASC']]
-        });
+   const priceRules = await PriceRule.findAll({
+     where: whereClause,
+     include: [
+       { model: PaperSize, as: 'paperSize', attributes: ['id', 'code', 'name'] },
+       { model: ColorMode, as: 'colorMode', attributes: ['id', 'code', 'description'] },
+       { model: Side,      as: 'side',      attributes: ['id', 'code', 'description'] },
+     ],
+     order: [
+       [{ model: PaperSize, as: 'paperSize' }, 'code', 'ASC'],
+       [{ model: ColorMode, as: 'colorMode' }, 'code', 'ASC'],
+       [{ model: Side,      as: 'side' },      'code', 'ASC'],
+       ['basePricePerPage', 'ASC'],
+     ],
+   });
 
         res.json({
             success: true,

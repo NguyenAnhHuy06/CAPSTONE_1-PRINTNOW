@@ -17,7 +17,8 @@ const Order = sequelize.define('Order', {
   completedAt: { type: DataTypes.DATE, allowNull: true, comment: 'Thời gian hoàn thành' },
 }, {
   tableName: 'orders',
-  timestamps: true, // bảng của bạn không có createdAt/updatedAt
+  // Bảng orders trong MySQL đã có createdAt/updatedAt, nên để timestamps=true là đúng
+  timestamps: true,
 });
 
 module.exports = Order;

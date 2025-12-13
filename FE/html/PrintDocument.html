@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Print Documents</title>
+    <title data-i18n="print_doc.page_title">Print Documents</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
       rel="stylesheet"
@@ -576,29 +576,43 @@
               ><i class="bx bx-arrow-back" aria-hidden="true"></i
             ></a>
             <div>
-              <h2>Print Documents</h2>
-              <p>Upload files and configure print options for each file</p>
+              <h2 data-i18n="print_doc.title">Print Documents</h2>
+              <p data-i18n="print_doc.subtitle">
+                Upload files and configure print options for each file
+              </p>
             </div>
           </div>
 
           <div class="section">
-            <h3>Customer Information</h3>
+            <h3 data-i18n="print_doc.customer_info_title">
+              Customer Information
+            </h3>
             <div class="input-group">
               <div class="input-field">
-                <label>Full Name <span>*</span></label>
+                <label>
+                  <span data-i18n="print_doc.field_full_name_label">
+                    Full Name
+                  </span>
+                  <span>*</span>
+                </label>
                 <input
                   type="text"
                   id="customerName"
                   placeholder="Enter full name"
+                  data-i18n-placeholder="print_doc.field_full_name_placeholder"
                   required
                 />
               </div>
               <div class="input-field">
-                <label>Email <span>*</span></label>
+                <label>
+                  <span data-i18n="print_doc.field_email_label">Email</span>
+                  <span>*</span>
+                </label>
                 <input
                   type="email"
                   id="customerEmail"
                   placeholder="Enter email"
+                  data-i18n-placeholder="print_doc.field_email_placeholder"
                   required
                 />
               </div>
@@ -606,7 +620,7 @@
           </div>
 
           <div class="section">
-            <h3>Upload file</h3>
+            <h3 data-i18n="print_doc.upload_section_title">Upload file</h3>
             <label class="file-upload">
               <input
                 type="file"
@@ -615,7 +629,10 @@
                 accept=".pdf,.doc,.docx,.ppt,.pptx"
               />
               <p>
-                📄 <strong>Select file to print</strong><br /><small
+                📄
+                <strong data-i18n="print_doc.upload_main">
+                  Select file to print </strong
+                ><br /><small data-i18n="print_doc.upload_helper"
                   >Supports PDF, DOC, DOCX, PPT, PPTX (max 10MB per file)</small
                 >
               </p>
@@ -623,17 +640,21 @@
           </div>
 
           <div class="section">
-            <h3>Special request</h3>
+            <h3 data-i18n="print_doc.special_request_title">Special request</h3>
             <textarea
               rows="3"
               id="specialRequest"
               placeholder="For example: deliver before 2pm, print on thicker paper..."
+              data-i18n-placeholder="print_doc.special_request_placeholder"
             ></textarea>
           </div>
 
           <div class="section" id="configSection" style="display: none">
             <h3 class="config-title">
-              <i class="bi bi-gear-fill"></i> Configure print files
+              <i class="bi bi-gear-fill"></i>
+              <span data-i18n="print_doc.config_section_title">
+                Configure print files
+              </span>
             </h3>
             <div id="configContainer"></div>
           </div>
@@ -642,33 +663,59 @@
         <div class="right-panel">
           <div>
             <div class="order-summary-header">
-              <i class="bi bi-list"></i> <span>Order Summary</span>
+              <i class="bi bi-list"></i>
+              <span data-i18n="print_doc.summary_title">Order Summary</span>
             </div>
 
             <div id="orderSummaryList">
-              <p class="text-muted">No files uploaded yet</p>
+              <p class="text-muted" data-i18n="print_doc.summary_empty">
+                No files uploaded yet
+              </p>
             </div>
           </div>
 
           <div class="order-summary-footer">
             <div class="d-flex justify-content-between">
-              <span>Number of files:</span>
+              <span data-i18n="print_doc.summary_count_label">
+                Number of files:
+              </span>
               <span id="fileCount">0 files</span>
             </div>
             <div class="d-flex justify-content-between fw-semibold mt-1">
-              <span>Total:</span>
+              <span data-i18n="print_doc.summary_total_label">Total:</span>
               <span id="totalPrice">0₫</span>
             </div>
-            <button class="btn-payment mt-3" id="btnPay" disabled>
+            <button
+              class="btn-payment mt-3"
+              id="btnPay"
+              disabled
+              data-i18n="print_doc.btn_proceed_payment"
+            >
               Proceed with payment
             </button>
           </div>
         </div>
       </div>
 
+      <script src="/js/i18n.js"></script>
       <script src="/js/apiService.js"></script>
 
       <script>
+        // Khởi tạo i18n từ settings backend (nếu có)
+        document.addEventListener("DOMContentLoaded", () => {
+          if (window.i18n) {
+            i18n.translateDom();
+            fetch("/api/settings/me", { credentials: "include" })
+              .then((r) => r.json())
+              .then((data) => {
+                if (data?.success && data.setting?.language) {
+                  i18n.setLang(data.setting.language);
+                }
+              })
+              .catch(() => {});
+          }
+        });
+
         // === CÁC BIẾN DOM ===
         const fileInput = document.getElementById("fileInput");
         const configContainer = document.getElementById("configContainer");
@@ -732,6 +779,42 @@
           // Đảm bảo amount là số
           if (typeof amount !== "number") return "0₫";
           return amount.toLocaleString("vi-VN") + "₫";
+        }
+
+        // Chuẩn hoá chế độ in về code nội bộ (bw / color / combination),
+        // KHÔNG phụ thuộc ngôn ngữ (Anh / Việt).
+        function normalizePrintMode(mode) {
+          const m = norm(mode);
+          if (!m) return "bw";
+
+          // Ưu tiên "kết hợp" trước vì chuỗi có thể chứa từ "màu"
+          if (
+            m.includes("combination") ||
+            m.includes("ket hop") ||
+            m.includes("kết hợp")
+          ) {
+            return "combination";
+          }
+
+          if (
+            m.includes("color") ||
+            m.includes("mau") || // "màu" -> "mau" sau khi bỏ dấu
+            m.includes("in mau") ||
+            m.includes("in màu")
+          ) {
+            return "color";
+          }
+
+          if (
+            m.includes("black") ||
+            m.includes("trang den") || // "trắng đen"
+            m === "bw"
+          ) {
+            return "bw";
+          }
+
+          // fallback an toàn
+          return "bw";
         }
 
         function toggleDetails(id) {
@@ -898,12 +981,14 @@
             .toLowerCase()
             .includes("2");
           const sheets = isDouble ? Math.ceil(totalPages / 2) : totalPages;
+          // Chuẩn hoá mode để không phụ thuộc ngôn ngữ
+          const modeCode = normalizePrintMode(file.mode);
 
-          if (file.mode.includes("Black & White")) {
+          if (modeCode === "bw") {
             calculatedPrice = sheets * pricePerPageBW;
-          } else if (file.mode.includes("Color")) {
+          } else if (modeCode === "color") {
             calculatedPrice = sheets * pricePerPageColor;
-          } else if (file.mode.includes("Combination")) {
+          } else if (modeCode === "combination") {
             const colorPagesSingle = countColorPagesSpec(
               file.colorPages,
               file.pages
@@ -1095,11 +1180,15 @@
               }" style="display: none;">
                   <div class="option-group flex-row">
                       <div style="flex:1;">
-                          <label>Number of copies</label>
+                          <label data-i18n="print_doc.label_copies">
+                            Number of copies
+                          </label>
                           <input type="number" value="${file.copies}" min="1">
                       </div>
                       <div style="flex:1;">
-                        <label>Paper size</label>
+                        <label data-i18n="print_doc.label_paper_size">
+                          Paper size
+                        </label>
                         <select data-field="paper">
                           <option value="A4" ${
                             file.size === "A4" ? "selected" : ""
@@ -1114,7 +1203,9 @@
                       </div>
 
                       <div style="flex:1;">
-                        <label>Printed sides</label>
+                        <label data-i18n="print_doc.label_printed_sides">
+                          Printed sides
+                        </label>
                         <select data-field="side">
                           <option value="1 side" ${
                             file.side === "1 side" ? "selected" : ""
@@ -1127,7 +1218,12 @@
                   </div>
 
                   <div class="radio-group">
-                      <label class="radio-title">Print mode</label>
+                       <label
+                        class="radio-title"
+                        data-i18n="print_doc.label_print_mode"
+                      >
+                        Print mode
+                      </label>
                       <div class="radio-row">
                           <label><input type="radio" name="mode-${
                             file.id
@@ -1135,51 +1231,72 @@
               !isCombination && file.mode.includes("Black & White")
                 ? "checked"
                 : ""
-            }><span>Black &amp; White</span></label>
+            }><span data-i18n="print_doc.print_mode_bw">
+                              Black &amp; White
+                           </span></label>
                       </div>
                       <div class="radio-row">
-                          <label><input type="radio" name="mode-${
-                            file.id
-                          }" value="color" ${
+                          <label
+                            ><input type="radio" name="mode-${
+                              file.id
+                            }" value="color" ${
               !isCombination && file.mode.includes("Color") ? "checked" : ""
-            }> Color</label>
+            }><span data-i18n="print_doc.print_mode_color">
+                               Color
+                              </span></label>
                       </div>
                       <div class="radio-row">
                           <label><input type="radio" name="mode-${
                             file.id
                           }" value="combination" ${
               isCombination ? "checked" : ""
-            }><span>Combination (some coloring pages)</span></label>
+            }><span data-i18n="print_doc.print_mode_combination">
+                                Combination (some coloring pages)
+                              </span></label>
                       </div>
 
                       <div class="combination-options ${
                         isCombination ? "show" : ""
                       }" id="combination-input-${file.id}">
-                          <label>Pages to be printed in color</label>
+                          <label data-i18n="print_doc.label_color_pages">
+                            Pages to be printed in color
+                          </label>
                           <textarea rows="2" id="color-pages-${
                             file.id
-                          }" placeholder="E.g., 1, 3-5, 8, 10">${
-              file.colorPages
-            }</textarea>
+                          }" placeholder="E.g., 1, 3-5, 8, 10"
+                            data-i18n-placeholder="print_doc.placeholder_color_pages">${
+                              file.colorPages
+                            }</textarea>
                       </div>
 
                   </div>
 
                   <div class="radio-group">
-                      <label class="radio-title">Document type</label>
+                      <label
+                        class="radio-title"
+                        data-i18n="print_doc.label_document_type"
+                      >
+                        Document type
+                      </label>
                       <div class="radio-row">
-                          <label><input type="radio" name="type-${
-                            file.id
-                          }" value="Regular" ${
+                          <label
+                            ><input type="radio" name="type-${
+                              file.id
+                            }" value="Regular" ${
               !isThesisReport ? "checked" : ""
-            }> Regular</label>
+            }><span data-i18n="print_doc.doc_type_regular">
+                                Regular
+                              </span></label>
                       </div>
                       <div class="radio-row">
-                          <label><input type="radio" name="type-${
-                            file.id
-                          }" value="Thesis/Report" ${
+                          <label
+                            ><input type="radio" name="type-${
+                              file.id
+                            }" value="Thesis/Report" ${
               isThesisReport ? "checked" : ""
-            }> Thesis/Report</label>
+            }><span data-i18n="print_doc.doc_type_thesis">
+                                Thesis/Report
+                              </span></label>
                       </div>
 
                     <div class="checkbox-options ${
@@ -1189,13 +1306,17 @@
                         <input type="checkbox" data-field="binding" ${
                           file.binding ? "checked" : ""
                         }>
-                        <span>Binding (+5.000₫)</span>
+                        <span data-i18n="print_doc.binding_label">
+                          Binding (+5.000₫)
+                        </span>
                       </label>
                       <label>
                         <input type="checkbox" data-field="cover" ${
                           file.coverPage ? "checked" : ""
                         }>
-                        <span>Cover Page (+2.000₫)</span>
+                        <span data-i18n="print_doc.cover_label">
+                          Cover Page (+2.000₫)
+                        </span>
                       </label>
                     </div>
 
@@ -1205,6 +1326,9 @@
             // 👇 THÊM 2 DÒNG NÀY để tránh XSS cho tên file
             const nameStrong = div.querySelector(".file-title strong");
             if (nameStrong) nameStrong.textContent = file.name;
+            if (window.i18n) {
+              i18n.translateDom(div);
+            }
             configContainer.appendChild(div);
           });
 
@@ -1222,8 +1346,14 @@
 
           if (uploadedFiles.length === 0) {
             orderSummaryList.innerHTML = `<p class="text-muted">No files uploaded yet</p>`;
-            fileCountElement.textContent = "0 files";
-            totalPriceElement.textContent = "0₫";
+            orderSummaryList.innerHTML = `<p class="text-muted" data-i18n="print_doc.summary_empty">No files uploaded yet</p>`;
+            if (window.i18n) {
+              i18n.translateDom(orderSummaryList);
+            }
+            const filesSuffix = window.i18n
+              ? i18n.t("print_doc.files_suffix")
+              : "files";
+            fileCountElement.textContent = `0 ${filesSuffix}`;
             btnPay.disabled = true;
             return;
           }
@@ -1263,8 +1393,18 @@
           fileCountElement.textContent = `${uploadedFiles.length} file${
             uploadedFiles.length > 1 ? "s" : ""
           }`;
+          const filesSuffix = window.i18n
+            ? i18n.t("print_doc.files_suffix")
+            : uploadedFiles.length > 1
+            ? "files"
+            : "file";
+          fileCountElement.textContent = `${uploadedFiles.length} ${filesSuffix}`;
           totalPriceElement.textContent = formatCurrency(total);
           btnPay.disabled = false;
+
+          if (window.i18n) {
+            i18n.translateDom(orderSummaryList);
+          }
         }
 
         // Map UI -> DB code
@@ -1272,16 +1412,18 @@
           const x = String(ui || "A4").toUpperCase();
           return ["A3", "A4", "A5"].includes(x) ? x : "A4";
         }
+
         function mapSideCode(ui) {
           const s = String(ui || "").toLowerCase();
           if (s.includes("2")) return "DOUBLE";
           return "SINGLE";
         }
+
         function mapColorCode(ui) {
-          const m = String(ui || "").toLowerCase();
-          if (m.includes("black") || m.includes("bw")) return "BW"; // giả định DB có code 'BW'
-          if (m.includes("combination") || m.includes("color")) return "COLOR";
-          return "BW";
+          const modeCode = normalizePrintMode(ui);
+          // Backend hiện chỉ phân biệt BW vs COLOR,
+          // nên "combination" cũng map về COLOR.
+          return modeCode === "bw" ? "BW" : "COLOR";
         }
 
         // Lấy id theo code (paper/color/side)
@@ -1334,23 +1476,43 @@
 
             const ids = await lookupIdsCached(paperCode, colorCode, sideCode);
 
-            // Đảm bảo giá đã đúng theo cấu hình hiện tại
+            // Tính lại tổng cho file này theo config hiện tại
             const totalForThisFile = calculateFilePrice(f); // đã set f.price = total
 
-            const extraOptions = {};
+            const pages = Math.max(1, parseInt(f.pages, 10) || 1);
+            const copies = Math.max(1, parseInt(f.copies, 10) || 1);
+
+            // Đơn giá mỗi bản (1 file, full cấu hình)
+            const unit =
+              copies > 0 ? totalForThisFile / copies : totalForThisFile;
+
+            const extraOptions = {
+              // Thông tin hiển thị / Reorder
+              type: f.type || "Regular",
+              size: f.size || "A4",
+              side: f.side || "1 side",
+              mode: f.mode || "Black & White",
+              printModeCode: normalizePrintMode(f.mode), // bw / color / combination
+              colorPages: f.colorPages || "",
+              // Lượng in
+              pages,
+              copies,
+            };
+            // Tuỳ chọn luận văn/báo cáo
             if (f.type === "Thesis/Report") {
               if (f.binding) extraOptions.binding = true;
               if (f.coverPage) extraOptions.coverPage = true;
             }
+
             items.push({
               printType: "DOCUMENT",
-              pricingMode: "FIXED", // ⟵ bắt buộc
+              pricingMode: "FIXED", // ⟵ vẫn tính theo gói
               paperSizeId: Number(ids.paperSizeId),
               colorModeId: Number(ids.colorModeId),
               sideId: Number(ids.sideId),
-              pages: Math.max(1, parseInt(f.pages, 10) || 1), // BE validate cần có
-              quantity: 1, // FIXED → 1 item
-              unitPrice: Number(totalForThisFile).toFixed(2), // string "12345.00" pass isDecimal()
+              pages,
+              quantity: copies, // số bản in
+              unitPrice: Number(unit).toFixed(2), // "12345.00"
               extraOptions,
             });
           }
@@ -1412,7 +1574,10 @@
           const customerEmail = customerEmailInput.value.trim();
           const specialRequest = specialRequestTextarea.value.trim();
           if (!customerName || !customerEmail) {
-            alert("Please enter your Full Name and Email.");
+            const msg = window.i18n
+              ? i18n.t("print_doc.alert_missing_customer")
+              : "Please enter your Full Name and Email.";
+            alert(msg);
             return;
           }
 
@@ -1420,7 +1585,9 @@
           btnPay.disabled = true;
           // 👇 Thêm loading text
           const originalBtnText = btnPay.textContent;
-          btnPay.textContent = "Processing...";
+          btnPay.textContent = window.i18n
+            ? i18n.t("print_doc.btn_processing")
+            : "Processing...";
 
           try {
             // 1) Build orderItems từ danh sách file
@@ -1442,7 +1609,15 @@
             );
 
             // 3) Lưu localStorage cho trang Payment + Confirmation
-            const orderCode = "DOC-" + String(order.id).padStart(6, "0"); // hoặc dùng mã bạn có
+            // Chuẩn hoá trùng với backend genOrderCode (#ORD-YYYY-XXX)
+            const createdAt = order.createdAt
+              ? new Date(order.createdAt)
+              : new Date();
+            const year = createdAt.getFullYear();
+            const orderCode = `#ORD-${year}-${String(order.id).padStart(
+              3,
+              "0"
+            )}`;
             localStorage.setItem("backendOrderId", String(order.id));
             const orderForUi = {
               orderCode,
@@ -1456,9 +1631,9 @@
                 size: f.size,
                 side: f.side,
                 mode: f.mode,
-                type: f.type,              // để trang Confirm render đúng "Thesis/Report"
+                type: f.type, // để trang Confirm render đúng "Thesis/Report"
                 binding: !!f.binding,
-                coverPage: !!f.coverPage,  // key này trang Confirm đang đọc là coverPage
+                coverPage: !!f.coverPage, // key này trang Confirm đang đọc là coverPage
                 price: f.price,
               })),
               specialRequest,
@@ -1467,14 +1642,20 @@
                 totalPrice: grandTotal,
               },
             };
-            localStorage.setItem("currentOrderData", JSON.stringify(orderForUi));
+            localStorage.setItem(
+              "currentOrderData",
+              JSON.stringify(orderForUi)
+            );
             localStorage.setItem("printOrderData", JSON.stringify(orderForUi));
 
             // 4) Chuyển sang trang XÁC NHẬN trước
             window.location.href = "/order/confirm";
           } catch (e) {
             console.error(e);
-            alert("Tạo đơn thất bại. Vui lòng thử lại.");
+            const msg = window.i18n
+              ? i18n.t("print_doc.alert_create_order_failed")
+              : "Failed to create order. Please try again.";
+            alert(msg);
           } finally {
             btnPay.disabled = false;
             btnPay.textContent = originalBtnText; // 👈 khôi phục

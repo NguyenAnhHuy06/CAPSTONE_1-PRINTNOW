@@ -1,0 +1,594 @@
+<!--FE/html/Employee_Setting.html-->
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - Account</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      href="https://cdn.boxicons.com/fonts/basic/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #4a90e2;
+        --light-bg: #f5f7fa;
+        --border-color: #e0e0e0;
+        --text-color: #333;
+        --label-color: #777;
+        --sidebar-bg: #fff;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background-color: var(--light-bg);
+        color: var(--text-color);
+      }
+
+      /* Bố cục chính */
+      .app-container {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* Sidebar trái */
+      .sidebar {
+        width: 80px;
+        background-color: var(--sidebar-bg, white);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        border-right: 1px solid var(--border-color);
+      }
+
+      .logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 40%;
+        background-color: #043873;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 40px;
+      }
+
+      .logo i {
+        color: white;
+        font-size: 24px;
+      }
+
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .nav-item {
+        font-size: 24px;
+        color: var(--label-color);
+        padding: 10px;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+        text-align: center;
+      }
+
+      .nav-item.setting {
+        color: var(--primary-color);
+        background-color: #ebf2fa;
+      }
+
+      /* Nội dung chính */
+      .main-content {
+        flex-grow: 1;
+        padding: 0 30px;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .breadcrumb {
+        font-size: 14px;
+        color: var(--label-color);
+      }
+
+      .breadcrumb .home-icon {
+        color: var(--primary-color);
+        margin-right: 5px;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .header-right i {
+        font-size: 25px;
+        color: var(--label-color);
+        margin-left: 20px;
+        cursor: pointer;
+      }
+
+      /* Chung cho panel Settings */
+      .settings-panel {
+        background-color: white;
+        padding: 30px;
+        margin-top: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .header-and-form {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .account-settings-content .heading {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 0;
+      }
+
+      /* Form Container (Nội dung chính) */
+      .form-container {
+        display: flex;
+        gap: 40px;
+      }
+
+      .input-column {
+        flex-basis: 60%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px 30px;
+      }
+
+      .input-group {
+        width: calc(50% - 15px);
+      }
+
+      .input-group:nth-child(5),
+        /* Address */
+        .input-group:nth-child(6),
+        /* City */
+        .input-group:nth-child(7) {
+        /* Country */
+        width: 100%;
+      }
+
+      .input-group label {
+        display: block;
+        font-size: 16px;
+        color: var(--label-color);
+        margin-bottom: 5px;
+      }
+
+      .input-field {
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        padding: 0 10px;
+        background-color: var(--light-bg);
+      }
+
+      .input-field i {
+        color: var(--label-color);
+        margin-right: 10px;
+        font-size: 16px;
+      }
+
+      .input-field input,
+      .input-field select {
+        flex-grow: 1;
+        border: none;
+        padding: 12px 0;
+        background: none;
+        font-size: 14px;
+        outline: none;
+        color: var(--text-color);
+        appearance: none;
+        -webkit-appearance: none;
+      }
+
+      .phone-input {
+        padding: 0;
+      }
+
+      .phone-input .country-code {
+        padding: 12px 10px;
+        border-right: 1px solid var(--border-color);
+        color: var(--label-color);
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Avatar Column */
+      .avatar-column {
+        flex-basis: 30%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 50px;
+      }
+
+      .avatar-upload {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background-color: var(--light-bg);
+        border: 1px solid var(--border-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .avatar-placeholder {
+        width: 100px;
+        height: 100px;
+        background-color: #e0e0e0;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 50px;
+        color: #fff;
+        position: relative;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%236c757d' d='M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3c0 16.2 13.1 29.3 29.3 29.3H418.7c16.2 0 29.3-13.1 29.3-29.3C448 383.8 368.2 304 269.7 304H178.3z'/%3E%3C/svg%3E");
+        background-size: 80%;
+        background-position: center bottom;
+        background-repeat: no-repeat;
+        background-color: #e9ecef;
+      }
+
+      /* Icons on Avatar */
+      .avatar-placeholder .fa-camera,
+      .avatar-placeholder .fa-trash-can {
+        position: absolute;
+        font-size: 16px;
+        color: white;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        cursor: pointer;
+        z-index: 10;
+      }
+
+      .avatar-placeholder .fa-camera {
+        top: 5px;
+        right: 5px;
+        background-color: orange;
+      }
+
+      .avatar-placeholder .fa-trash-can {
+        top: -5px;
+        right: -10px;
+        background-color: #dc3545;
+      }
+
+      /* Nút Update */
+      .update-button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .update-button:hover {
+        background-color: #3a7bd5;
+      }
+
+      /* --- Styling for Language Setting Section --- */
+      .language-settings-panel {
+        margin-top: 15px;
+        padding-bottom: 30px;
+      }
+
+      .language-title-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .language-title-group i {
+        font-size: 25px;
+      }
+
+      .language-icon {
+        font-size: 20px;
+        color: var(--text-color);
+      }
+
+      .language-title-group .heading {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .language-description {
+        font-size: 14px;
+        color: var(--label-color);
+        margin-bottom: 15px;
+      }
+
+      .language-selector-section {
+        width: 60%;
+      }
+
+      .language-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-color);
+        margin-bottom: 8px;
+      }
+
+      .language-select-field {
+        position: relative;
+        padding: 0;
+        background-color: white;
+      }
+
+      .language-select-field select {
+        padding: 12px 40px 12px 15px;
+        background-color: white;
+        font-size: 14px;
+        width: 100%;
+        cursor: pointer;
+      }
+
+      .language-select-field .select-arrow {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: var(--label-color);
+        font-size: 12px;
+      }
+
+      .language-note {
+        margin-top: 15px;
+        font-size: 13px;
+        color: var(--label-color);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-container">
+      <aside class="sidebar">
+        <div class="logo"><i class="bx bx-printer"></i></div>
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-item active"><i class="fas fa-box"></i></a>
+          <a href="#" class="nav-item"><i class="fas fa-user-friends"></i></a>
+          <a href="#" class="nav-item setting"><i class="fas fa-cog"></i></a>
+          <a href="#" class="nav-item"><i class="fas fa-headphones"></i></a>
+        </nav>
+      </aside>
+
+      <div class="main-content">
+        <header class="header">
+          <div class="breadcrumb">
+            <span class="home-icon"><i class="fa-solid fa-house"></i></span>
+            <span> / </span>
+            <span data-i18n="title.setting"></span>
+          </div>
+          <div class="header-right">
+            <a href="#" class="notification"
+              ><i class="fa-solid fa-bell" style="color: #3a7bd5"></i
+            ></a>
+            <a href="#" class="account"
+              ><i class="fa-solid fa-user-circle"></i
+            ></a>
+          </div>
+        </header>
+
+        <!-- Panel Cài đặt Tài khoản -->
+        <div class="settings-panel">
+          <div class="header-and-form">
+            <div class="account-settings-content">
+              <div
+                class="heading"
+                data-i18n="employee_settings.account_heading"
+              ></div>
+            </div>
+            <button
+              class="update-button"
+              id="btnSaveProfile"
+              data-i18n="employee_settings.btn_update"
+            ></button>
+          </div>
+
+          <div class="form-container">
+            <div class="input-column">
+              <div class="input-group">
+                <label data-i18n="employee_settings.label_first_name"></label>
+                <div class="input-field">
+                  <i class="fa-solid fa-user"></i>
+                  <input
+                    id="firstName"
+                    type="text"
+                    placeholder=""
+                    data-i18n-placeholder="employee_settings.placeholder_first_name"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label data-i18n="employee_settings.label_last_name"></label>
+                <div class="input-field">
+                  <i class="fa-solid fa-user"></i>
+                  <input
+                    id="lastName"
+                    type="text"
+                    placeholder="Enter the last name"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label data-i18n="employee_settings.label_email"></label>
+                <div class="input-field">
+                  <i class="fa-solid fa-envelope"></i>
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder=""
+                    data-i18n-placeholder="employee_settings.placeholder_email"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label data-i18n="employee_settings.label_phone"></label>
+                <div class="input-field phone-input">
+                  <div class="country-code">
+                    84 <i class="fa-solid fa-chevron-down"></i>
+                  </div>
+                  <input
+                    id="phone"
+                    type="tel"
+                    placeholder=""
+                    data-i18n-placeholder="employee_settings.placeholder_phone"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label data-i18n="employee_settings.label_address"></label>
+                <div class="input-field">
+                  <i class="fa-solid fa-location-dot"></i>
+                  <input
+                    id="address"
+                    type="text"
+                    placeholder=""
+                    data-i18n-placeholder="employee_settings.placeholder_address"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label data-i18n="employee_settings.label_city"></label>
+                <div class="input-field">
+                  <input
+                    id="city"
+                    type="text"
+                    placeholder=""
+                    data-i18n-placeholder="employee_settings.placeholder_city"
+                  />
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label data-i18n="employee_settings.label_country"></label>
+                <div class="input-field">
+                  <select id="country">
+                    <option value="Vietnam">Viet Nam</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="avatar-column">
+              <div class="avatar-upload">
+                <div class="avatar-placeholder" id="avatarPreview">
+                  <i class="fa-solid fa-camera" id="btnChangeAvatar"></i>
+                </div>
+                <!-- input ẩn để chọn file avatar -->
+                <input
+                  type="file"
+                  id="avatarInput"
+                  accept="image/*"
+                  style="display: none"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel Cài đặt Ngôn ngữ mới -->
+        <div class="language-settings-panel settings-panel">
+          <div class="language-title-group">
+            <i class="bxr bx-globe-alt" style="color: #000000"></i>
+            <h2 class="heading" data-i18n="section.language.title"></h2>
+          </div>
+          <p class="language-description" data-i18n="section.language.desc"></p>
+          <div class="language-selector-section">
+            <label class="language-label" data-i18n="label.language"></label>
+            <div class="language-input-group">
+              <div class="input-field language-select-field">
+                <select id="languageSelect">
+                  <option value="vi" selected>vn Vietnamese</option>
+                  <option value="en">en English</option>
+                </select>
+                <i class="fa-solid fa-chevron-down select-arrow"></i>
+              </div>
+            </div>
+            <p class="language-note" data-i18n="note.language_applied"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Script logic cho trang Employee Setting -->
+    <script src="/FE/js/i18n.js"></script>
+    <script src="/FE/js/employee-settings.page.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // i18n cho title trang
+        if (window.i18n && typeof window.i18n.t === "function") {
+          document.title = window.i18n.t("title.setting");
+        }
+
+        // Đồng bộ và xử lý change language
+        const langSelect = document.getElementById("languageSelect");
+        if (
+          langSelect &&
+          window.i18n &&
+          typeof window.i18n.getLang === "function" &&
+          typeof window.i18n.setLang === "function"
+        ) {
+          const currentLang = window.i18n.getLang();
+          langSelect.value = currentLang === "vi" ? "vi" : "en";
+
+          langSelect.addEventListener("change", function (e) {
+            window.i18n.setLang(e.target.value);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1422 @@
+<!--FE/html/Owner_Dashboard.html-->
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PrintNow Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/Owner_Dashboard.css" />
+  </head>
+
+  <body>
+    <div class="dashboard-layout">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <i class="bx bxs-printer logo-icon"></i>
+          <div class="logo-text">
+            <strong>PrintNow</strong>
+            <span>Print service</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <ul>
+            <li class="nav-item active">
+              <a href="#">
+                <i class="bx bxs-dashboard icon"></i>
+                <span class="nav-text">Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item has-badge">
+              <a href="#">
+                <i class="bx bx-notepad icon"></i>
+                <span class="nav-text">Orders</span>
+                <span class="badge">3</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#">
+                <i class="bx bx-group icon"></i>
+                <span class="nav-text">Customers</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#">
+                <i class="bx bx-package icon"></i>
+                <span class="nav-text">Inventory</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#">
+                <i class="bx bx-cog icon"></i>
+                <span class="nav-text">Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+          <a href="#" class="contact-support">
+            <i class="bx bx-headphone icon"></i>
+            <span class="nav-text">Contact Support</span>
+          </a>
+          <a href="#" class="logout">
+            <i class="bx bx-log-out icon"></i>
+            <span class="nav-text">Logout</span>
+          </a>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="top-header">
+          <h2><i class="bx bx-home"></i>Dashboard</h2>
+          <div class="user-actions">
+            <i class="bx bx-bell icon"></i>
+            <i class="bx bxs-user-circle user-avatar"></i>
+          </div>
+        </header>
+
+        <div class="dashboard-body">
+          <section class="main-content-split">
+            <div class="left-section">
+              <div class="kpi-top-row">
+                <div class="card kpi-card sales-kpi">
+                  <div class="card-header">
+                    <div class="kpi-icon-container">
+                      <i class="bx bx-trending-up icon"></i>
+                    </div>
+                    <div class="time-filter">
+                      This Week <i class="bx bx-chevron-down"></i>
+                    </div>
+                  </div>
+                  <div class="kpi-metrics-group">
+                    <div class="kpi-metric">
+                      <p class="kpi-title">Sales</p>
+                      <p class="kpi-value">
+                        ₦0.00 <span class="kpi-change success">+0.00%</span>
+                      </p>
+                    </div>
+                    <div class="kpi-metric">
+                      <p class="kpi-title">Volume</p>
+                      <p class="kpi-value">0</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card kpi-card customer-kpi">
+                  <div class="card-header">
+                    <div class="kpi-icon-container">
+                      <i class="bx bx-group icon"></i>
+                    </div>
+                    <div class="time-filter">
+                      This Week <i class="bx bx-chevron-down"></i>
+                    </div>
+                  </div>
+                  <div class="kpi-metrics-group">
+                    <div class="kpi-metric">
+                      <p class="kpi-title">Customers</p>
+                      <p class="kpi-value">
+                        0 <span class="kpi-change success">+0.00%</span>
+                      </p>
+                    </div>
+                    <div class="kpi-metric">
+                      <p class="kpi-title">Active</p>
+                      <p class="kpi-value">
+                        0 <span class="kpi-change success">+0.00%</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="marketing-product-group">
+                <div class="marketing-col-left">
+                  <div class="card marketing-card">
+                    <div class="card-header">
+                      <h3>Marketing</h3>
+                      <div class="time-filter">
+                        This Week <i class="bx bx-chevron-down"></i>
+                      </div>
+                    </div>
+                    <div class="marketing-content">
+                      <div class="chart-legend">
+                        <span class="dot acquisition"></span>Acquisition
+                        <span class="dot purchase"></span>Purchase
+                        <span class="dot retention"></span>Retention
+                      </div>
+                      <div class="donut-chart-placeholder"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="product-cart-col-right">
+                  <div class="card product-card">
+                    <div class="card-header">
+                      <i class="bx bx-copy icon-lg"></i>
+                    </div>
+                    <div class="product-metrics-grid">
+                      <div>
+                        <p>All Products</p>
+                        <p class="kpi-value">
+                          0 <span class="kpi-change">+0.00%</span>
+                        </p>
+                      </div>
+                      <div>
+                        <p>Active</p>
+                        <p class="kpi-value">
+                          0 <span class="kpi-change">+0.00%</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card cart-card">
+                    <div class="card-header">
+                      <i class="bx bx-cart icon"></i>
+                      <div class="time-filter">
+                        This Week <i class="bx bx-chevron-down"></i>
+                      </div>
+                    </div>
+                    <div class="cart-details">
+                      <div>
+                        <p class="error-text">Abandoned Cart</p>
+                        <p class="kpi-value">
+                          0% <span class="kpi-change success">+0.00%</span>
+                        </p>
+                      </div>
+                      <div>
+                        <p>Customers</p>
+                        <p class="kpi-value">0</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <section class="summary-section">
+                <div class="card summary-card">
+                  <div class="card-header">
+                    <h3>Summary</h3>
+                    <div class="dropdown">
+                      Sales <i class="bx bx-chevron-down"></i>
+                    </div>
+                    <div class="time-filter">
+                      Last 7 Days <i class="bx bx-chevron-down"></i>
+                    </div>
+                  </div>
+                  <div class="summary-chart-placeholder">
+                    <div class="y-axis">
+                      <p>100K</p>
+                      <p>80K</p>
+                      <p>60K</p>
+                      <p>40K</p>
+                      <p>20K</p>
+                    </div>
+                    <div class="bar-chart-area">
+                      <div class="bar-group">
+                        <div class="bar" style="height: 0%"></div>
+                        <p class="x-label">Sept 10</p>
+                      </div>
+                      <div class="bar-group">
+                        <div class="bar" style="height: 0%"></div>
+                        <p class="x-label">Sept 11</p>
+                      </div>
+                      <div class="bar-group">
+                        <div class="bar" style="height: 0%"></div>
+                        <p class="x-label">Sept 12</p>
+                      </div>
+                      <div class="bar-group">
+                        <div class="bar" style="height: 0%"></div>
+                        <p class="x-label">Sept 13</p>
+                      </div>
+                      <div class="bar-group">
+                        <div class="bar" style="height: 0%"></div>
+                        <p class="x-label">Sept 14</p>
+                      </div>
+                      <div class="bar-group">
+                        <div class="bar" style="height: 0%"></div>
+                        <p class="x-label">Sept 15</p>
+                      </div>
+                      <div class="bar-group">
+                        <div class="bar" style="height: 0%"></div>
+                        <p class="x-label">Sept 16</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="card recent-orders-card recent-orders-card--fixed">
+              <h3>Recent Orders</h3>
+              <div class="recent-orders-scroll">
+                <table class="recent-orders-table">
+                  <thead>
+                    <tr class="recent-orders-header-row">
+                      <th class="recent-orders-header-cell">Product</th>
+                      <th class="recent-orders-header-cell">Unit Price</th>
+                      <th class="recent-orders-header-cell text-center">Qty</th>
+                      <th class="recent-orders-header-cell">Discount</th>
+                      <th class="recent-orders-header-cell text-right">
+                        Total
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentOrdersBody">
+                    <!-- Dữ liệu sẽ được load động từ API -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="../js/apiService.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        // ✅ Luôn dùng authMe() + api() từ apiService.js
+        //    → Không phụ thuộc việc token đang nằm ở localStorage/sessionStorage hay cookie,
+        //    → Chỉ cần backend xác nhận được phiên đăng nhập là đủ.
+
+        // Kiểm tra authentication với /auth/me
+        try {
+          const me = typeof authMe === "function" ? await authMe() : null;
+          if (!me || me.success === false) {
+            throw new Error("Unauthenticated");
+          }
+        } catch (err) {
+          console.error("❌ Không xác thực được user, redirect Login:", err);
+          alert("Vui lòng đăng nhập để xem dashboard!");
+          window.location.href = "Login.html";
+          return;
+        }
+
+        function formatCurrency(amount) {
+          if (!amount) return "₦0.00";
+          try {
+            return (
+              "₦" +
+              Number(amount).toLocaleString("vi-VN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            );
+          } catch (_) {
+            return "₦" + amount;
+          }
+        }
+
+        // Load Sales Data
+        async function loadSalesData(timeRange = "week") {
+          try {
+            console.log(
+              "🔄 Đang gọi API dashboard/sales với timeRange:",
+              timeRange
+            );
+            const response = await api(
+              `/dashboard/sales?timeRange=${encodeURIComponent(timeRange)}`
+            );
+
+            if (!response.ok) {
+              if (response.status === 401) {
+                // Token không hợp lệ hoặc hết hạn
+                console.error("❌ Token không hợp lệ - redirect đến Login");
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                localStorage.removeItem("token");
+                window.location.href = "Login.html";
+                return;
+              }
+              const errorText = await response.text();
+              console.error(
+                "❌ Không thể tải dữ liệu doanh số:",
+                response.status,
+                errorText
+              );
+              return;
+            }
+
+            const result = await response.json();
+            console.log("✅ API response:", result);
+
+            if (!result.success) {
+              console.error("❌ Lỗi:", result.message);
+              return;
+            }
+
+            const data = result.data;
+            console.log("📊 Data nhận được:", data);
+
+            const salesCard = document.querySelector(".sales-kpi");
+            console.log("🎯 Sales card element:", salesCard);
+
+            if (salesCard) {
+              // Cập nhật Sales (Doanh thu)
+              const salesValue = salesCard.querySelector(
+                ".kpi-metrics-group .kpi-metric:first-child .kpi-value"
+              );
+              console.log("🎯 Sales value element:", salesValue);
+              if (salesValue) {
+                const growthClass =
+                  parseFloat(data.growthRate) >= 0 ? "success" : "";
+                const growthSign = parseFloat(data.growthRate) >= 0 ? "+" : "";
+                const newContent = `${formatCurrency(
+                  data.revenue
+                )} <span class="kpi-change ${growthClass}">${growthSign}${
+                  data.growthRate
+                }%</span>`;
+                console.log("📝 Cập nhật Sales:", newContent);
+                salesValue.innerHTML = newContent;
+              } else {
+                console.warn("⚠️ Không tìm thấy sales value element");
+              }
+
+              // Cập nhật Volume (Số đơn)
+              const volumeValue = salesCard.querySelector(
+                ".kpi-metrics-group .kpi-metric:last-child .kpi-value"
+              );
+              console.log("🎯 Volume value element:", volumeValue);
+              if (volumeValue) {
+                console.log("📝 Cập nhật Volume:", data.volume);
+                volumeValue.textContent = data.volume.toString();
+              } else {
+                console.warn("⚠️ Không tìm thấy volume value element");
+              }
+
+              // Cập nhật time filter text
+              const timeFilter = salesCard.querySelector(".time-filter");
+              if (timeFilter) {
+                const timeRangeText = {
+                  today: "Today",
+                  week: "This Week",
+                  month: "This Month",
+                };
+                timeFilter.innerHTML = `${
+                  timeRangeText[timeRange] || "This Week"
+                } <i class='bx bx-chevron-down'></i>`;
+              }
+            } else {
+              console.warn("⚠️ Không tìm thấy sales card element");
+            }
+          } catch (error) {
+            console.error("Lỗi khi tải dữ liệu doanh số:", error);
+          }
+        }
+
+        // Load Customers Data
+        async function loadCustomersData(timeRange = "week") {
+          try {
+            console.log(
+              "🔄 Đang gọi API dashboard/customers với timeRange:",
+              timeRange
+            );
+            const response = await api(
+              `/dashboard/customers?timeRange=${encodeURIComponent(timeRange)}`
+            );
+
+            if (!response.ok) {
+              if (response.status === 401) {
+                console.error("❌ Token không hợp lệ - redirect đến Login");
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                localStorage.removeItem("token");
+                window.location.href = "Login.html";
+                return;
+              }
+              const errorText = await response.text();
+              console.error(
+                "❌ Không thể tải dữ liệu khách hàng:",
+                response.status,
+                errorText
+              );
+              return;
+            }
+
+            const result = await response.json();
+            console.log("✅ Customers API response:", result);
+
+            if (!result.success) {
+              console.error("❌ Lỗi:", result.message);
+              return;
+            }
+
+            const data = result.data;
+            console.log("👥 Customers data nhận được:", data);
+
+            const customerCard = document.querySelector(".customer-kpi");
+            console.log("🎯 Customer card element:", customerCard);
+
+            if (customerCard) {
+              // Cập nhật Customers (Tổng số khách hàng đã mua hàng)
+              const customersValue = customerCard.querySelector(
+                ".kpi-metrics-group .kpi-metric:first-child .kpi-value"
+              );
+              console.log("🎯 Customers value element:", customersValue);
+              if (customersValue) {
+                const growthClass =
+                  parseFloat(data.customersGrowthRate) >= 0 ? "success" : "";
+                const growthSign =
+                  parseFloat(data.customersGrowthRate) >= 0 ? "+" : "";
+                const newContent = `${data.customersWithOrders} <span class="kpi-change ${growthClass}">${growthSign}${data.customersGrowthRate}%</span>`;
+                console.log("📝 Cập nhật Customers:", newContent);
+                customersValue.innerHTML = newContent;
+              } else {
+                console.warn("⚠️ Không tìm thấy customers value element");
+              }
+
+              // Cập nhật Active (Số khách hàng đang hoạt động)
+              const activeValue = customerCard.querySelector(
+                ".kpi-metrics-group .kpi-metric:last-child .kpi-value"
+              );
+              console.log("🎯 Active value element:", activeValue);
+              if (activeValue) {
+                console.log("📝 Cập nhật Active:", data.activeCustomers);
+                activeValue.textContent = data.activeCustomers.toString();
+              } else {
+                console.warn("⚠️ Không tìm thấy active value element");
+              }
+
+              // Cập nhật time filter text
+              const timeFilter = customerCard.querySelector(".time-filter");
+              if (timeFilter) {
+                const timeRangeText = {
+                  today: "Today",
+                  week: "This Week",
+                  month: "This Month",
+                };
+                timeFilter.innerHTML = `${
+                  timeRangeText[timeRange] || "This Week"
+                } <i class='bx bx-chevron-down'></i>`;
+              }
+            } else {
+              console.warn("⚠️ Không tìm thấy customer card element");
+            }
+          } catch (error) {
+            console.error("Lỗi khi tải dữ liệu khách hàng:", error);
+          }
+        }
+
+        // Load Orders Data
+        async function loadOrdersData(timeRange = "week") {
+          try {
+            console.log(
+              "🔄 Đang gọi API dashboard/orders với timeRange:",
+              timeRange
+            );
+            const response = await api(
+              `/dashboard/orders?timeRange=${encodeURIComponent(timeRange)}`
+            );
+
+            if (!response.ok) {
+              if (response.status === 401) {
+                console.error("❌ Token không hợp lệ - redirect đến Login");
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                localStorage.removeItem("token");
+                window.location.href = "Login.html";
+                return;
+              }
+              const errorText = await response.text();
+              console.error(
+                "❌ Không thể tải dữ liệu đơn hàng:",
+                response.status,
+                errorText
+              );
+              return;
+            }
+
+            const result = await response.json();
+            console.log("✅ Orders API response:", result);
+
+            if (!result.success) {
+              console.error("❌ Lỗi:", result.message);
+              return;
+            }
+
+            const data = result.data;
+            console.log("📦 Orders data nhận được:", data);
+
+            const ordersCard = document.querySelector(".orders-kpi");
+            console.log("🎯 Orders card element:", ordersCard);
+
+            if (ordersCard) {
+              // Cập nhật All Orders (Tổng số đơn hàng)
+              const allOrdersValue = ordersCard.querySelector(
+                ".kpi-metrics-group .kpi-metric:first-child .kpi-value"
+              );
+              console.log("🎯 All Orders value element:", allOrdersValue);
+              if (allOrdersValue) {
+                console.log("📝 Cập nhật All Orders:", data.totalOrders);
+                allOrdersValue.textContent = data.totalOrders.toString();
+              } else {
+                console.warn("⚠️ Không tìm thấy all orders value element");
+              }
+
+              // Cập nhật Pending (Đơn hàng đang xử lý)
+              const pendingValue = ordersCard.querySelector(
+                ".kpi-metrics-group .kpi-metric:nth-child(2) .kpi-value"
+              );
+              console.log("🎯 Pending value element:", pendingValue);
+              if (pendingValue) {
+                console.log("📝 Cập nhật Pending:", data.pendingOrders);
+                pendingValue.textContent = data.pendingOrders.toString();
+              } else {
+                console.warn("⚠️ Không tìm thấy pending value element");
+              }
+
+              // Cập nhật Completed (Đơn hàng hoàn thành) với tỷ lệ tăng trưởng
+              const completedValue = ordersCard.querySelector(
+                ".kpi-metrics-group .kpi-metric:last-child .kpi-value"
+              );
+              console.log("🎯 Completed value element:", completedValue);
+              if (completedValue) {
+                const growthClass =
+                  parseFloat(data.completedGrowthRate) >= 0 ? "success" : "";
+                const growthSign =
+                  parseFloat(data.completedGrowthRate) >= 0 ? "+" : "";
+                const newContent = `${data.completedOrders} <span class="kpi-change ${growthClass}">${growthSign}${data.completedGrowthRate}%</span>`;
+                console.log("📝 Cập nhật Completed:", newContent);
+                completedValue.innerHTML = newContent;
+              } else {
+                console.warn("⚠️ Không tìm thấy completed value element");
+              }
+
+              // Cập nhật time filter text
+              const timeFilter = ordersCard.querySelector(".time-filter");
+              if (timeFilter) {
+                const timeRangeText = {
+                  today: "Today",
+                  week: "This Week",
+                  month: "This Month",
+                };
+                timeFilter.innerHTML = `${
+                  timeRangeText[timeRange] || "This Week"
+                } <i class='bx bx-chevron-down'></i>`;
+              }
+            } else {
+              console.warn("⚠️ Không tìm thấy orders card element");
+            }
+          } catch (error) {
+            console.error("Lỗi khi tải dữ liệu đơn hàng:", error);
+          }
+        }
+
+        // Load Products Data
+        async function loadProductsData() {
+          try {
+            console.log("🔄 Đang gọi API dashboard/products");
+            const response = await api("/dashboard/products?timeRange=week");
+
+            if (!response.ok) {
+              if (response.status === 401) {
+                console.error("❌ Token không hợp lệ - redirect đến Login");
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                localStorage.removeItem("token");
+                window.location.href = "Login.html";
+                return;
+              }
+              const errorText = await response.text();
+              console.error(
+                "❌ Không thể tải dữ liệu sản phẩm:",
+                response.status,
+                errorText
+              );
+              return;
+            }
+
+            const result = await response.json();
+            console.log("✅ Products API response:", result);
+
+            if (!result.success) {
+              console.error("❌ Lỗi:", result.message);
+              return;
+            }
+
+            const data = result.data;
+            console.log("📦 Products data nhận được:", data);
+
+            const productCard = document.querySelector(".product-card");
+            console.log("🎯 Product card element:", productCard);
+
+            if (productCard) {
+              // Cập nhật All Products (Tổng số sản phẩm)
+              const allProductsValue = productCard.querySelector(
+                ".product-metrics-grid > div:first-child .kpi-value"
+              );
+              console.log("🎯 All Products value element:", allProductsValue);
+              if (allProductsValue) {
+                const growthClass =
+                  parseFloat(data.newProductsGrowthRate) >= 0 ? "success" : "";
+                const growthSign =
+                  parseFloat(data.newProductsGrowthRate) >= 0 ? "+" : "";
+                const newContent = `${data.allProducts} <span class="kpi-change ${growthClass}">${growthSign}${data.newProductsGrowthRate}%</span>`;
+                console.log("📝 Cập nhật All Products:", newContent);
+                allProductsValue.innerHTML = newContent;
+              } else {
+                console.warn("⚠️ Không tìm thấy all products value element");
+              }
+
+              // Cập nhật Active (Sản phẩm đang kinh doanh)
+              const activeValue = productCard.querySelector(
+                ".product-metrics-grid > div:last-child .kpi-value"
+              );
+              console.log("🎯 Active value element:", activeValue);
+              if (activeValue) {
+                console.log("📝 Cập nhật Active:", data.activeProducts);
+                activeValue.textContent = data.activeProducts.toString();
+              } else {
+                console.warn("⚠️ Không tìm thấy active value element");
+              }
+            } else {
+              console.warn("⚠️ Không tìm thấy product card element");
+            }
+          } catch (error) {
+            console.error("Lỗi khi tải dữ liệu sản phẩm:", error);
+          }
+        }
+
+        // Load Abandoned Cart Data
+        async function loadAbandonedCartData(timeRange = "week") {
+          try {
+            console.log(
+              "🔄 Đang gọi API dashboard/abandoned-cart với timeRange:",
+              timeRange
+            );
+            const response = await api(
+              `/dashboard/abandoned-cart?timeRange=${encodeURIComponent(
+                timeRange
+              )}`
+            );
+
+            if (!response.ok) {
+              if (response.status === 401) {
+                console.error("❌ Token không hợp lệ - redirect đến Login");
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                localStorage.removeItem("token");
+                window.location.href = "Login.html";
+                return;
+              }
+              const errorText = await response.text();
+              console.error(
+                "❌ Không thể tải dữ liệu giỏ hàng bị bỏ quên:",
+                response.status,
+                errorText
+              );
+              return;
+            }
+
+            const result = await response.json();
+            console.log("✅ Abandoned Cart API response:", result);
+
+            if (!result.success) {
+              console.error("❌ Lỗi:", result.message);
+              return;
+            }
+
+            const data = result.data;
+            console.log("🛒 Abandoned Cart data nhận được:", data);
+
+            const cartCard = document.querySelector(".cart-card");
+            console.log("🎯 Cart card element:", cartCard);
+
+            if (cartCard) {
+              // Cập nhật Abandoned Cart (Tỷ lệ bỏ giỏ hàng %)
+              const abandonedCartValue = cartCard.querySelector(
+                ".cart-details > div:first-child .kpi-value"
+              );
+              console.log(
+                "🎯 Abandoned Cart value element:",
+                abandonedCartValue
+              );
+              if (abandonedCartValue) {
+                const growthClass =
+                  parseFloat(data.abandonedCartRateChange) >= 0
+                    ? "success"
+                    : "";
+                const growthSign =
+                  parseFloat(data.abandonedCartRateChange) >= 0 ? "+" : "";
+                const newContent = `${data.abandonedCartRate}% <span class="kpi-change ${growthClass}">${growthSign}${data.abandonedCartRateChange}%</span>`;
+                console.log("📝 Cập nhật Abandoned Cart:", newContent);
+                abandonedCartValue.innerHTML = newContent;
+              } else {
+                console.warn("⚠️ Không tìm thấy abandoned cart value element");
+              }
+
+              // Cập nhật Customers (Số lượng khách bị bỏ giỏ)
+              const customersValue = cartCard.querySelector(
+                ".cart-details > div:last-child .kpi-value"
+              );
+              console.log("🎯 Customers value element:", customersValue);
+              if (customersValue) {
+                console.log("📝 Cập nhật Customers:", data.abandonedCustomers);
+                customersValue.textContent = data.abandonedCustomers.toString();
+              } else {
+                console.warn("⚠️ Không tìm thấy customers value element");
+              }
+
+              // Cập nhật time filter text
+              const timeFilter = cartCard.querySelector(".time-filter");
+              if (timeFilter) {
+                const timeRangeText = {
+                  today: "Today",
+                  week: "This Week",
+                  month: "This Month",
+                };
+                timeFilter.innerHTML = `${
+                  timeRangeText[timeRange] || "This Week"
+                } <i class='bx bx-chevron-down'></i>`;
+              }
+            } else {
+              console.warn("⚠️ Không tìm thấy cart card element");
+            }
+          } catch (error) {
+            console.error("Lỗi khi tải dữ liệu giỏ hàng bị bỏ quên:", error);
+          }
+        }
+
+        // Load Summary Chart Data
+        async function loadSummaryChartData(days = 7) {
+          try {
+            console.log(
+              "🔄 Đang gọi API dashboard/summary-chart với days:",
+              days
+            );
+            const response = await api(
+              `/dashboard/summary-chart?days=${encodeURIComponent(days)}`
+            );
+
+            if (!response.ok) {
+              if (response.status === 401) {
+                console.error("❌ Token không hợp lệ - redirect đến Login");
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                localStorage.removeItem("token");
+                window.location.href = "Login.html";
+                return;
+              }
+              const errorText = await response.text();
+              console.error(
+                "❌ Không thể tải dữ liệu biểu đồ:",
+                response.status,
+                errorText
+              );
+              return;
+            }
+
+            const result = await response.json();
+            console.log("✅ Summary Chart API response:", result);
+
+            if (!result.success) {
+              console.error("❌ Lỗi:", result.message);
+              return;
+            }
+
+            const data = result.data;
+            console.log("📊 Summary Chart data nhận được:", data);
+
+            const summaryCard = document.querySelector(".summary-card");
+            const barChartArea = summaryCard?.querySelector(".bar-chart-area");
+            const yAxis = summaryCard?.querySelector(".y-axis");
+
+            if (summaryCard && barChartArea && yAxis) {
+              // Cập nhật Y-axis labels dựa trên maxRevenue
+              const maxRevenue = data.maxRevenue;
+              const yAxisLabels = [];
+              if (maxRevenue > 0) {
+                // Tạo 5 mức giá trị từ 0 đến maxRevenue
+                for (let i = 4; i >= 0; i--) {
+                  const value = (maxRevenue / 4) * i;
+                  if (value >= 1000) {
+                    yAxisLabels.push(`${(value / 1000).toFixed(0)}K`);
+                  } else {
+                    yAxisLabels.push(value.toFixed(0));
+                  }
+                }
+              } else {
+                yAxisLabels.push("100K", "80K", "60K", "40K", "20K");
+              }
+
+              yAxis.innerHTML = yAxisLabels
+                .map((label) => `<p>${label}</p>`)
+                .join("");
+
+              // Xóa các bar cũ
+              barChartArea.innerHTML = "";
+
+              // Tạo các bar mới với dữ liệu thực
+              data.dailyData.forEach((dayData, index) => {
+                const barGroup = document.createElement("div");
+                barGroup.className = "bar-group";
+
+                const bar = document.createElement("div");
+                bar.className = "bar";
+                bar.style.height = `${dayData.percentage}%`;
+
+                const label = document.createElement("p");
+                label.className = "x-label";
+                label.textContent = dayData.dateLabel;
+
+                barGroup.appendChild(bar);
+                barGroup.appendChild(label);
+                barChartArea.appendChild(barGroup);
+              });
+
+              console.log(
+                "📝 Đã cập nhật biểu đồ với",
+                data.dailyData.length,
+                "ngày"
+              );
+            } else {
+              console.warn("⚠️ Không tìm thấy summary card elements");
+            }
+          } catch (error) {
+            console.error("Lỗi khi tải dữ liệu biểu đồ:", error);
+          }
+        }
+
+        // Load Marketing Donut Chart Data
+        async function loadMarketingData(timeRange = "week") {
+          try {
+            console.log(
+              "🔄 Đang gọi API dashboard/marketing với timeRange:",
+              timeRange
+            );
+            const response = await api(
+              `/dashboard/marketing?timeRange=${encodeURIComponent(timeRange)}`
+            );
+
+            if (!response.ok) {
+              if (response.status === 401) {
+                console.error("❌ Token không hợp lệ - redirect đến Login");
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                localStorage.removeItem("token");
+                window.location.href = "Login.html";
+                return;
+              }
+              const errorText = await response.text();
+              console.error(
+                "❌ Không thể tải dữ liệu Marketing:",
+                response.status,
+                errorText
+              );
+              return;
+            }
+
+            const result = await response.json();
+            console.log("✅ Marketing API response:", result);
+
+            if (!result.success) {
+              console.error("❌ Lỗi:", result.message);
+              return;
+            }
+
+            const data = result.data;
+            console.log("📊 Marketing data nhận được:", data);
+
+            const marketingCard = document.querySelector(".marketing-card");
+            const donutChartPlaceholder = marketingCard?.querySelector(
+              ".donut-chart-placeholder"
+            );
+            const chartLegend = marketingCard?.querySelector(".chart-legend");
+
+            if (marketingCard && donutChartPlaceholder && chartLegend) {
+              // Vẽ donut chart với 3 phần: Acquisition, Purchase, Retention
+              const size = 200;
+              const radius = 70;
+              const strokeWidth = 30;
+              const center = size / 2;
+              const innerRadius = radius - strokeWidth;
+
+              // Tính toán phần trăm cho từng phần
+              const acquisitionPercent =
+                parseFloat(data.acquisition.percentage) || 0;
+              const purchasePercent = parseFloat(data.purchase.percentage) || 0;
+              const retentionPercent =
+                parseFloat(data.retention.percentage) || 0;
+
+              console.log("📊 Phần trăm:", {
+                acquisitionPercent,
+                purchasePercent,
+                retentionPercent,
+              });
+
+              // Tính góc (theo độ, bắt đầu từ -90 để bắt đầu từ trên)
+              let currentAngle = -90; // Bắt đầu từ trên (12 giờ)
+              const acquisitionAngle = (acquisitionPercent / 100) * 360;
+              const purchaseAngle = (purchasePercent / 100) * 360;
+              const retentionAngle = (retentionPercent / 100) * 360;
+
+              // Helper function để tạo path arc
+              function createArcPath(
+                startAngle,
+                endAngle,
+                outerRadius,
+                innerRadius
+              ) {
+                // Nếu góc = 0 hoặc nhỏ hơn, không vẽ
+                const angleDiff = endAngle - startAngle;
+                if (angleDiff <= 0.01) {
+                  return "";
+                }
+
+                // Xử lý trường hợp vòng tròn đầy đủ (360 độ)
+                if (angleDiff >= 359.99) {
+                  // Vẽ 2 nửa vòng tròn để tránh lỗi SVG
+                  const midAngle = startAngle + 180;
+                  const startRad1 = (startAngle * Math.PI) / 180;
+                  const midRad = (midAngle * Math.PI) / 180;
+                  const endRad1 = (endAngle * Math.PI) / 180;
+
+                  const x1 = center + outerRadius * Math.cos(startRad1);
+                  const y1 = center + outerRadius * Math.sin(startRad1);
+                  const x2 = center + outerRadius * Math.cos(midRad);
+                  const y2 = center + outerRadius * Math.sin(midRad);
+                  const x3 = center + outerRadius * Math.cos(endRad1);
+                  const y3 = center + outerRadius * Math.sin(endRad1);
+
+                  const x4 = center + innerRadius * Math.cos(endRad1);
+                  const y4 = center + innerRadius * Math.sin(endRad1);
+                  const x5 = center + innerRadius * Math.cos(midRad);
+                  const y5 = center + innerRadius * Math.sin(midRad);
+                  const x6 = center + innerRadius * Math.cos(startRad1);
+                  const y6 = center + innerRadius * Math.sin(startRad1);
+
+                  return `M ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 1 1 ${x2} ${y2} A ${outerRadius} ${outerRadius} 0 1 1 ${x3} ${y3} L ${x4} ${y4} A ${innerRadius} ${innerRadius} 0 1 0 ${x5} ${y5} A ${innerRadius} ${innerRadius} 0 1 0 ${x6} ${y6} Z`;
+                }
+
+                const startRad = (startAngle * Math.PI) / 180;
+                const endRad = (endAngle * Math.PI) / 180;
+
+                const x1 = center + outerRadius * Math.cos(startRad);
+                const y1 = center + outerRadius * Math.sin(startRad);
+                const x2 = center + outerRadius * Math.cos(endRad);
+                const y2 = center + outerRadius * Math.sin(endRad);
+
+                const x3 = center + innerRadius * Math.cos(endRad);
+                const y3 = center + innerRadius * Math.sin(endRad);
+                const x4 = center + innerRadius * Math.cos(startRad);
+                const y4 = center + innerRadius * Math.sin(startRad);
+
+                const largeArc = angleDiff > 180 ? 1 : 0;
+
+                return `M ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+              }
+
+              // Tính toán các góc bắt đầu và kết thúc
+              const acquisitionStart = currentAngle;
+              const acquisitionEnd = currentAngle + acquisitionAngle;
+              currentAngle = acquisitionEnd;
+
+              const purchaseStart = currentAngle;
+              const purchaseEnd = currentAngle + purchaseAngle;
+              currentAngle = purchaseEnd;
+
+              const retentionStart = currentAngle;
+              const retentionEnd = currentAngle + retentionAngle;
+
+              console.log("📐 Góc:", {
+                acquisition: {
+                  start: acquisitionStart,
+                  end: acquisitionEnd,
+                  angle: acquisitionAngle,
+                },
+                purchase: {
+                  start: purchaseStart,
+                  end: purchaseEnd,
+                  angle: purchaseAngle,
+                },
+                retention: {
+                  start: retentionStart,
+                  end: retentionEnd,
+                  angle: retentionAngle,
+                },
+              });
+
+              // Tạo SVG với donut chart
+              const svg = `
+                            <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="display: block; margin: 0 auto;">
+                                <!-- Acquisition (Xanh đậm) -->
+                                ${
+                                  acquisitionAngle > 0.01
+                                    ? `<path
+                                    d="${createArcPath(
+                                      acquisitionStart,
+                                      acquisitionEnd,
+                                      radius,
+                                      innerRadius
+                                    )}"
+                                    fill="#5570F1"
+                                />`
+                                    : ""
+                                }
+                                <!-- Purchase (Xanh nhạt/Tím) -->
+                                ${
+                                  purchaseAngle > 0.01
+                                    ? `<path
+                                    d="${createArcPath(
+                                      purchaseStart,
+                                      purchaseEnd,
+                                      radius,
+                                      innerRadius
+                                    )}"
+                                    fill="#97A5EB"
+                                />`
+                                    : ""
+                                }
+                                <!-- Retention (Cam) -->
+                                ${
+                                  retentionAngle > 0.01
+                                    ? `<path
+                                    d="${createArcPath(
+                                      retentionStart,
+                                      retentionEnd,
+                                      radius,
+                                      innerRadius
+                                    )}"
+                                    fill="#f7a530"
+                                />`
+                                    : ""
+                                }
+                                <!-- Text hiển thị tổng số customers -->
+                                <text
+                                    x="${center}"
+                                    y="${center - 5}"
+                                    text-anchor="middle"
+                                    dominant-baseline="middle"
+                                    font-size="24"
+                                    font-weight="bold"
+                                    fill="${
+                                      getComputedStyle(
+                                        document.documentElement
+                                      ).getPropertyValue("--text-color") ||
+                                      "#333"
+                                    }"
+                                >${data.total}</text>
+                                <text
+                                    x="${center}"
+                                    y="${center + 15}"
+                                    text-anchor="middle"
+                                    dominant-baseline="middle"
+                                    font-size="12"
+                                    fill="${
+                                      getComputedStyle(
+                                        document.documentElement
+                                      ).getPropertyValue("--sub-text-color") ||
+                                      "#666"
+                                    }"
+                                >Customers</text>
+                            </svg>
+                        `;
+
+              console.log("🎨 SVG được tạo:", svg);
+
+              donutChartPlaceholder.innerHTML = svg;
+
+              // Cập nhật legend với số liệu
+              chartLegend.innerHTML = `
+                            <span class="dot acquisition"></span>Acquisition <strong>${data.acquisition.count} (${data.acquisition.percentage}%)</strong>
+                            <span class="dot purchase"></span>Purchase <strong>${data.purchase.count} (${data.purchase.percentage}%)</strong>
+                            <span class="dot retention"></span>Retention <strong>${data.retention.count} (${data.retention.percentage}%)</strong>
+                        `;
+
+              // Cập nhật time filter text
+              const timeFilter = marketingCard.querySelector(".time-filter");
+              if (timeFilter) {
+                const timeRangeText = {
+                  today: "Today",
+                  week: "This Week",
+                  month: "This Month",
+                };
+                timeFilter.innerHTML = `${
+                  timeRangeText[timeRange] || "This Week"
+                } <i class='bx bx-chevron-down'></i>`;
+              }
+
+              console.log("📝 Đã cập nhật Marketing donut chart");
+            } else {
+              console.warn("⚠️ Không tìm thấy marketing card elements");
+            }
+          } catch (error) {
+            console.error("Lỗi khi tải dữ liệu Marketing:", error);
+          }
+        }
+
+        // Load Recent Orders Data
+        async function loadRecentOrders() {
+          try {
+            console.log("🔄 Đang gọi API dashboard/recent-orders");
+            const response = await api("/dashboard/recent-orders?limit=10");
+
+            if (!response.ok) {
+              if (response.status === 401) {
+                console.error("❌ Token không hợp lệ - redirect đến Login");
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                localStorage.removeItem("token");
+                window.location.href = "Login.html";
+                return;
+              }
+              const errorText = await response.text();
+              console.error(
+                "❌ Không thể tải dữ liệu đơn hàng gần nhất:",
+                response.status,
+                errorText
+              );
+              return;
+            }
+
+            const result = await response.json();
+            console.log("✅ Recent Orders API response:", result);
+
+            if (!result.success) {
+              console.error("❌ Lỗi:", result.message);
+              return;
+            }
+
+            const orders = result.data || [];
+            console.log("📦 Recent Orders data nhận được:", orders);
+
+            const tbody = document.getElementById("recentOrdersBody");
+            if (!tbody) {
+              console.warn("⚠️ Không tìm thấy tbody cho Recent Orders");
+              return;
+            }
+
+            // Xóa nội dung cũ
+            tbody.innerHTML = "";
+
+            if (orders.length === 0) {
+              tbody.innerHTML = `
+                            <tr>
+                                <td colspan="5" style="padding: 40px; text-align: center; color: var(--sub-text-color);">
+                                    Chưa có đơn hàng nào
+                                </td>
+                            </tr>
+                        `;
+              return;
+            }
+
+            // Render từng đơn hàng
+            orders.forEach((order, index) => {
+              const isEven = index % 2 === 0;
+              const rowClass = isEven
+                ? "recent-order-row recent-order-row--even"
+                : "recent-order-row";
+
+              // Format giá tiền
+              const formatCurrency = (amount) => {
+                return (
+                  Number(amount).toLocaleString("vi-VN", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  }) + "₫"
+                );
+              };
+
+              // Tạo icon/thumbnail dựa trên printType
+              let thumbnail = "";
+              if (order.printType === "PHOTO") {
+                const imageUrl =
+                  order.extraOptions?.fileUrl ||
+                  order.extraOptions?.thumbnailUrl ||
+                  "https://tse2.mm.bing.net/th/id/OIP.khFGeXvNGtNXJIpsCVliewHaEK?rs=1&pid=ImgDetMain&o=7&rm=3";
+                thumbnail = `<img src="${imageUrl}" alt="${order.productName}" class="recent-order-thumb-image">`;
+              } else if (order.printType === "BANNER") {
+                const imageUrl =
+                  order.extraOptions?.fileUrl ||
+                  order.extraOptions?.thumbnailUrl ||
+                  "https://images.unsplash.com/photo-1587440871875-191322ee64b0?w=400&h=300&fit=crop";
+                thumbnail = `<img src="${imageUrl}" alt="${order.productName}" class="recent-order-thumb-image">`;
+              } else {
+                // Document - dùng icon
+                thumbnail = `
+                  <div class="recent-order-thumb-doc">
+                    <i class='bx bxs-file-doc recent-order-doc-icon'></i>
+                  </div>
+                `;
+              }
+
+              // Tạo discount display
+              const discountDisplay =
+                order.discount > 0
+                  ? `<span class="recent-order-discount">-${formatCurrency(
+                      order.discount
+                    )}</span>`
+                  : "—";
+
+              const row = `
+                <tr class="${rowClass}">
+                  <td class="recent-orders-row-cell">
+                    <div class="recent-order-product">
+                      ${thumbnail}
+                      <div>
+                        <strong>${order.productName || "N/A"}</strong><br>
+                        <small class="recent-order-description">
+                          ${order.description || ""}
+                        </small>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="recent-orders-row-cell">
+                    ${formatCurrency(order.unitPrice)}
+                  </td>
+                  <td class="recent-orders-row-cell text-center">
+                    ${order.quantity}
+                  </td>
+                  <td class="recent-orders-row-cell">
+                    ${discountDisplay}
+                  </td>
+                  <td class="recent-orders-row-cell recent-orders-total-cell">
+                    ${formatCurrency(order.total)}
+                  </td>
+                </tr>
+              `;
+              tbody.innerHTML += row;
+            });
+
+            console.log("📝 Đã cập nhật Recent Orders table");
+          } catch (error) {
+            console.error("Lỗi khi tải dữ liệu Recent Orders:", error);
+          }
+        }
+
+        // Load dữ liệu ban đầu
+        await loadSalesData("week");
+        await loadCustomersData("week");
+        await loadOrdersData("week");
+        await loadProductsData();
+        await loadAbandonedCartData("week");
+        await loadSummaryChartData(7);
+        await loadMarketingData("week");
+        await loadRecentOrders();
+
+        // Xử lý click vào time filter của Sales
+        const salesTimeFilter = document.querySelector(
+          ".sales-kpi .time-filter"
+        );
+        if (salesTimeFilter) {
+          salesTimeFilter.style.cursor = "pointer";
+          salesTimeFilter.addEventListener("click", async (e) => {
+            const currentText = salesTimeFilter.textContent.trim();
+            let newTimeRange = "week";
+            if (currentText.includes("Week")) {
+              newTimeRange = "month";
+            } else if (currentText.includes("Month")) {
+              newTimeRange = "today";
+            } else {
+              newTimeRange = "week";
+            }
+            await loadSalesData(newTimeRange);
+          });
+        }
+
+        // Xử lý click vào time filter của Customers
+        const customerTimeFilter = document.querySelector(
+          ".customer-kpi .time-filter"
+        );
+        if (customerTimeFilter) {
+          customerTimeFilter.style.cursor = "pointer";
+          customerTimeFilter.addEventListener("click", async (e) => {
+            const currentText = customerTimeFilter.textContent.trim();
+            let newTimeRange = "week";
+            if (currentText.includes("Week")) {
+              newTimeRange = "month";
+            } else if (currentText.includes("Month")) {
+              newTimeRange = "today";
+            } else {
+              newTimeRange = "week";
+            }
+            await loadCustomersData(newTimeRange);
+          });
+        }
+
+        // Xử lý click vào time filter của Orders
+        const ordersTimeFilter = document.querySelector(
+          ".orders-kpi .time-filter"
+        );
+        if (ordersTimeFilter) {
+          ordersTimeFilter.style.cursor = "pointer";
+          ordersTimeFilter.addEventListener("click", async (e) => {
+            const currentText = ordersTimeFilter.textContent.trim();
+            let newTimeRange = "week";
+            if (currentText.includes("Week")) {
+              newTimeRange = "month";
+            } else if (currentText.includes("Month")) {
+              newTimeRange = "today";
+            } else {
+              newTimeRange = "week";
+            }
+            await loadOrdersData(newTimeRange);
+          });
+        }
+
+        // Xử lý click vào time filter của Abandoned Cart
+        const cartTimeFilter = document.querySelector(
+          ".cart-card .time-filter"
+        );
+        if (cartTimeFilter) {
+          cartTimeFilter.style.cursor = "pointer";
+          cartTimeFilter.addEventListener("click", async (e) => {
+            const currentText = cartTimeFilter.textContent.trim();
+            let newTimeRange = "week";
+            if (currentText.includes("Week")) {
+              newTimeRange = "month";
+            } else if (currentText.includes("Month")) {
+              newTimeRange = "today";
+            } else {
+              newTimeRange = "week";
+            }
+            await loadAbandonedCartData(newTimeRange);
+          });
+        }
+
+        // Xử lý click vào time filter của Summary Chart
+        const summaryTimeFilter = document.querySelector(
+          ".summary-card .time-filter"
+        );
+        if (summaryTimeFilter) {
+          summaryTimeFilter.style.cursor = "pointer";
+          summaryTimeFilter.addEventListener("click", async (e) => {
+            const currentText = summaryTimeFilter.textContent.trim();
+            let newDays = 7;
+            if (currentText.includes("7")) {
+              newDays = 30;
+              summaryTimeFilter.innerHTML =
+                "Last 30 Days <i class='bx bx-chevron-down'></i>";
+            } else {
+              newDays = 7;
+              summaryTimeFilter.innerHTML =
+                "Last 7 Days <i class='bx bx-chevron-down'></i>";
+            }
+            await loadSummaryChartData(newDays);
+          });
+        }
+
+        // Xử lý click vào time filter của Marketing Chart
+        const marketingTimeFilter = document.querySelector(
+          ".marketing-card .time-filter"
+        );
+        if (marketingTimeFilter) {
+          marketingTimeFilter.style.cursor = "pointer";
+          marketingTimeFilter.addEventListener("click", async (e) => {
+            const currentText = marketingTimeFilter.textContent.trim();
+            let newTimeRange = "week";
+            if (currentText.includes("Week")) {
+              newTimeRange = "month";
+            } else if (currentText.includes("Month")) {
+              newTimeRange = "today";
+            } else {
+              newTimeRange = "week";
+            }
+            await loadMarketingData(newTimeRange);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

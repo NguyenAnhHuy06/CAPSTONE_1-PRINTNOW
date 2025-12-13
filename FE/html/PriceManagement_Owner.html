@@ -1,0 +1,851 @@
+<!--FE/html/PriceManagement_Owner.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Printing Price Management Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #043873;
+            --secondary-blue: #4d59ff;
+            --text-color: #333333;
+            --sub-text-color: #718096;
+            --background-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --success-color: #48bb78;
+            --error-color: #f56565;
+            --sidebar-width-collapsed: 70px;
+            --sidebar-width-expanded: 220px;
+            --sidebar-padding-x: 10px;
+            --transition-speed: 0.3s;
+            --border-color: #e0e0e0;
+            --action-color: #6c757d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width-collapsed);
+            background-color: var(--card-bg);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            transition: width var(--transition-speed) ease-in-out;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 10;
+        }
+
+        .sidebar:hover {
+            width: var(--sidebar-width-expanded);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 0 10px 30px var(--sidebar-padding-x);
+            white-space: nowrap;
+        }
+
+        .sidebar-header i {
+            margin-left: 18px;
+        }
+
+        .logo-icon {
+            font-size: 30px;
+            color: var(--primary-color);
+            min-width: 50px;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+            font-size: 14px;
+        }
+
+        .logo-text strong {
+            font-size: 18px;
+            color: var(--text-color);
+        }
+
+        .logo-text span {
+            color: var(--sub-text-color);
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 15px 10px;
+            text-decoration: none;
+            color: var(--sub-text-color);
+            transition: background-color 0.2s, color 0.2s;
+            border-radius: 8px;
+            margin: 0 var(--sidebar-padding-x);
+            position: relative;
+        }
+
+        .sidebar-nav a:hover:not(.active a) {
+            background-color: var(--background-color);
+        }
+
+        .nav-item .icon {
+            min-width: 50px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .nav-text {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s;
+            transition-delay: var(--transition-speed);
+        }
+
+        .sidebar:hover .nav-text {
+            opacity: 1;
+            pointer-events: all;
+            transition-delay: 0s;
+        }
+
+        .nav-item.active a {
+            background-color: var(--secondary-blue);
+            color: var(--card-bg);
+            box-shadow: 0 4px 10px rgba(93, 92, 255, 0.4);
+        }
+
+        .nav-item.active .icon {
+            color: var(--card-bg);
+        }
+
+        .badge {
+            margin-left: auto;
+            background-color: #f7a530;
+            color: var(--card-bg);
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            display: block;
+        }
+
+        .sidebar:hover .badge {
+            position: relative;
+            top: auto;
+            right: auto;
+            margin-left: auto;
+        }
+
+        .sidebar-footer {
+            padding: 20px 0;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            padding: 10px 10px;
+            margin: 5px var(--sidebar-padding-x);
+            text-decoration: none;
+            color: var(--sub-text-color);
+            white-space: nowrap;
+            border-radius: 8px;
+        }
+
+        .contact-support {
+            background-color: rgba(93, 92, 255, 0.1);
+            color: var(--primary-color) !important;
+            border-radius: 8px;
+        }
+
+        .logout {
+            color: var(--error-color) !important;
+        }
+
+        .logout .icon {
+            color: var(--sub-text-color);
+        }
+
+        .sidebar:hover .logout .icon {
+            color: var(--error-color);
+        }
+
+        .sidebar:not(:hover) .logout .nav-text,
+        .sidebar:not(:hover) .contact-support .nav-text {
+            display: none;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 0 30px 30px 30px;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            background-color: var(--background-color);
+            z-index: 5;
+        }
+
+        .top-header h2 {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            font-size: 24px;
+        }
+
+        .top-header h2 .bx-home {
+            font-size: 18px;
+            color: var(--sub-text-color);
+            margin-right: 15px;
+        }
+
+        .user-actions .icon {
+            font-size: 30px;
+            margin-right: 15px;
+            color: var(--sub-text-color);
+        }
+        .user-actions{
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            font-size: 30px;
+            color: var(--primary-color);
+            vertical-align: middle;
+        }
+
+        /* --- Vùng chứa chính --- */
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* --- Phần Dịch vụ Giá (Printing, Paper Size) --- */
+        .price-section {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        /* Header của mỗi phần */
+        .section-header {
+            display: grid;
+            grid-template-areas:
+                "title total"
+                "subtitle total";
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            margin-bottom: 0px;
+            padding-bottom: 15px;
+        }
+
+        .section-header h2 {
+            grid-area: title;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .section-header p {
+            grid-area: subtitle;
+            font-size: 0.9rem;
+            color: var(--sub-text-color);
+        }
+
+        .total {
+            grid-area: total;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--sub-text-color);
+            align-self: flex-start;
+            white-space: nowrap; /* Để giữ tổng tiền không bị xuống dòng */
+        }
+
+        /* --- Bảng Giá --- */
+        .price-table {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Định nghĩa bố cục Grid cho mỗi hàng */
+        .table-row {
+            display: grid;
+            grid-template-columns: 2.5fr 3fr 1.5fr 1.5fr 1.5fr;
+            padding: 12px 0;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .price-table:last-child .last-row {
+            border-bottom: none;
+        }
+
+        .table-header {
+            color: #F59E0B;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .table-header .col-unit{
+            color: #F59E0B;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .table-data {
+            font-size: 0.95rem;
+        }
+
+        .col-unit {
+            color: var(--sub-text-color);
+            font-size: 0.85rem;
+        }
+
+        .price-value {
+            color: var(--success-color);
+            font-weight: 600;
+            white-space: nowrap; /* Để giữ giá tiền và ký hiệu ₫ không bị xuống dòng */
+        }
+
+        .col-actions a {
+            text-decoration: none;
+            color: var(--action-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .edit-input {
+            border: 1px solid #ccc;
+            padding: 3px 5px;
+            width: 90%; 
+            font-size: 0.95rem;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .col-actions .save-btn {
+            color: var(--secondary-blue) !important;
+            font-weight: 600;
+        }
+
+        .col-actions i {
+            margin-right: 5px;
+        }
+
+        .table-data .col-service {
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class='bx bxs-printer logo-icon'></i>
+                <div class="logo-text">
+                    <strong>PrintNow</strong>
+                    <span>Print service</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active">
+                        <a href="#">
+                            <i class='bx bxs-dashboard icon'></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item has-badge">
+                        <a href="#">
+                            <i class='bx bx-notepad icon'></i>
+                            <span class="nav-text">Orders</span>
+                            <span class="badge">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#">
+                            <i class='bx bx-group icon'></i>
+                            <span class="nav-text">Customers</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#">
+                            <i class='bx bx-package icon'></i>
+                            <span class="nav-text">Inventory</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#">
+                            <i class='bx bx-cog icon'></i>
+                            <span class="nav-text">Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" class="contact-support">
+                    <i class='bx bx-headphone icon'></i>
+                    <span class="nav-text">Contact Support</span>
+                </a>
+                <a href="#" class="logout">
+                    <i class='bx bx-log-out icon'></i>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header class="top-header">
+                <h2><i class='bx bx-home'></i>Printing Price Management</h2>
+                <div class="user-actions">
+                    <i class='bx bx-bell icon'></i>
+                    <i class='bx bxs-user-circle user-avatar'></i>
+                </div>
+            </header>
+            <div class="container">
+                <section class="price-section">
+                    <div class="section-header">
+                        <h2>Printing Document</h2>
+                        <p>Configure prices for printing services</p>
+                    </div>
+                    <div class="price-table">
+                        <div class="table-header table-row">
+                            <div class="col-service">Printing</div>
+                            <div class="col-description">Description</div>
+                            <div class="col-unit">Unit</div>
+                            <div class="col-price">Price</div>
+                            <div class="col-actions">Actions</div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-printing-1">
+                            <div class="col-service">Single-Sided Printing</div>
+                            <div class="col-description">Black & White, A4</div>
+                            <div class="col-unit edit-field" data-name="unit">per page</div>
+                            <div class="col-price price-value edit-field" data-name="price">500 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-printing-1', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-printing-2">
+                            <div class="col-service">Double-Sided Printing</div>
+                            <div class="col-description">Black & White, A4</div>
+                            <div class="col-unit edit-field" data-name="unit">per page</div>
+                            <div class="col-price price-value edit-field" data-name="price">1.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-printing-2', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-printing-3">
+                            <div class="col-service">Single-Sided Color Printing</div>
+                            <div class="col-description">Full Color, A4</div>
+                            <div class="col-unit edit-field" data-name="unit">per page</div>
+                            <div class="col-price price-value edit-field" data-name="price">2.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-printing-3', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-printing-4">
+                            <div class="col-service">Double-Sided Color Printing</div>
+                            <div class="col-description">Full Color, A4</div>
+                            <div class="col-unit edit-field" data-name="unit">per page</div>
+                            <div class="col-price price-value edit-field" data-name="price">8.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-printing-4', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="price-table">
+                        <div class="table-header table-row">
+                            <div class="col-service">Paper size</div>
+                            <div class="col-description">Description</div>
+                            <div class="col-unit">Unit</div>
+                            <div class="col-price">Price</div>
+                            <div class="col-actions">Actions</div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-papersize-a3">
+                            <div class="col-service">A3 Printing</div>
+                            <div class="col-description">Additional charge for A3</div>
+                            <div class="col-unit edit-field" data-name="unit">per page</div>
+                            <div class="col-price price-value edit-field" data-name="price">2.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-papersize-a3', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-papersize-a4">
+                            <div class="col-service">A4 Printing</div>
+                            <div class="col-description">Additional charge for A4</div>
+                            <div class="col-unit edit-field" data-name="unit">per page</div>
+                            <div class="col-price price-value edit-field" data-name="price">2.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-papersize-a4', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-papersize-a6">
+                            <div class="col-service">A6 Printing</div>
+                            <div class="col-description">Additional charge for A5</div>
+                            <div class="col-unit edit-field" data-name="unit">per page</div>
+                            <div class="col-price price-value edit-field" data-name="price">2.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-papersize-a6', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-papersize-letter">
+                            <div class="col-service">Letter Printing</div>
+                            <div class="col-description">Additional charge for Letter</div>
+                            <div class="col-unit edit-field" data-name="unit">per page</div>
+                            <div class="col-price price-value edit-field" data-name="price">2.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-papersize-letter', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="price-table">
+                        <div class="table-header table-row">
+                            <div class="col-service">Binding & Cover</div>
+                            <div class="col-description">Description</div>
+                            <div class="col-unit">Unit</div>
+                            <div class="col-price">Price</div>
+                            <div class="col-actions">Actions</div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-binding-1">
+                            <div class="col-service">Binding</div>
+                            <div class="col-description">Plastic coil binding</div>
+                            <div class="col-unit edit-field" data-name="unit">per document</div>
+                            <div class="col-price price-value edit-field" data-name="price">5.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-binding-1', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-cover">
+                            <div class="col-service">Cover</div>
+                            <div class="col-description">Transparent plastic cover</div>
+                            <div class="col-unit edit-field" data-name="unit">per document</div>
+                            <div class="col-price price-value edit-field" data-name="price">2.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-cover', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="price-section">
+                    <div class="section-header">
+                        <h2>Printing Photo</h2>
+                        <p>Configure prices for printing services</p>
+                    </div>
+                    <div class="price-table">
+                        <div class="table-header table-row">
+                            <div class="col-service">Paper size</div>
+                            <div class="col-description">Description</div>
+                            <div class="col-unit">Unit</div>
+                            <div class="col-price">Price</div>
+                            <div class="col-actions">Actions</div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-photo-10x15">
+                            <div class="col-service">10 × 15 cm </div>
+                            <div class="col-description">Small photo</div>
+                            <div class="col-unit edit-field" data-name="unit">per photo</div>
+                            <div class="col-price price-value edit-field" data-name="price">500 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-photo-10x15', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-photo-13x18">
+                            <div class="col-service">13 × 18 cm</div>
+                            <div class="col-description">Medium photo</div>
+                            <div class="col-unit edit-field" data-name="unit">per photo</div>
+                            <div class="col-price price-value edit-field" data-name="price">1.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-photo-13x18', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-photo-20x25">
+                            <div class="col-service">20 × 25 cm</div>
+                            <div class="col-description">Large photo</div>
+                            <div class="col-unit edit-field" data-name="unit">per photo</div>
+                            <div class="col-price price-value edit-field" data-name="price">2.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-photo-20x25', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-photo-21x30">
+                            <div class="col-service">21 × 29.7 cm</div>
+                            <div class="col-description">Small poster</div>
+                            <div class="col-unit edit-field" data-name="unit">per photo</div>
+                            <div class="col-price price-value edit-field" data-name="price">8.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-photo-21x30', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-photo-30x42">
+                            <div class="col-service">29.7 × 42 cm</div>
+                            <div class="col-description">Large poster</div>
+                            <div class="col-unit edit-field" data-name="unit">per photo</div>
+                            <div class="col-price price-value edit-field" data-name="price">8.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-photo-30x42', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="price-table">
+                        <div class="table-header table-row">
+                            <div class="col-service">Paper type</div>
+                            <div class="col-description">Description</div>
+                            <div class="col-unit">Unit</div>
+                            <div class="col-price">Price</div>
+                            <div class="col-actions">Actions</div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-photo-glossy">
+                            <div class="col-service">Glossy </div>
+                            <div class="col-description">Shiny, vibrant colors, sharp look</div>
+                            <div class="col-unit edit-field" data-name="unit">per photo</div>
+                            <div class="col-price price-value edit-field" data-name="price">500 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-photo-glossy', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-photo-matte">
+                            <div class="col-service">Matte</div>
+                            <div class="col-description">Non-glare, smooth, fingerprint-resistant</div>
+                            <div class="col-unit edit-field" data-name="unit">per photo</div>
+                            <div class="col-price price-value edit-field" data-name="price">1.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-photo-matte', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-photo-premium">
+                            <div class="col-service">Premium</div>
+                            <div class="col-description">Thick, high-quality, best color durability</div>
+                            <div class="col-unit edit-field" data-name="unit">per photo</div>
+                            <div class="col-price price-value edit-field" data-name="price">2.000 ₫</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-photo-premium', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="price-table">
+                            <div class="table-header table-row">
+                                <div class="col-service">Order option</div>
+                                <div class="col-description">Description</div>
+                                <div class="col-unit">Unit</div>
+                                <div class="col-price">Price</div>
+                                <div class="col-actions">Actions</div>
+                            </div>
+
+                            <div class="table-data table-row" id="row-photo-borderless">
+                                <div class="col-service">Borderless </div>
+                                <div class="col-description">The photo prints full size with no borders</div>
+                                <div class="col-unit edit-field" data-name="unit">per photo</div>
+                                <div class="col-price price-value edit-field" data-name="price">10%</div>
+                                <div class="col-actions">
+                                    <a href="#" class="edit-btn" onclick="editRow('row-photo-borderless', this, event)">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+<script>
+    /* Chuyển đổi các ô dữ liệu trong một hàng thành các trường nhập liệu (input).*/
+    function editRow(rowId, buttonElement, event) { // <--- Đã thêm tham số event
+        // KHẮC PHỤC LỖI CUỘN TRANG: Ngăn chặn hành vi mặc định của thẻ <a> (href="#")
+        if (event) event.preventDefault(); 
+        
+        const row = document.getElementById(rowId);
+        if (!row) {
+            console.error(`Không tìm thấy hàng với ID: ${rowId}. ID phải là duy nhất.`);
+            return;
+        }
+
+        const editableFields = row.querySelectorAll('.edit-field');
+        const isEditing = buttonElement.textContent.trim().toLowerCase().includes('save');
+
+        if (!isEditing) {
+            // --- CHẾ ĐỘ CHỈNH SỬA (Từ 'Edit' sang 'Save') ---
+            editableFields.forEach(field => {
+                const currentValue = field.textContent.trim();
+                const dataName = field.getAttribute('data-name');
+                
+                let inputElement;
+                
+                if (dataName === 'price') {
+                    // CHỈ GIỮ LẠI CÁC CHỮ SỐ, bỏ dấu chấm, dấu $ và ký hiệu ₫ khi nhập
+                    // LƯU Ý: Trường "Borderless" có giá trị là "10%", nên cần xử lý nếu bạn muốn sửa được %
+                    let priceValue = currentValue.replace(/[^0-9]/g, ''); 
+                    
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text'; // Dùng text để nhập số lớn không giới hạn
+                    inputElement.value = priceValue;
+                    inputElement.className = 'edit-input price-input';
+                    
+                } else {
+                    // Trường nhập liệu đơn giản
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'text';
+                    inputElement.value = currentValue;
+                    inputElement.className = 'edit-input';
+                }
+
+                // Xóa nội dung hiện tại và chèn input
+                field.innerHTML = '';
+                field.appendChild(inputElement);
+            });
+
+            // Thay đổi nút Edit thành Save
+            buttonElement.innerHTML = '<i class="fas fa-save"></i> Save';
+            buttonElement.classList.add('save-btn');
+
+        } else {
+            // --- CHẾ ĐỘ LƯU (Từ 'Save' sang 'Edit') ---
+            editableFields.forEach(field => {
+                const inputElement = field.querySelector('input');
+                if (inputElement) {
+                    let newValue = inputElement.value;
+                    const dataName = field.getAttribute('data-name');
+
+                    // ĐỊNH DẠNG LẠI GIÁ TIỀN CHO VND (CHỈ SỐ NGUYÊN)
+                    if (dataName === 'price') {
+                        // Xử lý riêng cho giá trị là phần trăm (ví dụ: 10)
+                        if (newValue.includes('%') || field.textContent.includes('%')) {
+                             // Nếu là phần trăm, giữ nguyên ký tự % khi lưu
+                            newValue = newValue.replace(/[^0-9]/g, '') + '%'; 
+                        } else {
+                            // Là tiền tệ (VND)
+                            let cleanValue = newValue.replace(/[^0-9]/g, ''); 
+                            let price = parseInt(cleanValue);
+                            
+                            if (isNaN(price)) price = 0; 
+                            
+                            // Định dạng lại (10000 -> 10.000 ₫)
+                            newValue = price.toLocaleString('vi-VN') + ' ₫';
+                        }
+                    }
+                    
+                    // Cập nhật nội dung hiển thị
+                    field.textContent = newValue;
+                }
+            });
+
+            // Thay đổi nút Save thành Edit
+            buttonElement.innerHTML = '<i class="fas fa-edit"></i> Edit';
+            buttonElement.classList.remove('save-btn');
+            
+            console.log(`Dữ liệu mới của hàng ${rowId} đã được lưu.`);
+        }
+    }
+</script>
+</body>
+
+</html>

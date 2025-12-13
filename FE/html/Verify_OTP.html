@@ -1,9 +1,10 @@
+<!-- FE/html/Verify_OTP.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Email Verification</title>
+    <title data-i18n="otp.page_title">Email Verification</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
@@ -32,8 +33,10 @@
     <main role="main">
       <div class="container">
         <div class="icon"><i class="bxr bx-envelope"></i></div>
-        <h2>Email Verification</h2>
-        <p>Enter the 6-digit code sent to your email</p>
+        <h2 data-i18n="otp.title">Email Verification</h2>
+        <p id="otpSub" data-i18n="otp.subtitle">
+          Enter the 6-digit code sent to your email
+        </p>
 
         <div class="otp-field">
           <input type="text" maxlength="1" inputmode="numeric" />
@@ -44,19 +47,32 @@
           <input type="text" maxlength="1" inputmode="numeric" />
         </div>
 
-        <div class="resend">Resend Code</div>
-        <button id="verifyBtn">Verify</button>
-        <div class="error" id="error" style="display: none">
+        <div class="resend" data-i18n="otp.resend">Resend Code</div>
+        <button id="verifyBtn" data-i18n="otp.verify">Verify</button>
+        <div
+          class="error"
+          id="error"
+          style="display: none"
+          data-i18n="otp.error_invalid"
+        >
           Invalid code. Please try again.
         </div>
       </div>
 
+      <!-- Nhúng i18n trước khi script logic chạy -->
+      <script src="/js/i18n.js"></script>
       <script>
         document.addEventListener("DOMContentLoaded", () => {
           const inputs = document.querySelectorAll(".otp-field input");
           const verifyBtn = document.getElementById("verifyBtn");
           const errorMsg = document.getElementById("error");
           const resendBtn = document.querySelector(".resend");
+          const sub = document.getElementById("otpSub");
+
+          // Cập nhật <title> theo i18n (nếu i18n đã load)
+          try {
+            document.title = i18n.t("otp.page_title");
+          } catch {}
 
           // Nhận email & mode
           const urlParams = new URLSearchParams(window.location.search);
@@ -67,13 +83,12 @@
             "";
           const mode = (urlParams.get("mode") || "").toLowerCase(); // '' | 'reset'
 
-          if (email) {
-            document.querySelector(
-              "p"
-            ).innerHTML = `Enter the 6-digit code sent to <strong>${email}</strong>`;
+          // Subtitle có email (giữ nguyên UI, chỉ i18n hoá text)
+          if (email && window.i18n) {
+            sub.innerHTML = i18n.f("otp.subtitle_email", { email });
           }
 
-          // UX inputs
+          // UX inputs (giữ nguyên)
           inputs.forEach((input, index) => {
             input.addEventListener("input", (e) => {
               let v = e.target.value.replace(/\D/g, "");
@@ -101,17 +116,25 @@
             });
           });
 
-          // Verify
+          // Verify (giữ flow cũ, chỉ đổi message -> i18n)
           verifyBtn.addEventListener("click", async () => {
             const otp = Array.from(inputs)
               .map((i) => i.value.trim())
               .join("");
             if (!/^\d{6}$/.test(otp)) {
-              showErr("Vui lòng nhập đầy đủ 6 chữ số");
+              showErr(
+                window.i18n
+                  ? i18n.t("otp.error_fill6")
+                  : "Please enter all 6 digits."
+              );
               return;
             }
             if (!email) {
-              showErr("Không tìm thấy email. Vui lòng thao tác lại.");
+              showErr(
+                window.i18n
+                  ? i18n.t("otp.error_missing_email")
+                  : "Email not found. Please try again."
+              );
               return;
             }
 
@@ -138,24 +161,42 @@
                   window.location.href = "/reset-password";
                 } else {
                   localStorage.removeItem("registrationEmail");
-                  alert("Xác thực thành công! Bạn đã có thể đăng nhập.");
+                  alert(
+                    window.i18n
+                      ? i18n.t("otp.alert_verified")
+                      : "Verification successful! You can now log in."
+                  );
                   window.location.href = "/login";
                 }
               } else {
-                showErr(data.message || "Mã OTP không đúng. Vui lòng thử lại.");
+                showErr(
+                  (window.i18n && i18n.t("otp.error_invalid")) ||
+                    data.message ||
+                    "Invalid OTP. Please try again."
+                );
                 inputs.forEach((i) => (i.value = ""));
                 inputs[0].focus();
               }
             } catch (e) {
               console.error("Verification error:", e);
-              showErr("Có lỗi xảy ra. Vui lòng thử lại.");
+              showErr(
+                window.i18n
+                  ? i18n.t("otp.error_generic")
+                  : "Something went wrong. Please try again."
+              );
             }
           });
 
-          // Resend
+          // Resend (giữ flow cũ, chỉ đổi message -> i18n)
           resendBtn.addEventListener("click", async () => {
-            if (!email)
-              return alert("Không tìm thấy email. Vui lòng thao tác lại.");
+            if (!email) {
+              alert(
+                window.i18n
+                  ? i18n.t("otp.error_missing_email")
+                  : "Email not found. Please try again."
+              );
+              return;
+            }
             try {
               const endpoint =
                 mode === "reset"
@@ -168,16 +209,26 @@
               });
               const data = await res.json();
               if (res.ok && data.success) {
-                alert("Mã OTP mới đã được gửi.");
+                alert(
+                  window.i18n
+                    ? i18n.t("otp.resend_ok")
+                    : "A new OTP has been sent."
+                );
                 errorMsg.style.display = "none";
               } else {
                 alert(
-                  data.message || "Không thể gửi lại mã OTP. Vui lòng thử sau."
+                  (window.i18n && i18n.t("otp.resend_fail")) ||
+                    data.message ||
+                    "Could not resend OTP. Please try again later."
                 );
               }
             } catch (e) {
               console.error("Resend OTP error:", e);
-              alert("Có lỗi xảy ra. Vui lòng thử lại sau.");
+              alert(
+                window.i18n
+                  ? i18n.t("otp.error_generic")
+                  : "Something went wrong. Please try again later."
+              );
             }
           });
 
@@ -185,6 +236,16 @@
             errorMsg.textContent = msg;
             errorMsg.style.display = "block";
           }
+
+          // Khi đổi ngôn ngữ runtime, cập nhật title & subtitle
+          window.addEventListener("lang-changed", () => {
+            try {
+              document.title = i18n.t("otp.page_title");
+            } catch {}
+            if (email && window.i18n) {
+              sub.innerHTML = i18n.f("otp.subtitle_email", { email });
+            }
+          });
         });
       </script>
     </main>

@@ -6,9 +6,9 @@ const ENABLE_VNPAY = true;
 
 // ===== VIETQR CONFIG (thay bằng info thật của bạn) =====
 const VIETQR = {
-  bankCode: 'MB',                // MBBank (mã VietQR là 'MB')
-  accountNumber: '0896216239',    // Số TK nhận
-  accountName: 'NGUYEN ANH HUY',  // TÊN CHỦ TK – CHỮ HOA, KHÔNG DẤU càng tốt
+  bankCode: "MB", // MBBank (mã VietQR là 'MB')
+  accountNumber: "0896216239", // Số TK nhận
+  accountName: "NGUYEN ANH HUY", // TÊN CHỦ TK – CHỮ HOA, KHÔNG DẤU càng tốt
 };
 
 // Build URL ảnh QR VietQR (NAPAS)
@@ -16,28 +16,30 @@ function buildVietQrUrl({ amount, addInfo, accountNameOverride }) {
   const bank = VIETQR.bankCode.trim();
   const acc = VIETQR.accountNumber.trim();
   const name = encodeURIComponent(
-    (accountNameOverride || VIETQR.accountName || '').trim()
+    (accountNameOverride || VIETQR.accountName || "").trim()
   );
 
   const safeAmount = Math.max(0, Math.round(Number(amount) || 0)); // VND integer
-  const info = encodeURIComponent(String(addInfo || '').slice(0, 60)); // tránh quá dài
+  const info = encodeURIComponent(String(addInfo || "").slice(0, 60)); // tránh quá dài
 
   // qr_only.png: chỉ ảnh QR (đúng nhu cầu Figma)
   // Có thể dùng .png?amount=...&addInfo=...&accountName=...
-  return `https://img.vietqr.io/image/${bank}-${acc}-qr_only.png` +
-    `?amount=${safeAmount}&addInfo=${info}&accountName=${name}`;
+  return (
+    `https://img.vietqr.io/image/${bank}-${acc}-qr_only.png` +
+    `?amount=${safeAmount}&addInfo=${info}&accountName=${name}`
+  );
 }
 
 // State hiển thị QR theo Figma
 let paymentPollTimer = null;
-let orderSSE = null;              // SSE connection theo orderCode
-let redirecting = false;          // tránh redirect nhiều lần
+let orderSSE = null; // SSE connection theo orderCode
+let redirecting = false; // tránh redirect nhiều lần
 
 // ===== add globals =====
-let waitingSince = 0;             // thời điểm vào trạng thái "waiting"
-let sseOpenedAt = 0;              // thời điểm mở SSE
-let uiState = "idle";             // "idle" | "waiting" | "success"
-let successTimerId = null;        // tránh setTimeout trùng
+let waitingSince = 0; // thời điểm vào trạng thái "waiting"
+let sseOpenedAt = 0; // thời điểm mở SSE
+let uiState = "idle"; // "idle" | "waiting" | "success"
+let successTimerId = null; // tránh setTimeout trùng
 
 function scheduleSuccess(minMs = 1200) {
   if (uiState === "success") return;
@@ -45,7 +47,10 @@ function scheduleSuccess(minMs = 1200) {
   const started = waitingSince || Date.now();
   const elapsed = Date.now() - started;
   const delay = Math.max(0, minMs - elapsed);
-  if (successTimerId) { clearTimeout(successTimerId); successTimerId = null; }
+  if (successTimerId) {
+    clearTimeout(successTimerId);
+    successTimerId = null;
+  }
   successTimerId = setTimeout(() => {
     if (uiState !== "success") {
       setQrStateSuccess();
@@ -71,16 +76,21 @@ function setQrStateIdle() {
   img.style.display = "block";
   row.classList.remove("hidden");
   success.classList.add("hidden");
-  waitingBox.classList.add("hidden");   // ẩn ô đồng hồ nếu có
+  waitingBox.classList.add("hidden"); // ẩn ô đồng hồ nếu có
 
   title.textContent = "Scan QR code to pay";
   // hiển thị “Amount: xxx₫”
-  const raw = Number(document.getElementById("summaryPayNowDisplay")?.dataset?.value || 0);
-  const totalNow = Number(document.getElementById("totalOrderValueDisplay")?.dataset?.value || 0);
+  const raw = Number(
+    document.getElementById("summaryPayNowDisplay")?.dataset?.value || 0
+  );
+  const totalNow = Number(
+    document.getElementById("totalOrderValueDisplay")?.dataset?.value || 0
+  );
   const showAmt = raw > 0 ? raw : totalNow;
   amount.style.display = "block";
   amount.textContent = `Amount: ${fmtVND(showAmt)}`;
-  if (helper) helper.textContent = "Use banking apps or e-wallets that support VnPay";
+  if (helper)
+    helper.textContent = "Use banking apps or e-wallets that support VnPay";
   if (extra) extra.textContent = "";
   waitingSince = 0;
   uiState = "idle";
@@ -104,20 +114,26 @@ function setQrStateWaiting() {
   waitingBox.classList.remove("hidden");
   // ensure có đồng hồ
   if (waitingBox && !waitingBox.firstElementChild) {
-    waitingBox.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="animate-spin text-gray-500"><circle cx="12" cy="12" r="10" stroke-opacity=".25"></circle><path d="M12 6v6l4 2" stroke-opacity=".8"></path></svg>';
+    waitingBox.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="animate-spin text-gray-500"><circle cx="12" cy="12" r="10" stroke-opacity=".25"></circle><path d="M12 6v6l4 2" stroke-opacity=".8"></path></svg>';
   }
-  row.classList.remove("hidden");      // HIỆN dòng chữ dưới đồng hồ
+  row.classList.remove("hidden"); // HIỆN dòng chữ dưới đồng hồ
 
   title.textContent = "Waiting for payment...";
   // “Amount: xxx₫”
-  const raw = Number(document.getElementById("summaryPayNowDisplay")?.dataset?.value || 0);
-  const totalNow = Number(document.getElementById("totalOrderValueDisplay")?.dataset?.value || 0);
+  const raw = Number(
+    document.getElementById("summaryPayNowDisplay")?.dataset?.value || 0
+  );
+  const totalNow = Number(
+    document.getElementById("totalOrderValueDisplay")?.dataset?.value || 0
+  );
   const showAmt = raw > 0 ? raw : totalNow;
   amount.style.display = "block";
   amount.textContent = `Amount: ${fmtVND(showAmt)}`;
-  if (helper) helper.textContent = "Use banking apps or e-wallets that support VnPay";
+  if (helper)
+    helper.textContent = "Use banking apps or e-wallets that support VnPay";
   if (extra) extra.textContent = "";
-  waitingSince = Date.now();     // <-- ĐÁNH DẤU đang waiting
+  waitingSince = Date.now(); // <-- ĐÁNH DẤU đang waiting
   uiState = "waiting";
 }
 
@@ -133,17 +149,18 @@ function setQrStateSuccess() {
   const extra = document.getElementById("qrExtraLine");
   if (!img || !row || !title || !amount || !success || !waitingBox) return;
 
-
   img.style.display = "none";
   row.classList.remove("hidden");
-  waitingBox.classList.add("hidden");  // ẩn ô đồng hồ
+  waitingBox.classList.add("hidden"); // ẩn ô đồng hồ
   success.classList.remove("hidden");
 
   title.textContent = "Payment Successful";
-  amount.style.display = "none";       // theo yêu cầu: không hiện Amount ở success
+  amount.style.display = "none"; // theo yêu cầu: không hiện Amount ở success
   if (helper) helper.textContent = "Redirecting...";
   if (extra) {
-    const oc = (document.getElementById("orderCodeDisplay")?.textContent || "").trim();
+    const oc = (
+      document.getElementById("orderCodeDisplay")?.textContent || ""
+    ).trim();
     extra.textContent = oc ? `Code: ${oc}` : "";
   }
   uiState = "success";
@@ -185,8 +202,12 @@ function bindBasics({ orderCode, fileCount, totalAmount, customer }) {
 // ================== PAYMENT UI ==================
 function wirePaymentOptions(total, defaultConfirmHandler) {
   const depositSec = $("#depositRequiredSection");
-  const vnpayOpt = document.querySelector('.payment-option[data-method="vnpay"]');
-  const storeOpt = document.querySelector('.payment-option[data-method="store"]');
+  const vnpayOpt = document.querySelector(
+    '.payment-option[data-method="vnpay"]'
+  );
+  const storeOpt = document.querySelector(
+    '.payment-option[data-method="store"]'
+  );
   const vnpayDesc = $("#vnpayDescription");
   const summaryPayNow = $("#summaryPayNowDisplay");
   const qrSec = $("#qrCodePaymentSection");
@@ -203,21 +224,30 @@ function wirePaymentOptions(total, defaultConfirmHandler) {
 
   // Mặc định chọn "Pay at store"
   $("#payAtStore").checked = true;
-  document.querySelectorAll(".payment-option").forEach(o => o.classList.remove("active"));
+  document
+    .querySelectorAll(".payment-option")
+    .forEach((o) => o.classList.remove("active"));
   storeOpt.classList.add("active");
   qrSec.style.display = "none";
-  depositSec.style.display = "none";     // <- đảm bảo ẩn khi mặc định Store
+  depositSec.style.display = "none"; // <- đảm bảo ẩn khi mặc định Store
   summaryPayNow.textContent = fmtVND(0);
   btn.style.display = "block";
-  btn.textContent = "Confirm payment at the store";
+  btn.textContent = tt("order_payment.btn_confirm_store");
   btn.classList.remove("bg-green-500");
   btn.classList.add("bg-primary-blue");
   btn.style.backgroundColor = "#0095ff";
-  if (typeof defaultConfirmHandler === "function") btn.onclick = defaultConfirmHandler;
+  if (typeof defaultConfirmHandler === "function")
+    btn.onclick = defaultConfirmHandler;
   // --- Trở lại "Pay at store" ---
-  if (orderSSE) { orderSSE.close(); orderSSE = null; }
-  if (paymentPollTimer) { clearInterval(paymentPollTimer); paymentPollTimer = null; }
-  setQrStateIdle();                 // ⬅️ reset QR UI
+  if (orderSSE) {
+    orderSSE.close();
+    orderSSE = null;
+  }
+  if (paymentPollTimer) {
+    clearInterval(paymentPollTimer);
+    paymentPollTimer = null;
+  }
+  setQrStateIdle(); // ⬅️ reset QR UI
   qrSec.style.display = "none";
   summaryPayNow.textContent = fmtVND(0);
 
@@ -228,11 +258,15 @@ function wirePaymentOptions(total, defaultConfirmHandler) {
       const method = option.dataset.method;
 
       if (!ENABLE_VNPAY && method === "vnpay") {
-        alert('Online payment is not available yet. Please choose "Pay at store".');
+        alert(
+          'Online payment is not available yet. Please choose "Pay at store".'
+        );
         return;
       }
 
-      document.querySelectorAll(".payment-option").forEach(o => o.classList.remove("active"));
+      document
+        .querySelectorAll(".payment-option")
+        .forEach((o) => o.classList.remove("active"));
       option.classList.add("active");
       radio.checked = true;
 
@@ -267,8 +301,8 @@ function wirePaymentOptions(total, defaultConfirmHandler) {
 
         // Dựng QR: chỉ dùng 1 mã "dính liền" để tránh app ngân hàng hiển thị 2 dòng nội dung
         // SSE vẫn nghe theo mã CHUẨN để khớp với broadcastPaid("#ORD-YYYY-XXX", ...)
-        const ocRaw = ($("#orderCodeDisplay").textContent || "ORDER").trim();   // ví dụ: "#ORD-2025-145"
-        const ocCompact = ocRaw.replace(/[#-]/g, "");                           // "ORD2025145"
+        const ocRaw = ($("#orderCodeDisplay").textContent || "ORDER").trim(); // ví dụ: "#ORD-2025-145"
+        const ocCompact = ocRaw.replace(/[#-]/g, ""); // "ORD2025145"
         const addInfo = ocCompact; // ✅ chỉ một mã
         const img = document.querySelector(".qr-code-img");
         const qrUrl = buildVietQrUrl({ amount: Math.round(payNow), addInfo });
@@ -279,10 +313,15 @@ function wirePaymentOptions(total, defaultConfirmHandler) {
         // 2) CHỈ mở SSE sau khi ảnh QR đã load (tránh nhảy quá nhanh)
         img.onload = () => {
           try {
-            if (orderSSE) { orderSSE.close(); orderSSE = null; }
+            if (orderSSE) {
+              orderSSE.close();
+              orderSSE = null;
+            }
             sseOpenedAt = Date.now();
             // ⚠️ Nghe theo mã CHUẨN (không phải chuỗi addInfo đôi) để trùng với BE broadcast
-            orderSSE = new EventSource(`/api/orders/${encodeURIComponent(ocRaw)}/stream`);
+            orderSSE = new EventSource(
+              `/api/orders/${encodeURIComponent(ocRaw)}/stream`
+            );
 
             orderSSE.onmessage = (ev) => {
               try {
@@ -291,26 +330,39 @@ function wirePaymentOptions(total, defaultConfirmHandler) {
                   if (redirecting) return;
                   redirecting = true;
 
-                  const paidNow = Math.round(Number(data.paidAmount ?? payNow) || 0);
+                  const paidNow = Math.round(
+                    Number(data.paidAmount ?? payNow) || 0
+                  );
                   $("#summaryPayNowDisplay").textContent = fmtVND(paidNow);
                   $("#summaryPayNowDisplay").dataset.value = paidNow; // đồng bộ số thô
 
                   // Chỉ khi nhận 'paid' mới vào trạng thái "waiting"
                   if (uiState !== "waiting") setQrStateWaiting();
-                  // Giữ "waiting" tối thiểu 1.2s rồi chuyển success
+                  // Giữ "waiting" đủ lâu cho người dùng thấy chuyển cảnh
                   scheduleSuccess(5000);
 
                   // NEW: Ghi currentOrderData để trang /order/status đọc được dù refresh/đi thẳng link
                   try {
                     const paidAmount = Number(data.paidAmount ?? payNow) || 0;
-                    const total = Number($("#totalOrderValueDisplay")?.dataset?.value || 0);
+                    const total = Number(
+                      $("#totalOrderValueDisplay")?.dataset?.value || 0
+                    );
                     const orderCode = ocRaw || "N/A";
-                    const fileCount = Number($("#fileCountDisplay")?.textContent?.match(/\d+/)?.[0] || 0);
+                    const fileCount = Number(
+                      $("#fileCountDisplay")?.textContent?.match(/\d+/)?.[0] ||
+                      0
+                    );
 
                     const current = safeParseLocal("currentOrderData", {});
                     // Nếu có giảm giá => xem số phải trả cuối cùng là paidAmount
-                    const finalTotal = Math.min(Math.max(0, total), paidAmount || total);
-                    const remainingAfterPay = Math.max(0, finalTotal - paidAmount);
+                    const finalTotal = Math.min(
+                      Math.max(0, total),
+                      paidAmount || total
+                    );
+                    const remainingAfterPay = Math.max(
+                      0,
+                      finalTotal - paidAmount
+                    );
                     const updated = {
                       ...current,
                       orderCode,
@@ -320,26 +372,64 @@ function wirePaymentOptions(total, defaultConfirmHandler) {
                       paidAmount,
                       remainingAmount: remainingAfterPay,
                       orderDate: new Date().toISOString(),
-                      expectedCompletion: current?.expectedCompletion ?? new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+                      expectedCompletion:
+                        current?.expectedCompletion ??
+                        new Date(
+                          Date.now() + 2 * 24 * 60 * 60 * 1000
+                        ).toISOString(),
                       // Ưu tiên lưu tổng sau giảm để trang Status hiển thị đúng
                       summary: {
                         ...(current?.summary ?? {}),
                         totalPrice: finalTotal,
-                        fileCount
+                        fileCount,
                       },
                       // Thêm field tường minh cho về sau (FE ưu tiên dùng nếu có)
-                      finalTotal
+                      finalTotal,
                     };
-                    localStorage.setItem("currentOrderData", JSON.stringify(updated));
+                    localStorage.setItem(
+                      "currentOrderData",
+                      JSON.stringify(updated)
+                    );
                   } catch { }
 
-                  // đóng SSE và chuyển trang sau khi đã hiển thị success
-                  if (orderSSE) { try { orderSSE.close(); } catch { } orderSSE = null; }
-                  // Cho người dùng thấy ✓ rõ trước khi chuyển trang
-                  setTimeout(() => {
-                    // Điều hướng bằng mã CHUẨN
-                    window.location.href = `/order/status?orderCode=${encodeURIComponent(ocRaw)}`;
-                  }, 10000);
+                  // Note: không redirect ngay tại "paid"; sẽ chờ "status"=Successful hoặc timeout
+                }
+                // 🆕 Bắt sự kiện trạng thái để đồng bộ UI mượt hơn
+                if (data.type === "status") {
+                  const st = String(data.status || "").toLowerCase();
+                  if (st === "completed" || st === "successful") {
+                    // nếu chưa chuyển sang success, thực hiện ngay (sau delay ngắn)
+                    scheduleSuccess(1200);
+                    // Redirect nhẹ sau khi đã show ✓ một lúc
+                    if (!redirecting) {
+                      redirecting = true;
+                      setTimeout(() => {
+                        try {
+                          if (orderSSE) {
+                            orderSSE.close();
+                            orderSSE = null;
+                          }
+                        } catch { }
+                        window.location.href = `/order/status?orderCode=${encodeURIComponent(
+                          ocRaw
+                        )}`;
+                      }, 2000);
+                    }
+                  } else if (st === "in-progress") {
+                    // giữ waiting; không làm gì thêm
+                  } else if (st === "ready") {
+                    // vẫn giữ waiting; đã gần hoàn tất
+                  } else if (st === "cancelled") {
+                    // Trường hợp hiếm khi đang mở QR mà user tự hủy — quay lại trang dịch vụ
+                    alert("This order was cancelled.");
+                    try {
+                      if (orderSSE) {
+                        orderSSE.close();
+                        orderSSE = null;
+                      }
+                    } catch { }
+                    window.location.href = "/service/print";
+                  }
                 }
               } catch { }
             };
@@ -349,30 +439,45 @@ function wirePaymentOptions(total, defaultConfirmHandler) {
         // fallback nếu ảnh QR lỗi vẫn mở SSE để không chặn thanh toán
         img.onerror = () => {
           try {
-            if (orderSSE) { orderSSE.close(); orderSSE = null; }
-            orderSSE = new EventSource(`/api/orders/${encodeURIComponent(ocRaw)}/stream`);
+            if (orderSSE) {
+              orderSSE.close();
+              orderSSE = null;
+            }
+            orderSSE = new EventSource(
+              `/api/orders/${encodeURIComponent(ocRaw)}/stream`
+            );
           } catch { }
         };
         // 3) set src SAU khi đã gán onload/onerror
         img.src = qrUrl;
 
         // Nếu có timer poll cũ thì clear
-        if (paymentPollTimer) { clearInterval(paymentPollTimer); paymentPollTimer = null; }
+        if (paymentPollTimer) {
+          clearInterval(paymentPollTimer);
+          paymentPollTimer = null;
+        }
         return;
       }
 
       // --- Trở lại "Pay at store" ---
-      if (orderSSE) { orderSSE.close(); orderSSE = null; }
-      if (successTimerId) { clearTimeout(successTimerId); successTimerId = null; }
+      if (orderSSE) {
+        orderSSE.close();
+        orderSSE = null;
+      }
+      if (successTimerId) {
+        clearTimeout(successTimerId);
+        successTimerId = null;
+      }
       qrSec.style.display = "none";
       summaryPayNow.textContent = fmtVND(0);
-      depositSec.style.display = "none";   // <- ẨN khi chuyển về Store
+      depositSec.style.display = "none"; // <- ẨN khi chuyển về Store
       btn.style.display = "block";
-      btn.textContent = "Confirm payment at the store";
+      btn.textContent = tt("order_payment.btn_confirm_store");
       btn.classList.remove("bg-green-500");
       btn.classList.add("bg-primary-blue");
       btn.style.backgroundColor = "#0095ff";
-      if (typeof defaultConfirmHandler === "function") btn.onclick = defaultConfirmHandler;
+      if (typeof defaultConfirmHandler === "function")
+        btn.onclick = defaultConfirmHandler;
       setQrStateIdle();
     };
   });
@@ -541,5 +646,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Clear timer khi rời trang
 window.addEventListener("beforeunload", () => {
   if (paymentPollTimer) clearInterval(paymentPollTimer);
-  if (orderSSE) { orderSSE.close(); orderSSE = null; }
+  if (orderSSE) {
+    orderSSE.close();
+    orderSSE = null;
+  }
 });

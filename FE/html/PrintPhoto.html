@@ -113,7 +113,12 @@
         margin-bottom: 6px;
       }
 
-      .input-field span {
+      /* text label giữ màu mặc định */
+      .input-field label span {
+        color: #222;
+      }
+      /* chỉ riêng dấu * có class .required mới màu đỏ */
+      .input-field label .required {
         color: #ef4444;
       }
 
@@ -449,6 +454,7 @@
         border: 0 !important;
       }
     </style>
+    <script src="/FE/js/i18n.js"></script>
   </head>
 
   <body>
@@ -457,43 +463,71 @@
         <div class="page-header">
           <button class="btn-back" onclick="window.history.back()">←</button>
           <div class="title-wrap">
-            <h1>High Quality Photo Printing</h1>
-            <p>Upload your photo and choose size and paper type</p>
+            <h1 data-i18n="print_photo.title">High Quality Photo Printing</h1>
+            <p data-i18n="print_photo.subtitle">
+              Upload your photo and choose size and paper type
+            </p>
           </div>
         </div>
 
         <div class="layout">
           <div class="left">
             <div class="section">
-              <h3>Customer Information</h3>
+              <h3 data-i18n="print_photo.customer_info_title">
+                Customer Information
+              </h3>
               <div class="input-group">
                 <div class="input-field">
-                  <label>Full Name <span>*</span></label>
-                  <input type="text" placeholder="Enter full name" required />
+                  <label>
+                    <span data-i18n="print_doc.field_full_name_label">
+                      Full Name
+                    </span>
+                    <span class="required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter full name"
+                    data-i18n-placeholder="print_doc.field_full_name_placeholder"
+                    required
+                  />
                 </div>
                 <div class="input-field">
-                  <label>Email <span>*</span></label>
-                  <input type="email" placeholder="Enter email" required />
+                  <label>
+                    <span data-i18n="print_doc.field_email_label"> Email </span>
+                    <span class="required">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="Enter email"
+                    data-i18n-placeholder="print_doc.field_email_placeholder"
+                    required
+                  />
                 </div>
               </div>
             </div>
 
             <div class="section">
-              <h3>Upload image</h3>
+              <h3 data-i18n="print_photo.upload_section_title">Upload image</h3>
               <div class="upload-area" id="uploadArea">
                 <div class="icon">📤</div>
-                <p style="font-weight: 600; margin: 6px 0 4px">
+                <p
+                  style="font-weight: 600; margin: 6px 0 4px"
+                  data-i18n="print_photo.upload_main"
+                >
                   Select a photo to print
                 </p>
                 <p
                   style="margin: 0 0 8px; color: var(--muted); font-size: 13px"
+                  data-i18n="print_photo.upload_helper"
                 >
                   Supports JPG, PNG, TIFF (up to 20MB per image, minimum
                   resolution 300 DPI)
                 </p>
                 <div class="file-input-row">
                   <label class="file-input" for="fileInput">
-                    <span id="chooseText">Select file</span>
+                    <span id="chooseText" data-i18n="print_photo.upload_button"
+                      >Select file</span
+                    >
                   </label>
                   <input
                     id="fileInput"
@@ -512,17 +546,26 @@
             </div>
 
             <div class="section">
-              <h3>Special request</h3>
-              <label>Additional notes (optional)</label>
+              <h3 data-i18n="print_photo.special_request_title">
+                Special request
+              </h3>
+              <label data-i18n="print_photo.special_request_label">
+                Additional notes (optional)
+              </label>
               <textarea
                 id="notes"
                 placeholder="For example: crop to scale, adjust colors, deliver to a different address..."
+                data-i18n-placeholder="print_photo.special_request_placeholder"
               ></textarea>
             </div>
 
             <div class="section" id="configSection" style="display: none">
               <div class="config-list-title">
-                ⚙️ Print configuration (<span id="countLabel">0 files</span>)
+                ⚙️
+                <span data-i18n="print_photo.config_section_title">
+                  Print configuration
+                </span>
+                (<span id="countLabel">0 files</span>)
               </div>
               <div id="configList"></div>
             </div>
@@ -530,23 +573,38 @@
 
           <div class="right">
             <div class="order-summary-box">
-              <h4>Order Summary</h4>
+              <h4 data-i18n="print_photo.summary_title">Order Summary</h4>
               <div id="orderList">
-                <p style="color: var(--muted); text-align: center">
+                <p
+                  style="color: var(--muted); text-align: center"
+                  data-i18n="print_photo.summary_empty"
+                >
                   No file has been uploaded
                 </p>
               </div>
 
               <div class="summary-footer">
                 <div class="summary-row">
-                  <div>Number of photos:</div>
+                  <div data-i18n="print_photo.summary_count_label">
+                    Number of photos:
+                  </div>
                   <div id="orderCount">0 photo</div>
                 </div>
                 <div class="summary-row">
-                  <div style="font-weight: 700">Total:</div>
+                  <div
+                    style="font-weight: 700"
+                    data-i18n="print_photo.summary_total_label"
+                  >
+                    Total:
+                  </div>
                   <div id="orderTotal">0₫</div>
                 </div>
-                <button id="payBtn" class="pay-btn" disabled>
+                <button
+                  id="payBtn"
+                  class="pay-btn"
+                  disabled
+                  data-i18n="print_photo.btn_proceed_payment"
+                >
                   Proceed to payment
                 </button>
               </div>
@@ -574,6 +632,15 @@
           ".input-group .input-field:nth-child(2) input"
         );
         const notesTextarea = document.getElementById("notes");
+        const t =
+          window.i18n && typeof window.i18n.t === "function"
+            ? window.i18n.t.bind(window.i18n)
+            : (key) => key;
+
+        // Cập nhật tiêu đề tab theo ngôn ngữ hiện tại
+        if (typeof document !== "undefined") {
+          document.title = t("print_photo.page_title");
+        }
 
         let items = [];
         // Đọc preset nếu có (Order_History → Reorder)
@@ -636,8 +703,13 @@
           const MAX_MB = 20;
           const oversize = files.find((f) => f.size > MAX_MB * 1024 * 1024);
           if (oversize) {
+            const msgTemplate =
+              t("alert.file_too_large") ||
+              `File "{name}" exceeds {max}MB. Please choose a smaller file.`;
             alert(
-              `Tệp "${oversize.name}" vượt quá ${MAX_MB}MB. Vui lòng chọn tệp nhỏ hơn.`
+              msgTemplate
+                .replace("{name}", oversize.name)
+                .replace("{max}", String(MAX_MB))
             );
             return;
           }
@@ -654,10 +726,14 @@
             (f) => !allowedTypes.includes((f.type || "").toLowerCase())
           );
           if (unsupported) {
+            const msgTemplate =
+              t("alert.file_type_not_supported") ||
+              `Format "{type}" is not supported.`;
             alert(
-              `Định dạng "${
+              msgTemplate.replace(
+                "{type}",
                 unsupported.type || unsupported.name
-              }" chưa được hỗ trợ.`
+              )
             );
             return;
           }
@@ -729,13 +805,19 @@
           // Hiển thị phần cấu hình
           configSection.style.display = items.length ? "block" : "none";
           countLabel.textContent = `${items.length} ${
-            items.length > 1 ? "ảnh" : "ảnh"
+            items.length > 1
+              ? t("print_photo.count_photos_plural")
+              : t("print_photo.count_photos_singular")
           }`;
 
           // Render danh sách cấu hình
           configList.innerHTML = "";
           items.forEach((it) => {
             it.price = calcPrice(it);
+            const copiesLabel =
+              it.copies > 1
+                ? t("order_confirm.file_detail_copies")
+                : t("order_confirm.file_detail_copy");
             const card = document.createElement("div");
             card.className = "file-card";
             card.id = "card-" + it.id;
@@ -750,9 +832,11 @@
                             <img class="thumb" src="${it.preview}" alt="">
                             <div class="meta">
                                 <strong>${shortName(it.name, 40)}</strong>
-                                <div class="sub">${it.sizeLabel} • ${
+                                <div class="sub">
+                                  ${it.sizeLabel} • ${
               it.copies
-            } bản${it.copies > 1 ? "" : ""} • ${fmt(it.price)}</div>
+            } ${copiesLabel} • ${fmt(it.price)}
+                                </div>
                             </div>
                         </div>
                         <div style="display:flex;align-items:center;gap:8px">
@@ -766,7 +850,9 @@
             }">
                         <div class="row" style="align-items:flex-end; flex-wrap:wrap;">
                             <div style="flex:0 0 130px">
-                                <label>Số bản</label>
+                                                                <label>${t(
+                                                                  "print_doc.label_copies"
+                                                                )}</label>
                                 <input type="number" min="1" value="${
                                   it.copies
                                 }" data-field="copies" data-id="${
@@ -774,7 +860,9 @@
             }" style="width:100%;margin-top:6px">
                             </div>
                             <div style="flex:1; min-width:160px">
-                                <label>Paper size</label>
+                                                                <label>
+                                  ${t("print_doc.label_paper_size")}
+                                </label>
                                 <select data-field="size" data-id="${
                                   it.id
                                 }" style="margin-top:6px; width:100%">
@@ -790,7 +878,9 @@
                                 </select>
                             </div>
                             <div style="flex:1; min-width:180px">
-                                <label>Type of paper</label>
+                                                                <label>
+                                  ${t("print_photo.label_paper_type")}
+                                </label>
                                 <select data-field="paper" data-id="${
                                   it.id
                                 }" style="margin-top:6px; width:100%">
@@ -807,15 +897,21 @@
                             </div>
                         </div>
                         <div style="margin-top:10px; display:flex; align-items:center; gap:12px">
-                            <label><input type="checkbox" data-field="borderless" data-id="${
-                              it.id
-                            }" ${
-              it.borderless ? "checked" : ""
-            }> Borderless (+10%)</label>
+                            <label>
+                              <input
+                                type="checkbox"
+                                data-field="borderless"
+                                data-id="${it.id}"
+                                ${it.borderless ? "checked" : ""}
+                              >
+                              ${t("print_photo.borderless_label")}
+                            </label>
                             <div style="flex:1"></div>
                             <div style="font-weight:700">${fmt(it.price)}</div>
                         </div>
-                        <div class="footer-note">The photo will be printed in full size, without any white borders around it.</div>
+                                                <div class="footer-note">
+                          ${t("print_photo.footer_note_borderless")}
+                        </div>
                     </div>
                 `;
             configList.appendChild(card);
@@ -921,8 +1017,12 @@
           orderList.innerHTML = "";
           let total = 0;
           if (items.length === 0) {
-            orderList.innerHTML = `<p style="color:var(--muted); text-align:center">Chưa tải lên file nào</p>`;
-            orderCount.textContent = "0 ảnh";
+            orderList.innerHTML = `<p style="color:var(--muted); text-align:center">${t(
+              "print_photo.summary_empty"
+            )}</p>`;
+            orderCount.textContent = `0 ${t(
+              "print_photo.count_photos_plural"
+            )}`;
             orderTotal.textContent = "0₫";
             payBtn.disabled = true;
             return;
@@ -931,6 +1031,13 @@
           items.forEach((it) => {
             it.price = calcPrice(it);
             total += it.price;
+            const copiesLabel =
+              it.copies > 1
+                ? t("order_confirm.file_detail_copies")
+                : t("order_confirm.file_detail_copy");
+            const borderlessLabel = it.borderless
+              ? ` • ${t("order_confirm.file_detail_borderless")}`
+              : "";
             const row = document.createElement("div");
             row.className = "order-item";
             row.innerHTML = `
@@ -940,18 +1047,21 @@
                           it.name,
                           28
                         )}</div>
-                        <div style="font-size:12px;color:var(--muted); margin-top:6px">${
-                          it.sizeLabel
-                        } • ${it.copies} bản${it.copies > 1 ? "" : ""}<br>${
-              it.paper
-            }${it.borderless ? " • Không viền" : ""}</div>
+                        <div style="font-size:12px;color:var(--muted); margin-top:6px">
+                          ${it.sizeLabel} • ${it.copies} ${copiesLabel}<br>
+                          ${it.paper}${borderlessLabel}
+                        </div>
                     </div>
                     <div class="o-price">${fmt(it.price)}</div>
                 `;
             orderList.appendChild(row);
           });
 
-          orderCount.textContent = `${items.length} ảnh`;
+          orderCount.textContent = `${items.length} ${
+            items.length > 1
+              ? t("print_photo.count_photos_plural")
+              : t("print_photo.count_photos_singular")
+          }`;
           orderTotal.textContent = fmt(total);
           payBtn.disabled = false;
           orderList.style.maxHeight = items.length > 4 ? "360px" : "auto";
@@ -963,17 +1073,21 @@
           "click",
           async () => {
             // 1) Kiểm tra input tối thiểu + định dạng email
-            if (!customerNameInput.value.trim()) {
-              alert("Vui lòng nhập Họ và tên.");
-              return;
-            }
-            if (!customerEmailInput.value.trim()) {
-              alert("Vui lòng nhập Email.");
+            if (
+              !customerNameInput.value.trim() ||
+              !customerEmailInput.value.trim()
+            ) {
+              const msg =
+                t("alert.missing_customer_info") ||
+                "Please enter your Full Name and Email.";
+              alert(msg);
               return;
             }
             const emailValid = customerEmailInput.checkValidity();
             if (!emailValid) {
-              alert("Email không hợp lệ. Vui lòng kiểm tra lại.");
+              alert(
+                t("alert.invalid_email") || "Invalid email. Please check again."
+              );
               return;
             }
 
@@ -991,7 +1105,8 @@
             // Trạng thái loading cho nút thanh toán
             payBtn.disabled = true;
             const prevText = payBtn.textContent;
-            payBtn.textContent = "Đang tạo đơn...";
+            payBtn.textContent =
+              t("print_photo.btn_creating_order") || "Creating order...";
             payBtn.setAttribute("aria-busy", "true");
 
             try {
@@ -1006,7 +1121,10 @@
               });
               if (!res.ok) {
                 if (res.status === 401) {
-                  alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+                  alert(
+                    t("alert.session_expired") ||
+                      "Login session has expired. Please log in again."
+                  );
                   window.location.href = "/login";
                   return;
                 }
@@ -1020,7 +1138,10 @@
               if (!backendOrderId) throw new Error("Missing backendOrderId");
             } catch (err) {
               console.error("[PrintPhoto] create photo order error:", err);
-              alert("Tạo đơn ảnh thất bại. Vui lòng thử lại.");
+              alert(
+                t("alert.create_order_failed") ||
+                  "Failed to create order. Please try again."
+              );
               // Khôi phục nút
               payBtn.disabled = false;
               payBtn.textContent = prevText;
@@ -1030,10 +1151,13 @@
 
             // 4) Lưu dữ liệu hiển thị cho trang xác nhận như hiện tại
             localStorage.removeItem("printOrderData");
-            // Ưu tiên dùng ID từ backend (fall back nếu thiếu)
+            // Ưu tiên dùng ID từ backend, chuẩn hoá như genOrderCode (#ORD-YYYY-XXX)
+            const now = new Date();
+            const year = now.getFullYear();
             const orderCode = backendOrderId
-              ? `PHOTO-${backendOrderId}`
-              : `PHOTO-${Date.now().toString().slice(-6)}`;
+              ? `#ORD-${year}-${String(backendOrderId).padStart(3, "0")}`
+              : // fallback an toàn nếu vì lý do gì đó không có backendOrderId
+                `PHOTO-${Date.now().toString().slice(-6)}`;
             const orderData = {
               orderCode,
               customer: {

@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login | PrintNow</title>
+    <title data-i18n="login.page_title">Login | PrintNow</title>
 
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
@@ -12,11 +12,12 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
     <link rel="stylesheet" href="../css/Login.css" />
 
+    <!-- i18n -->
+    <script src="/FE/js/i18n.js"></script>
+
     <style>
-      /* A11y helper: văn bản chỉ dành cho screen reader */
       .sr-only {
         position: absolute !important;
         width: 1px !important;
@@ -28,14 +29,12 @@
         white-space: nowrap !important;
         border: 0 !important;
       }
-
-      /* Center submit button inside the login form */
       #loginForm .btn {
-        display: block; /* tách khỏi inline để margin auto hoạt động */
-        margin: 16px auto 0; /* canh giữa ngang */
-        width: auto; /* tránh bị kéo full-width nếu CSS cũ đặt 100% */
-        min-width: 180px; /* dễ bấm hơn */
-        text-align: center; /* đề phòng style kế thừa */
+        display: block;
+        margin: 16px auto 0;
+        min-width: 180px;
+        width: auto;
+        text-align: center;
       }
     </style>
   </head>
@@ -48,7 +47,7 @@
         </div>
         <div class="text">
           <h1>PrintNow</h1>
-          <p>Print service</p>
+          <p data-i18n="nav.tagline">Print service</p>
         </div>
       </div>
     </header>
@@ -61,8 +60,8 @@
           </div>
         </div>
 
-        <h2>Welcome back!</h2>
-        <p class="subtext">Login to your account</p>
+        <h2 data-i18n="login.welcome">Welcome back!</h2>
+        <p class="subtext" data-i18n="login.subtext">Login to your account</p>
 
         <form id="loginForm" action="/api/auth/login" method="post" novalidate>
           <div class="input_box">
@@ -70,6 +69,7 @@
               id="email"
               name="email"
               type="email"
+              data-i18n-placeholder="login.placeholder_email"
               placeholder="Email Address"
               required
               autocomplete="email"
@@ -83,6 +83,7 @@
               id="password"
               name="password"
               type="password"
+              data-i18n-placeholder="login.placeholder_password"
               placeholder="Password"
               required
               autocomplete="current-password"
@@ -94,6 +95,7 @@
               class="bx bx-eye-closed icon-right"
               role="button"
               tabindex="0"
+              data-i18n-aria-label="a11y.toggle_password"
               aria-label="Toggle password visibility"
             ></i>
           </div>
@@ -104,11 +106,22 @@
             aria-live="polite"
             class="sr-only"
           ></div>
-          <button type="submit" class="btn">Login</button>
+
+          <button type="submit" class="btn" data-i18n="login.button">
+            Login
+          </button>
         </form>
-        <a class="recover-pass" href="/forgot-password">Recover Password</a>
+
+        <a
+          class="recover-pass"
+          href="/forgot-password"
+          data-i18n="login.recover"
+          >Recover Password</a
+        >
+
         <p class="login-text">
-          Don't have an account? <a href="/register">Sign Up</a>
+          <span data-i18n="login.no_account">Don't have an account?</span>
+          <a href="/register" data-i18n="login.signup">Sign Up</a>
         </p>
       </div>
     </main>
@@ -118,6 +131,7 @@
       const eyeIcon = document.getElementById("eye-pass");
       const loginForm = document.getElementById("loginForm");
       const msg = document.getElementById("form-message");
+      const T = (k, fallback) => window.i18n?.t(k) || fallback;
 
       function setMsg(text = "", ok = false) {
         if (!text) {
@@ -130,16 +144,15 @@
         msg.style.color = ok ? "#2e7d32" : "#c62828";
       }
 
-      // Toggle password visibility
+      // Toggle password visibility (click/keyboard)
       eyeIcon.addEventListener("click", () => {
         const isPassword = passwordInput.type === "password";
         passwordInput.type = isPassword ? "text" : "password";
         eyeIcon.classList.toggle("active", isPassword);
-        if (isPassword) {
-          eyeIcon.classList.replace("bx-eye-closed", "bx-eye");
-        } else {
-          eyeIcon.classList.replace("bx-eye", "bx-eye-closed");
-        }
+        eyeIcon.classList.replace(
+          isPassword ? "bx-eye-closed" : "bx-eye",
+          isPassword ? "bx-eye" : "bx-eye-closed"
+        );
       });
       eyeIcon.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " " || e.code === "Space") {
@@ -155,7 +168,17 @@
         btn.disabled = true;
 
         const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
+        const password = passwordInput.value;
+
+        // simple email check
+        const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        if (!emailOk) {
+          setMsg(
+            T("alert.invalid_email", "Invalid email. Please check again.")
+          );
+          btn.disabled = false;
+          return;
+        }
 
         setMsg("");
         try {
@@ -167,19 +190,30 @@
           });
           const data = await response.json();
           if (response.ok && data.success) {
-            setMsg("Đăng nhập thành công!", true);
+            setMsg(T("login.success", "Logged in successfully!"), true);
             setTimeout(() => {
               window.location.href = "/home";
             }, 800);
           } else {
-            setMsg(data.message || "Đăng nhập thất bại");
+            setMsg(data.message || T("login.failed", "Login failed"));
           }
         } catch (error) {
           console.error("Login error:", error);
-          setMsg("Lỗi kết nối. Vui lòng thử lại.");
+          setMsg(
+            T(
+              "alert.network_error",
+              "Cannot connect to server. Please check your network."
+            )
+          );
         } finally {
           btn.disabled = false;
         }
+      });
+
+      // cập nhật tiêu đề/nút khi đổi ngôn ngữ ở nơi khác
+      window.addEventListener("lang-changed", () => {
+        document.title = T("login.page_title", document.title);
+        document.querySelector(".btn").textContent = T("login.button", "Login");
       });
     </script>
   </body>

@@ -19,13 +19,18 @@ const PORT = process.env.PORT || 5000;
 // tin cậy proxy để req.protocol phản ánh đúng (HTTP/HTTPS) sau Nginx/Proxy
 app.set("trust proxy", 1);
 
-const corsOrigin = process.env.CORS_ORIGIN
-  ? { origin: [process.env.CORS_ORIGIN], credentials: true }
+// Hỗ trợ nhiều origin qua CORS_ORIGIN="https://a.com,https://b.com"
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim()).filter(Boolean)
+  : null;
+
+const corsConfig = allowedOrigins
+  ? { origin: allowedOrigins, credentials: true }
   : { origin: true, credentials: true }; // dev: cho mọi origin + gửi cookie
 
-app.use(cors(corsOrigin));
+app.use(cors(corsConfig));
 // Bắt OPTIONS cho preflight (đặc biệt khi FE gọi fetch kèm credentials)
-app.options("*", cors(corsOrigin));
+app.options("*", cors(corsConfig));
 
 app.use(express.json({ limit: "1mb" }));
 //app.post('/api/orders/webhooks/casso', orders.webhookCassoLike);
@@ -50,11 +55,14 @@ app.use(
     },
   })
 );
+// phục vụ toàn bộ FE dưới prefix /FE (để /FE/js/i18n.js, /FE/html/... hoạt động)
+app.use("/FE", express.static(path.join(__dirname, "FE")));
+// các alias cũ vẫn giữ lại nếu đang dùng ở chỗ khác
 app.use("/css", express.static(path.join(__dirname, "FE/css")));
 app.use("/js", express.static(path.join(__dirname, "FE/js")));
 app.use(express.static(path.join(__dirname, "FE/html")));
 // ở gần chỗ bạn dùng express.static cho FE/html
-app.use('/service', express.static(path.join(__dirname, 'FE', 'html')));
+app.use("/service", express.static(path.join(__dirname, "FE", "html")));
 
 /* Helper: gửi file HTML với no-cache để tránh dính cache khi dev/OTP */
 function sendHtmlNoCache(res, absPath) {
@@ -136,6 +144,9 @@ const pageMap = [
   ["/service/print", ["Service_Print.html"]],
   ["/print/document", ["PrintDocument.html"]],
   ["/print/photo", ["PrintPhoto.html"]],
+  
+  // Owner dashboard (khu chủ tiệm / admin)
+  ["/owner/dashboard", ["Owner_Dashboard.html"]],
 ];
 
 // Tạo route cho từng path: tìm file có sẵn rồi trả về
@@ -157,8 +168,8 @@ for (const [routePath, candidates] of pageMap) {
 app.get("/profile/Personal_Profile.html", (req, res) => res.redirect(301, "/profile"));
 app.get("/settings/Setting.html", (req, res) => res.redirect(301, "/settings"));
 // (tuỳ chọn) nếu bạn từng trỏ về /service/Order_History.html thì điều hướng về pretty URL
-app.get("/service/Order_History.html", (req, res) => res.redirect(302, "/order/history"));
-app.get("/PrintPhoto.html", (req, res) => res.redirect(302, "/print/photo"));
+app.get("/service/Order_History.html", (req, res) => res.redirect(301, "/order/history"));
+app.get("/PrintPhoto.html", (req, res) => res.redirect(301, "/print/photo"));
 
 /* =======================
    API Routes
@@ -170,10 +181,35 @@ app.use("/api/files", require("./routes/files"));
 app.use("/api/file-analyzer", require("./routes/file-analyzer"));
 app.use("/api/orders", require("./routes/orders"));
 app.use("/api/catalog", require("./routes/catalog"));
+
 // NEW: Payments (VNPay demo/polling)
 app.use("/api/payments", require("./routes/payments"));
+
 // NEW: Notifications
 app.use("/api/notifications", require("./routes/notifications"));
+
+// NEW: Customers (staff/admin manage customers)
+app.use("/api/customers", require("./routes/customers"));
+
+// NEW: Dashboard (owner metrics)
+app.use("/api/dashboard", require("./routes/dashboard"));
+
+// NEW: About page metrics (cho About_us.html)
+app.get("/api/metrics/about", async (req, res) => {
+  try {
+    // TODO: sau này có thể lấy từ DB (User.count, bảng orders, v.v.)
+    const yearsOfExperience = 10;
+    const totalCustomers = 9000;
+
+    res.json({
+      yearsOfExperience,
+      totalCustomers,
+    });
+  } catch (err) {
+    console.error("Error in /api/metrics/about:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 /* =======================
    API Root & Healthcheck

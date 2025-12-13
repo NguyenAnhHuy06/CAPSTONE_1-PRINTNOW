@@ -5,7 +5,9 @@ const User = require("../models/User");
 const auth = async (req, res, next) => {
   try {
     const token =
-      req.header("Authorization")?.replace("Bearer ", "") || req.cookies?.auth; // <--- đọc từ cookie 'auth' nếu không có header
+      req.header("Authorization")?.replace("Bearer ", "") ||
+      req.cookies?.auth ||
+      req.query?.token; // <--- thêm: chấp nhận token từ query cho SSE/EventSource
 
     if (!token) {
       return res.status(401).json({

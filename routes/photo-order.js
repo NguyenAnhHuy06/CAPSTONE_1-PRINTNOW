@@ -1,4 +1,11 @@
 // routes/photo-orders.js
+// ⚠️ DEPRECATED:
+// Logic tạo đơn in ảnh đã được chuyển sang routes/orders.js:
+//   - POST /api/orders/photo  (dùng Sequelize + auth, lấy customerId từ req.user)
+//   - GET  /api/orders/photo/:id
+// Hãy đảm bảo trong app.js KHÔNG còn dòng:
+//   app.use('/api/orders', require('./routes/photo-orders'));
+// để tránh trùng route /photo và khác format response (ok vs success).
 const express = require('express');
 const router = express.Router();
 const { sequelize } = require('../config/database'); // dùng instance Sequelize đang có

@@ -1,6 +1,6 @@
 // routes/notifications.js
 const express = require('express');
-const { Op } = require('sequelize');
+// const { Op } = require('sequelize'); // dự phòng nếu sau này cần thêm filter nâng cao
 const Notification = require('../models/Notification');
 const auth = require('../middleware/auth');
 
@@ -30,7 +30,8 @@ const toFE = (row) => {
         // "data" tổng hợp từ các cột có thật trong DB
         data: {
             link: row.link || null,
-            linkText: row.link ? 'Xem chi tiết' : null,
+            // text link sẽ do FE + i18n quyết định (notif.link_detail)
+            linkText: null,
             tag: row.tag,
             important: row.tag === 'important',
             orderCode: parseOrderCode(row.link)
@@ -112,8 +113,11 @@ const seedHandler = async (req, res) => {
     }
 };
 
-router.post('/seed', auth, seedHandler);
-router.get('/seed', auth, seedHandler); // tiện cho việc gõ URL trực tiếp
+// Chỉ expose seed ở môi trường không phải production
+if (process.env.NODE_ENV !== 'production') {
+    router.post('/seed', auth, seedHandler);
+    router.get('/seed', auth, seedHandler); // tiện cho việc gõ URL trực tiếp khi dev/test
+}
 
 // GET /api/notifications?limit=50&offset=0&unread=1
 router.get('/', auth, async (req, res) => {

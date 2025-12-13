@@ -9,6 +9,10 @@ const { sequelize } = require("../config/database");
 const { QueryTypes } = require("sequelize");
 const ordersCtrl = require("./orders.controller"); // để phát SSE sau khi DB ok
 
+// Dùng chung cách build tên bảng có db prefix như orders.controller
+const DB = (sequelize.config && sequelize.config.database) || process.env.DB_NAME;
+const T = (name) => `\`${DB}\`.\`${name}\``;
+
 // helper local: tạo order code giống Orders controller
 function genOrderCodeLocal(id, createdAt) {
   const d = createdAt ? new Date(createdAt) : new Date();
@@ -22,7 +26,7 @@ async function persistPaymentSuccess(orderId, amount) {
   await sequelize.transaction(async (t) => {
     // 1) Upsert payment -> SUCCESS
     await sequelize.query(
-      `INSERT INTO payments (order_id, method, status, amount, currency, paid_at, created_at, updated_at)
+      `INSERT INTO ${T('payments')} (order_id, method, status, amount, currency, paid_at, created_at, updated_at)
        VALUES (:orderId, 'VNPAY', 'SUCCESS', :amount, 'VND', NOW(), NOW(), NOW())
        ON DUPLICATE KEY UPDATE
          method     = 'VNPAY',
@@ -40,7 +44,7 @@ async function persistPaymentSuccess(orderId, amount) {
 
     // 2) Khóa & đọc tổng hiện tại để phản ánh giảm giá (nếu có)
     const [row] = await sequelize.query(
-      `SELECT totalAmount, createdAt FROM orders WHERE id = :orderId FOR UPDATE`,
+      `SELECT totalAmount, createdAt FROM ${T('orders')} WHERE id = :orderId FOR UPDATE`,
       { type: QueryTypes.SELECT, transaction: t, replacements: { orderId } }
     );
     const currentTotal = Number(row?.totalAmount ?? 0);
@@ -48,12 +52,12 @@ async function persistPaymentSuccess(orderId, amount) {
 
     // 3) Hoàn tất đơn
     await sequelize.query(
-      `UPDATE orders
+      `UPDATE ${T('orders')}
          SET status='completed',
              totalAmount = :finalTotal,
-             completedAt = NOW(),
-             updatedAt   = NOW()
-      WHERE id = :orderId`,
+             completedAt = COALESCE(completedAt, NOW()),
+             updatedAt = NOW()
+         WHERE id = :orderId`,
       {
         type: QueryTypes.UPDATE,
         transaction: t,
@@ -177,7 +181,7 @@ exports.vnpayIpn = async (req, res) => {
       let orderRow = null;
       try {
         [orderRow] = await sequelize.query(
-          `SELECT createdAt FROM orders WHERE id = :orderId`,
+          `SELECT createdAt FROM ${T('orders')} WHERE id = :orderId`,
           { type: QueryTypes.SELECT, replacements: { orderId: p.orderId } }
         );
       } catch { }
@@ -188,6 +192,33 @@ exports.vnpayIpn = async (req, res) => {
 
       if (typeof ordersCtrl._broadcastPaid === "function") {
         ordersCtrl._broadcastPaid(orderCode, { paidAmount: Math.round(Number(p.amount) || 0) });
+      }
+      // ✅ Đồng bộ với webhook Casso: broadcast luôn "status" -> Successful (100%)
+      try {
+        const mapProg = ordersCtrl._mapFrontendStatusToProgress || (() => ({ progress: 100, currentStage: "Completed" }));
+        const prog = mapProg("completed");
+        if (typeof ordersCtrl._broadcastStatus === "function") {
+          ordersCtrl._broadcastStatus(orderCode, {
+            type: "status",
+            status: "Completed",
+            dbStatus: "completed",
+            progress: prog.progress,
+            currentStage: prog.currentStage,
+            stages: ordersCtrl._ORDER_STAGES || [],
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      } catch (e) {
+        console.warn("[payments.controller] broadcast status after IPN failed:", e);
+      }
+
+      // 🔔 Sau khi DB & SSE ok: tạo Notification "Payment successful"
+      try {
+        if (typeof ordersCtrl._createPaymentNotification === "function") {
+          await ordersCtrl._createPaymentNotification(p.orderId, p.amount, "VNPAY", orderCode);
+        }
+      } catch (e) {
+        console.error("[payments.controller] createPaymentNotification error:", e);
       }
     } catch (dbErr) {
       console.error(

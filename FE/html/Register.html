@@ -1,20 +1,23 @@
+<!-- FE/html/Register.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PrintNow - Sign Up</title>
+    <title data-i18n="register.page_title">PrintNow - Sign Up</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../css/Register.css" />
 
+    <!-- i18n -->
+    <script src="/FE/js/i18n.js"></script>
+
     <style>
-      /* A11y helper: văn bản chỉ dành cho screen reader */
       .sr-only {
         position: absolute !important;
         width: 1px !important;
@@ -26,13 +29,11 @@
         white-space: nowrap !important;
         border: 0 !important;
       }
-
-      /* Center submit button inside the register form */
       #registerForm .btn {
         display: block;
         margin: 16px auto 0;
-        width: auto;
         min-width: 180px;
+        width: auto;
         text-align: center;
       }
     </style>
@@ -42,11 +43,11 @@
     <header class="header">
       <div class="logo">
         <div class="logo-icon">
-          <i class="bx bx-printer"></i>
+          <i class="bx bx-printer" aria-hidden="true"></i>
         </div>
         <div class="text">
           <h1>PrintNow</h1>
-          <p>Print service</p>
+          <p data-i18n="nav.tagline">Print service</p>
         </div>
       </div>
     </header>
@@ -55,62 +56,95 @@
       <div class="form-box">
         <div class="form-icon">
           <div class="icon-circle">
-            <i class="bx bx-printer"></i>
+            <i class="bx bx-printer" aria-hidden="true"></i>
           </div>
         </div>
 
-        <h2>Get Started with <span class="highlight">PrintNow</span></h2>
-        <p class="subtext">Create your free account</p>
+        <h2>
+          <span data-i18n="register.heading_prefix">Get Started with</span>
+          <span class="highlight">PrintNow</span>
+        </h2>
+        <p class="subtext" data-i18n="register.subtext">
+          Create your free account
+        </p>
 
-        <form id="registerForm">
+        <form id="registerForm" novalidate>
           <div class="input_box">
             <input
               id="fullName"
               type="text"
+              data-i18n-placeholder="register.placeholder_fullname"
               placeholder="Your Full Name"
               required
+              autocomplete="name"
             />
-            <i class="bx bx-user icon-left"></i>
+            <i class="bx bx-user icon-left" aria-hidden="true"></i>
           </div>
+
           <div class="input_box">
             <input
               id="email"
               type="email"
+              data-i18n-placeholder="register.placeholder_email"
               placeholder="Your Email Address"
               required
+              autocomplete="email"
+              inputmode="email"
             />
-            <i class="bx bx-envelope icon-left"></i>
+            <i class="bx bx-envelope icon-left" aria-hidden="true"></i>
           </div>
+
           <div class="input_box">
             <input
               id="phone"
               type="tel"
+              data-i18n-placeholder="register.placeholder_phone"
               placeholder="Your Phone Number"
               required
+              autocomplete="tel"
+              inputmode="tel"
             />
-            <i class="bx bx-phone icon-left"></i>
+            <i class="bx bx-phone icon-left" aria-hidden="true"></i>
           </div>
+
           <div class="input_box">
             <input
               id="password"
               type="password"
+              data-i18n-placeholder="register.placeholder_password"
               placeholder="Create a Strong Password"
               required
+              minlength="8"
+              autocomplete="new-password"
             />
-            <i class="bx bx-lock-alt icon-left"></i>
+            <i class="bx bx-lock-alt icon-left" aria-hidden="true"></i>
             <i
               id="eye-pass"
               class="bx bx-eye-closed icon-right"
               role="button"
               tabindex="0"
+              data-i18n-aria-label="a11y.toggle_password"
               aria-label="Toggle password visibility"
             ></i>
           </div>
-          <button type="submit" class="btn">Sign Up</button>
+
+          <div
+            id="form-message"
+            role="status"
+            aria-live="polite"
+            class="sr-only"
+          ></div>
+
+          <button type="submit" class="btn" data-i18n="register.button">
+            Sign Up
+          </button>
         </form>
 
         <p class="login-text">
-          Already have an account? <a href="/login">Login</a>
+          <span data-i18n="register.have_account"
+            >Already have an account?</span
+          >
+          <a href="/login" data-i18n="register.login">Login</a>
         </p>
       </div>
     </main>
@@ -119,61 +153,121 @@
       const passwordInput = document.getElementById("password");
       const eyeIcon = document.getElementById("eye-pass");
       const registerForm = document.getElementById("registerForm");
+      const msg = document.getElementById("form-message");
+      const T = (k, fallback) => window.i18n?.t(k) || fallback;
+
+      function setMsg(text = "", ok = false) {
+        if (!text) {
+          msg.textContent = "";
+          msg.classList.add("sr-only");
+          return;
+        }
+        msg.classList.remove("sr-only");
+        msg.textContent = text;
+        msg.style.color = ok ? "#2e7d32" : "#c62828";
+      }
 
       // Toggle password visibility
       eyeIcon.addEventListener("click", () => {
         const isPassword = passwordInput.type === "password";
-
         passwordInput.type = isPassword ? "text" : "password";
         eyeIcon.classList.toggle("active", isPassword);
-
-        if (isPassword) {
-          eyeIcon.classList.replace("bx-eye-closed", "bx-eye"); // mắt mở
-        } else {
-          eyeIcon.classList.replace("bx-eye", "bx-eye-closed"); // mắt nhắm
+        eyeIcon.classList.replace(
+          isPassword ? "bx-eye-closed" : "bx-eye",
+          isPassword ? "bx-eye" : "bx-eye-closed"
+        );
+      });
+      eyeIcon.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " " || e.code === "Space") {
+          e.preventDefault();
+          eyeIcon.click();
         }
       });
 
-      // Handle register form submission
+      // Submit
       registerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
+        const btn = registerForm.querySelector(".btn");
+        btn.disabled = true;
 
-        const fullName = document.getElementById("fullName").value;
-        const email = document.getElementById("email").value;
-        const phone = document.getElementById("phone").value;
-        const password = document.getElementById("password").value;
+        const fullName = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const password = passwordInput.value;
 
+        // basic validations
+        if (!fullName || !email) {
+          setMsg(
+            T(
+              "alert.missing_customer_info",
+              "Please enter your Full Name and Email."
+            )
+          );
+          btn.disabled = false;
+          return;
+        }
+        const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        if (!emailOk) {
+          setMsg(
+            T("alert.invalid_email", "Invalid email. Please check again.")
+          );
+          btn.disabled = false;
+          return;
+        }
+        if (password.length < 8) {
+          setMsg(
+            T("alert.pw_minlen", "Password must be at least 6 characters.")
+          );
+          btn.disabled = false;
+          return;
+        }
+
+        setMsg("");
         try {
           const response = await fetch("/api/auth/register", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              fullName: fullName,
-              email,
-              phone,
-              password,
-            }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fullName, email, phone, password }),
           });
-
           const data = await response.json();
 
-          if (response.ok) {
-            // Lưu email vào localStorage để sử dụng ở trang xác thực
+          if (response.ok && (data.success ?? true)) {
             localStorage.setItem("registrationEmail", email);
-            alert(
-              "Đăng ký thành công! Vui lòng kiểm tra email để lấy mã OTP xác thực."
+            setMsg(
+              T(
+                "register.success",
+                "Sign up successful! Please check your email for the OTP."
+              ),
+              true
             );
-            window.location.href =
-              "/verify-otp?email=" + encodeURIComponent(email);
+            // chuyển sang trang xác thực OTP
+            setTimeout(() => {
+              window.location.href =
+                "/verify-otp?email=" + encodeURIComponent(email);
+            }, 700);
           } else {
-            alert("Đăng ký thất bại: " + data.message);
+            setMsg(data.message || T("register.failed", "Registration failed"));
           }
         } catch (error) {
           console.error("Registration error:", error);
-          alert("Registration failed. Please try again.");
+          setMsg(
+            T(
+              "alert.network_error",
+              "Cannot connect to server. Please check your network."
+            )
+          );
+        } finally {
+          btn.disabled = false;
         }
+      });
+
+      // cập nhật tiêu đề/nút khi đổi ngôn ngữ
+      window.addEventListener("lang-changed", () => {
+        document.title = T("register.page_title", document.title);
+        document.querySelector(".btn").textContent = T(
+          "register.button",
+          "Sign Up"
+        );
       });
     </script>
   </body>

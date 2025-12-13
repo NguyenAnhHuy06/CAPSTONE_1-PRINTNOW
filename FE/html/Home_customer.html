@@ -34,6 +34,7 @@
       .container {
         padding: 0 20px;
       }
+
       /* HEADER */
 
       .header {
@@ -140,6 +141,7 @@
       .login-btn i {
         font-size: 1.1em;
       }
+
       /* HERO */
 
       .hero {
@@ -175,17 +177,15 @@
         border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
-        width: 160px;
-        height: 40px;
-        font-size: 20px;
-        display: inline-block;
-        /* Thêm để thẻ <a> hoạt động như block */
+        min-width: 160px; /* đủ rộng, nhưng không bắt buộc cố định */
+        height: auto; /* cho phép cao theo nội dung */
+        font-size: 16px; /* nhỏ lại chút để chữ dễ fit */
+        display: inline-flex; /* căn giữa dễ hơn */
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        /* Căn giữa chữ */
-        line-height: 20px;
-        /* Đảm bảo chữ căn giữa theo chiều dọc */
+        line-height: 1.4; /* line-height tự nhiên */
         text-decoration: none;
-        /* Bỏ gạch chân cho <a> */
       }
 
       .btn.primary {
@@ -198,6 +198,7 @@
         border: 1px solid #fff;
         color: #fff;
       }
+
       /* SERVICES */
 
       .services {
@@ -207,6 +208,7 @@
         margin: 0 auto;
         max-width: 1200px;
       }
+
       @media (max-width: 768px) {
         .services {
           padding: 24px 16px;
@@ -324,6 +326,7 @@
       .btn.view-all:hover {
         background-color: #155edc;
       }
+
       /* WHY US */
 
       .why-us {
@@ -358,6 +361,7 @@
         color: #4f9cf9;
         margin-bottom: 20px;
       }
+
       /* CTA */
 
       .cta {
@@ -376,6 +380,7 @@
         font-size: 16px;
         margin-bottom: 20px;
       }
+
       /* FOOTER */
 
       .footer {
@@ -444,19 +449,30 @@
           </div>
           <div class="text">
             <h1>PrintNow</h1>
-            <p>Print service</p>
+            <p data-i18n="nav.tagline">Print service</p>
           </div>
         </div>
 
         <ul class="nav-links">
-          <li><a href="/home" class="home">Home</a></li>
-          <li><a href="/service/print" class="service">Services</a></li>
-          <li><a href="/about-us" class="about">About Us</a></li>
+          <li>
+            <a href="/home" class="home" data-i18n="nav.home">Home</a>
+          </li>
+          <li>
+            <a href="/service/print" class="service" data-i18n="nav.services">
+              Services
+            </a>
+          </li>
+          <li>
+            <a href="/about-us" class="about" data-i18n="nav.about">
+              About Us
+            </a>
+          </li>
         </ul>
 
         <div id="authArea" class="auth-area">
           <a href="/login" class="login-btn">
-            <i class="bx bx-log-in" aria-hidden="true"></i> Login
+            <i class="bx bx-log-in" aria-hidden="true"></i>
+            <span data-i18n="nav.login">Login</span>
           </a>
         </div>
       </nav>
@@ -465,22 +481,30 @@
     <main role="main">
       <section class="hero">
         <div class="hero-content">
-          <h1>Professional Printing Services</h1>
-          <p>
+          <h1 data-i18n="home.hero_title">Professional Printing Services</h1>
+          <p data-i18n="home.hero_subtitle">
             From office documents to photo printing, business cards and drinks –
             we offer comprehensive printing solutions with high quality and
             competitive prices.
           </p>
           <div class="hero-buttons">
-            <a href="/service/print" class="btn primary">Order now</a>
-            <button class="btn secondary">Learn more</button>
+            <a
+              href="/service/print"
+              class="btn primary"
+              data-i18n="home.hero_order"
+            >
+              Order now
+            </a>
+            <button class="btn secondary" data-i18n="home.hero_learn_more">
+              Learn more
+            </button>
           </div>
         </div>
       </section>
 
       <section class="services">
-        <h2>Professional Printing Services</h2>
-        <p>
+        <h2 data-i18n="home.services_title">Professional Printing Services</h2>
+        <p data-i18n="home.services_subtitle">
           Discover a wide range of printing services, from basic to advanced, to
           meet all your needs.
         </p>
@@ -490,101 +514,131 @@
             <div class="icon-box">
               <i class="bx bx-file" aria-hidden="true"></i>
             </div>
-            <h3>Print Documents</h3>
-            <p>Print office documents, theses, reports with high quality</p>
+            <h3 data-i18n="home.service_doc_title">Print Documents</h3>
+            <p data-i18n="home.service_doc_desc">
+              Print office documents, theses, reports with high quality
+            </p>
             <div class="tags">
-              <span>Black/White & Color printing</span>
-              <span>2-sided printing</span>
-              <span>Various paper sizes</span>
+              <span data-i18n="home.service_doc_tag1">
+                Black/White & Color printing
+              </span>
+              <span data-i18n="home.service_doc_tag2">2-sided printing</span>
+              <span data-i18n="home.service_doc_tag3">Various paper sizes</span>
             </div>
-            <a href="#" class="price">From 2.000đ/page</a>
+            <a href="#" class="price" data-i18n="home.service_doc_price">
+              From 2.000đ/page
+            </a>
           </div>
 
           <div class="service-card">
             <div class="icon-box">
               <i class="bx bx-image" aria-hidden="true"></i>
             </div>
-            <h3>Print Photo</h3>
-            <p>
+            <h3 data-i18n="home.service_photo_title">Print Photo</h3>
+            <p data-i18n="home.service_photo_desc">
               High-quality photo printing available in a wide range of sizes and
               finishes
             </p>
             <div class="tags">
-              <span>Multiple sizes</span>
-              <span>Premium paper</span>
-              <span>Vibrant colors</span>
+              <span data-i18n="home.service_photo_tag1">Multiple sizes</span>
+              <span data-i18n="home.service_photo_tag2">Premium paper</span>
+              <span data-i18n="home.service_photo_tag3">Vibrant colors</span>
             </div>
-            <a href="#" class="price">From 5.000đ/photo</a>
+            <a href="#" class="price" data-i18n="home.service_photo_price">
+              From 5.000đ/photo
+            </a>
           </div>
 
           <div class="service-card">
             <div class="icon-box">
               <i class="bx bx-id-card" aria-hidden="true"></i>
             </div>
-            <h3>Print Name Card</h3>
-            <p>Professional Business Card Printing from Your Design</p>
+            <h3 data-i18n="home.service_card_title">Print Name Card</h3>
+            <p data-i18n="home.service_card_desc">
+              Professional Business Card Printing from Your Design
+            </p>
             <div class="tags">
-              <span>High-quality paper</span>
-              <span>Beautiful finish</span>
-              <span>Flexible quantity</span>
+              <span data-i18n="home.service_card_tag1">High-quality paper</span>
+              <span data-i18n="home.service_card_tag2">Beautiful finish</span>
+              <span data-i18n="home.service_card_tag3">Flexible quantity</span>
             </div>
-            <a href="#" class="price">From 100.000đ/box</a>
+            <a href="#" class="price" data-i18n="home.service_card_price">
+              From 100.000đ/box
+            </a>
           </div>
 
           <div class="service-card">
             <div class="icon-box">
               <i class="bx bx-coffee" aria-hidden="true"></i>
             </div>
-            <h3>Print Cups</h3>
-            <p>Print logos and designs on paper cups and plastic cups</p>
+            <h3 data-i18n="home.service_cup_title">Print Cups</h3>
+            <p data-i18n="home.service_cup_desc">
+              Print logos and designs on paper cups and plastic cups
+            </p>
             <div class="tags">
-              <span>Paper & plastic cups</span>
-              <span>Beautiful finish</span>
-              <span>Reasonable price</span>
+              <span data-i18n="home.service_cup_tag1">
+                Paper & plastic cups
+              </span>
+              <span data-i18n="home.service_cup_tag2">Beautiful finish</span>
+              <span data-i18n="home.service_cup_tag3">Reasonable price</span>
             </div>
-            <a href="#" class="price">From 2.000đ/cup</a>
+            <a href="#" class="price" data-i18n="home.service_cup_price">
+              From 2.000đ/cup
+            </a>
           </div>
         </div>
 
-        <button class="btn view-all">View all services</button>
+        <button class="btn view-all" data-i18n="home.view_all_services">
+          View all services
+        </button>
       </section>
 
       <section class="why-us">
-        <h2>Why Choose Us?</h2>
-        <p>
+        <h2 data-i18n="home.why_title">Why Choose Us?</h2>
+        <p data-i18n="home.why_subtitle">
           With many years of experience and modern technology, we are committed
           to providing the best service
         </p>
         <div class="why-grid">
           <div class="why-card">
             <i class="bx bx-timer" aria-hidden="true"></i>
-            <h4>Fast</h4>
-            <p>Fast printing time, on-time delivery</p>
+            <h4 data-i18n="home.why_fast_title">Fast</h4>
+            <p data-i18n="home.why_fast_desc">
+              Fast printing time, on-time delivery
+            </p>
           </div>
           <div class="why-card">
             <i class="bx bx-shield" aria-hidden="true"></i>
-            <h4>Quality</h4>
-            <p>Using modern machinery, quality guaranteed</p>
+            <h4 data-i18n="home.why_quality_title">Quality</h4>
+            <p data-i18n="home.why_quality_desc">
+              Using modern machinery, quality guaranteed
+            </p>
           </div>
           <div class="why-card">
             <i class="bx bx-medal" aria-hidden="true"></i>
-            <h4>Credibility</h4>
-            <p>Many years of experience in the printing industry</p>
+            <h4 data-i18n="home.why_cred_title">Credibility</h4>
+            <p data-i18n="home.why_cred_desc">
+              Many years of experience in the printing industry
+            </p>
           </div>
           <div class="why-card">
             <i class="bx bx-headphone" aria-hidden="true"></i>
-            <h4>24/7 Support</h4>
-            <p>Professional consulting team, support at all times</p>
+            <h4 data-i18n="home.why_support_title">24/7 Support</h4>
+            <p data-i18n="home.why_support_desc">
+              Professional consulting team, support at all times
+            </p>
           </div>
         </div>
       </section>
 
       <section class="cta">
-        <h3>Ready to Get Started?</h3>
-        <p>
+        <h3 data-i18n="home.cta_title">Ready to Get Started?</h3>
+        <p data-i18n="home.cta_subtitle">
           Let us help you print high quality products with dedicated service
         </p>
-        <a href="/service/print" class="btn primary">Order now</a>
+        <a href="/service/print" class="btn primary" data-i18n="home.cta_order">
+          Order now
+        </a>
       </section>
 
       <footer class="footer">
@@ -596,21 +650,21 @@
             <p>123 Nguyen Van Linh, Da Nang, Viet Nam</p>
           </div>
           <div class="footer-col">
-            <h4>Working Hours</h4>
-            <p>Mon - Fri: 8:00 - 18:00</p>
-            <p>Saturday: 8:00 - 16:00</p>
-            <p>Sunday: 9:00 - 15:00</p>
+            <h4 data-i18n="home.footer_hours_title">Working Hours</h4>
+            <p data-i18n="home.footer_hours_line1">Mon - Fri: 8:00 - 18:00</p>
+            <p data-i18n="home.footer_hours_line2">Saturday: 8:00 - 16:00</p>
+            <p data-i18n="home.footer_hours_line3">Sunday: 9:00 - 15:00</p>
           </div>
           <div class="footer-col">
-            <h4>Services</h4>
-            <p>Print Name Card</p>
-            <p>Document Print</p>
-            <p>Photo Print</p>
-            <p>Packaging Print</p>
+            <h4 data-i18n="home.footer_services_title">Services</h4>
+            <p data-i18n="home.footer_services_line1">Print Name Card</p>
+            <p data-i18n="home.footer_services_line2">Document Print</p>
+            <p data-i18n="home.footer_services_line3">Photo Print</p>
+            <p data-i18n="home.footer_services_line4">Packaging Print</p>
           </div>
         </div>
         <div class="footer-bottom">
-          <p>© 2025 All rights reserved.</p>
+          <p data-i18n="home.footer_copyright">© 2025 All rights reserved.</p>
         </div>
       </footer>
       <script>
@@ -646,5 +700,24 @@
       </script>
     </main>
     <script src="/js/authHeader.js"></script>
+    <script src="/js/i18n.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.i18n) {
+          // Áp dụng ngay theo localStorage
+          i18n.translateDom();
+
+          // Nếu đã đăng nhập thì đọc language từ server
+          fetch("/api/settings/me", { credentials: "include" })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data?.success && data.setting?.language) {
+                i18n.setLang(data.setting.language);
+              }
+            })
+            .catch(() => {});
+        }
+      });
+    </script>
   </body>
 </html>

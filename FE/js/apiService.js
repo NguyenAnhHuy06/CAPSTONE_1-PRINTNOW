@@ -9,11 +9,6 @@ const API_BASE_URL = "http://localhost:5000/api";
 // ===================================
 // AUTHENTICATION HELPERS
 // ===================================
-const api = (path, opts = {}) =>
-  fetch(`${API_BASE_URL}${path}`, {
-    credentials: "include",
-    ...opts,
-  });
 
 /**
  * Lấy JWT token từ localStorage hoặc sessionStorage
@@ -21,6 +16,27 @@ const api = (path, opts = {}) =>
 function getAuthToken() {
   return localStorage.getItem("token") || sessionStorage.getItem("token");
 }
+
+/**
+ * Wrapper gọi API – luôn gửi cookie + (nếu có) Bearer token
+ */
+const api = (path, opts = {}) => {
+  const token = getAuthToken();
+
+  const headers = {
+    ...(opts.headers || {}),
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
+    ...opts,
+    headers,
+  });
+};
 
 /**
  * Kiểm tra user đã đăng nhập chưa
@@ -276,6 +292,39 @@ async function getMyOrders() {
 }
 
 /**
+ * Lấy tất cả đơn hàng cho employee/admin (dùng cho dashboard nhân viên)
+ * @param {Object} filters - {status, from, to, page, pageSize, sort, customerId, orderType, search}
+ * @returns {Promise<Object>} - {data, summary, pagination}
+ */
+async function getAllOrders(filters = {}) {
+  try {
+    const queryParams = new URLSearchParams();
+    Object.keys(filters).forEach((key) => {
+      const v = filters[key];
+      if (v !== null && v !== undefined && v !== "") {
+        queryParams.append(key, v);
+      }
+    });
+
+    const queryString = queryParams.toString();
+    const url = `/orders/all${queryString ? "?" + queryString : ""}`;
+
+    const res = await api(url);
+    if (res.status === 401)
+      throw new Error("Bạn cần đăng nhập để xem đơn hàng");
+    if (res.status === 403)
+      throw new Error("Bạn không có quyền truy cập trang này");
+
+    const data = await res.json();
+    if (data.success) return data;
+    throw new Error(data.message || "Không thể lấy danh sách đơn hàng");
+  } catch (err) {
+    console.error("Lỗi getAllOrders:", err);
+    throw err;
+  }
+}
+
+/**
  * Lấy chi tiết một đơn hàng
  * @param {number} orderId - ID đơn hàng
  * @returns {Promise<Object>} - Chi tiết đơn hàng
@@ -430,6 +479,26 @@ async function getPaymentStatus(paymentId) {
   return data.payment; // {status: "PENDING"|"SUCCESS"|"FAILED"|"EXPIRED"}
 }
 
+// ======= DASHBOARD SUMMARY APIS =======
+async function getOrdersSummary(range = "this_week") {
+  const res = await api(`/orders/summary?range=${encodeURIComponent(range)}`);
+  if (res.status === 401) throw new Error("UNAUTHORIZED");
+  if (res.status === 403) throw new Error("FORBIDDEN");
+  const data = await res.json();
+  if (!data?.success) throw new Error(data?.message || "Lấy summary thất bại");
+  return data.summary; // {range, counts, prevCounts, deltas, ...}
+}
+async function getOrdersSummaryMulti(ranges = []) {
+  const keys = Array.from(new Set((ranges || []).filter(Boolean)));
+  const qs = keys.length ? `?ranges=${encodeURIComponent(keys.join(","))}` : "";
+  const res = await api(`/orders/summary-multi${qs}`);
+  if (res.status === 401) throw new Error("UNAUTHORIZED");
+  if (res.status === 403) throw new Error("FORBIDDEN");
+  const data = await res.json();
+  if (!data?.success) throw new Error(data?.message || "Lấy summary thất bại");
+  return data.summaries; // {key: payload}
+}
+
 // Nếu dùng module system (ES6)
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
@@ -460,6 +529,8 @@ if (typeof module !== "undefined" && module.exports) {
     confirmStorePayment, // Orders
     cancelOrderByCode,   // Orders
 
+    getAllOrders,
+
     // Mapping Helpers
     findPaperSizeId,
     findColorModeId,
@@ -468,6 +539,10 @@ if (typeof module !== "undefined" && module.exports) {
     // VNPay
     createVnpayPayment,
     getPaymentStatus,
+
+    // Summary
+    getOrdersSummary,
+    getOrdersSummaryMulti,
 
   };
 }

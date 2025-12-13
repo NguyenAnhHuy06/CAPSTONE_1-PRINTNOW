@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrintNow - Employee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+         :root {
+            --primary: #043873;
+            --blue: #4d59ff;
+            --orange: #f7a530;
+            --gray: #718096;
+            --light-gray: #a0aec0;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --sidebar-w: 70px;
+            --sidebar-expand: 240px;
+            --transition: 0.35s;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: var(--bg);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        /* ==================== SIDEBAR ==================== */
+        
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--white);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            transition: width var(--transition);
+            overflow: hidden;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar:hover {
+            width: var(--sidebar-expand);
+        }
+        
+        .sidebar-header {
+            padding: 24px 20px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        .logo-icon {
+            font-size: 36px;
+            color: var(--primary);
+        }
+        
+        .logo-text {
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s var(--transition);
+        }
+        
+        .sidebar:hover .logo-text {
+            opacity: 1;
+            transition-delay: 0.1s;
+        }
+        
+        .logo-text strong {
+            font-size: 18px;
+            display: block;
+            color: #333;
+        }
+        
+        .logo-text span {
+            font-size: 13px;
+            color: var(--gray);
+        }
+        
+        .nav-list {
+            flex: 1;
+            padding: 20px 12px 0;
+        }
+        
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.25s;
+            position: relative;
+        }
+        
+        .nav-item a:hover {
+            background: #eef1ff;
+            color: var(--primary);
+        }
+        
+        .nav-item a i {
+            font-size: 22px;
+            width: 36px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            opacity: 0;
+            margin-left: 12px;
+            transition: opacity 0.2s var(--transition);
+        }
+        
+        .sidebar:hover .nav-text {
+            opacity: 1;
+            transition-delay: 0.1s;
+        }
+        
+        .nav-item.employee.active a {
+            background: rgba(4, 56, 115, 0.15);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .badge {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--orange);
+            color: white;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .sidebar:hover .badge {
+            position: relative;
+            right: auto;
+            top: auto;
+            margin-left: auto;
+        }
+        
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+        }
+        
+        .contact-support {
+            background: rgba(77, 89, 255, 0.1);
+            color: var(--blue);
+        }
+        
+        .logout {
+            color: #f56565;
+        }
+        /* ==================== MAIN ==================== */
+        
+        .main {
+            flex: 1;
+            margin-left: var(--sidebar-w);
+            transition: margin-left var(--transition);
+        }
+        
+        .sidebar:hover~.main {
+            margin-left: var(--sidebar-expand);
+        }
+        /* ==================== HEADER - CHỈ SỬA CHUÔNG + AVATAR ĐẸP HƠN ==================== */
+        
+        .header {
+            background: var(--bg);
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-info h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        
+        .page-info p {
+            font-size: 15px;
+            color: var(--gray);
+        }
+        
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-actions i {
+            font-size: 26px;
+            color: var(--gray);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .user-actions i:hover {
+            color: var(--primary);
+        }
+        
+        .user-avatar {
+            font-size: 40px;
+            color: var(--primary);
+        }
+        /* ==================== CONTENT ==================== */
+        
+        .content {
+            padding: 30px 40px 60px;
+        }
+        
+        .add-btn {
+            background: var(--primary);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(4, 56, 115, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .add-btn:hover {
+            background: #02305c;
+            transform: translateY(-2px);
+        }
+        
+        .total-emp {
+            font-size: 15px;
+            color: #555;
+        }
+        
+        .total-emp strong {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .right-tools {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .search-box {
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            width: 300px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .search-box::placeholder {
+            color: #a0aec0;
+        }
+        
+        .tool-btn {
+            padding: 12px 20px;
+            border: 1.5px solid var(--border);
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .tool-btn:hover {
+            border-color: var(--blue);
+            background: #f8f9ff;
+        }
+        
+        .tool-btn.active {
+            background: #eef1ff;
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+        /* ==================== GRID CARD ==================== */
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 24px;
+        }
+        
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e8ecf4;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .tag {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .full-time {
+            background: #4d59ff;
+        }
+        
+        .freelance {
+            background: #51cf66;
+        }
+        
+        .emp-main {
+            display: flex;
+            gap: 18px;
+        }
+        
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #e0e7ff;
+        }
+        
+        .info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #222;
+        }
+        
+        .info p {
+            font-size: 13.5px;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+        
+        .dept-role {
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        
+        .dept {
+            color: var(--blue);
+            font-weight: 600;
+        }
+        
+        .footer-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12.5px;
+            color: var(--light-gray);
+            padding-top: 14px;
+            border-top: 1px dashed var(--border);
+        }
+        
+        .footer-info strong {
+            display: block;
+            color: #444;
+            font-weight: 500;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class='bx bxs-printer logo-icon'></i>
+                <div class="logo-text">
+                    <strong>PrintNow</strong>
+                    <span>Print service</span>
+                </div>
+            </div>
+
+            <div class="nav-list">
+                <div class="nav-item"><a href="#"><i class='bx bxs-dashboard'></i><span class="nav-text">Dashboard</span></a></div>
+                <div class="nav-item"><a href="#"><i class='bx bx-notepad'></i><span class="nav-text">Orders</span><span class="badge">3</span></a></div>
+                <div class="nav-item"><a href="#"><i class='bx bx-group'></i><span class="nav-text">Customers</span></a></div>
+                <div class="nav-item"><a href="#"><i class='bx bx-package'></i><span class="nav-text">Inventory</span></a></div>
+                <div class="nav-item"><a href="#"><i class='bx bx-cog'></i><span class="nav-text">Settings</span></a></div>
+                <div class="nav-item employee active">
+                    <a href="#"><i class='bx bxs-user'></i><span class="nav-text">Employee</span></a>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="#" class="contact-support"><i class='bx bx-headphone'></i><span class="nav-text">Contact Support</span></a>
+                <a href="#" class="logout"><i class='bx bx-log-out'></i><span class="nav-text">Logout</span></a>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="header">
+                <div class="page-info">
+                    <h1>Employee</h1>
+                    <p>View and manage employee</p>
+                </div>
+                <div class="user-actions">
+                    <i class='bx bx-bell'></i>
+                    <i class='bx bxs-user-circle user-avatar'></i>
+                </div>
+            </header>
+
+            <div class="content">
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px;">
+                    <button class="add-btn">
+                        <i class='bx bx-plus'></i> Add Staff Member
+                    </button>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 16px;">
+                    <div class="total-emp">
+                        Total Employee: <strong>1,285</strong> persons
+                    </div>
+
+                    <div class="right-tools">
+                        <input type="text" class="search-box" placeholder="Search payroll or name...">
+                        <button class="tool-btn"><i class='bx bx-filter'></i> Filter</button>
+                        <button class="tool-btn"><i class='bx bx-sort'></i> Sort</button>
+                        <button class="tool-btn active"><i class='bx bx-grid-alt'></i> Card View</button>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-top">
+                            <span class="tag full-time">Full-time</span>
+                            <i class='bx bx-dots-vertical-rounded' style="font-size:22px; color:#bbb; cursor:pointer;"></i>
+                        </div>
+                        <div class="emp-main">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" class="avatar" alt="Esther Howard">
+                            <div class="info">
+                                <h4>Esther Howard</h4>
+                                <p>esther.howard@gmail.com</p>
+                                <div class="dept-role">
+                                    <span class="dept">Full-time</span> • Staff
+                                </div>
+                                <div class="footer-info">
+                                    <div><strong>Payroll</strong> MMZKA0811</div>
+                                    <div><strong>Join Date</strong> Jan 10, 2025</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-top">
+                            <span class="tag part-time">Part-time</span>
+                            <i class='bx bx-dots-vertical-rounded' style="font-size:22px; color:#bbb; cursor:pointer;"></i>
+                        </div>
+                        <div class="emp-main">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" class="avatar" alt="Cameron Williamson">
+                            <div class="info">
+                                <h4>Cameron Williamson</h4>
+                                <p>william.c@gmail.com</p>
+                                <div class="dept-role">
+                                    <span class="dept">Part-time</span> • Staff
+                                </div>
+                                <div class="footer-info">
+                                    <div><strong>Payroll</strong> HSASH8188</div>
+                                    <div><strong>Join Date</strong> Mar 30, 2025</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

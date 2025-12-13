@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrintNow - Add New Staff Member</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+         :root {
+            /* Màu sắc */
+            --primary-color: #043873;
+            --secondary-blue: #4d59ff;
+            --text-color: #333333;
+            --sub-text-color: #718096;
+            --background-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --success-color: #48bb78;
+            --error-color: #f56565;
+            /* Sidebar - BẮT BUỘC */
+            --sidebar-w: 70px;
+            --sidebar-expand: 240px;
+            --transition: 0.35s;
+            /* Biến phụ */
+            --white: #ffffff;
+            --primary: #043873;
+            --gray: #718096;
+            --blue: #4d59ff;
+            --orange: #f6ad55;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+        /* ==================== LAYOUT CHÍNH ==================== */
+        
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        /* ==================== SIDEBAR ==================== */
+        
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--white);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            transition: width var(--transition);
+            overflow: hidden;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        
+        .sidebar:hover {
+            width: var(--sidebar-expand);
+        }
+        
+        .sidebar-header {
+            padding: 24px 20px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        .logo-icon {
+            font-size: 36px;
+            color: var(--primary);
+        }
+        
+        .logo-text {
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s var(--transition);
+        }
+        
+        .sidebar:hover .logo-text {
+            opacity: 1;
+            transition-delay: 0.1s;
+        }
+        
+        .logo-text strong {
+            font-size: 18px;
+            display: block;
+            color: #333;
+        }
+        
+        .logo-text span {
+            font-size: 13px;
+            color: var(--gray);
+        }
+        
+        .nav-list {
+            flex: 1;
+            padding: 20px 12px 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 6px;
+        }
+        
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.25s;
+            position: relative;
+        }
+        
+        .nav-item a:hover {
+            background: #eef1ff;
+            color: var(--primary);
+        }
+        
+        .nav-item a i {
+            font-size: 22px;
+            width: 36px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            opacity: 0;
+            margin-left: 12px;
+            transition: opacity 0.2s var(--transition);
+        }
+        
+        .sidebar:hover .nav-text {
+            opacity: 1;
+            transition-delay: 0.1s;
+        }
+        
+        .badge {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--orange);
+            color: white;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .sidebar:hover .badge {
+            position: relative;
+            right: auto;
+            top: auto;
+            transform: none;
+            margin-left: auto;
+        }
+        
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .sidebar-footer a {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.25s;
+            margin-bottom: 6px;
+        }
+        
+        .contact-support {
+            background: rgba(77, 89, 255, 0.1);
+            color: var(--blue);
+        }
+        
+        .logout {
+            color: #f56565;
+        }
+        
+        .logout i {
+            color: var(--gray);
+        }
+        
+        .sidebar:hover .logout i {
+            color: #f56565;
+        }
+        /* Employee Active */
+        
+        .nav-item.employee a,
+        .nav-item.employee a:hover,
+        .nav-item.employee.active a {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .nav-item.employee.active a {
+            background-color: rgba(4, 56, 115, 0.15);
+        }
+        /* ==================== MAIN WRAPPER - QUAN TRỌNG NHẤT ==================== */
+        
+        .main {
+            flex: 1;
+            margin-left: var(--sidebar-w);
+            transition: margin-left var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar:hover~.main {
+            margin-left: var(--sidebar-expand);
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 0 40px 40px;
+        }
+        /* ==================== HEADER & CONTENT ==================== */
+        
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            background-color: var(--background-color);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .page-heading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--primary-color);
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .page-heading i {
+            font-size: 28px;
+            cursor: pointer;
+        }
+        
+        .user-actions i {
+            font-size: 26px;
+            color: var(--sub-text-color);
+            cursor: pointer;
+            margin-left: 20px;
+        }
+        
+        .user-avatar {
+            font-size: 38px;
+            color: var(--primary-color);
+        }
+        
+        .page-container {
+            padding: 30px 0;
+        }
+        
+        .breadcrumb {
+            color: var(--sub-text-color);
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        
+        .breadcrumb .current {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .page-title {
+            font-size: 18px;
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e8ecf4;
+        }
+        
+        .form-header h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .form-header p {
+            color: var(--sub-text-color);
+            font-size: 14px;
+        }
+        /* Avatar Upload */
+        
+        .avatar-section {
+            margin: 30px 0;
+        }
+        
+        .avatar-upload-area {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            background-color: #f0f4ff;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 24 24' fill='none' stroke='%234d59ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 56px;
+            border: 3px dashed #4d59ff;
+            object-fit: cover;
+        }
+        
+        .upload-zone {
+            padding: 20px 30px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            background-color: #f8faff;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 320px;
+        }
+        
+        .upload-zone:hover {
+            border-color: var(--secondary-blue);
+            background-color: #eef1ff;
+        }
+        
+        .upload-zone.dragover {
+            border-color: var(--secondary-blue);
+            background-color: #eef1ff;
+            transform: scale(1.02);
+        }
+        
+        .upload-btn {
+            background-color: var(--secondary-blue);
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+        /* Form */
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 10px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input,
+        select {
+            padding: 14px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 0 3px rgba(77, 89, 255, 0.15);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            padding-top: 30px;
+            margin-top: 40px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .btn-cancel {
+            padding: 14px 32px;
+            border: 1.5px solid #e2e8f0;
+            background: transparent;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .btn-add {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class='bx bxs-printer logo-icon'></i>
+                <div class="logo-text">
+                    <strong>PrintNow</strong>
+                    <span>Print service</span>
+                </div>
+            </div>
+
+            <div class="nav-list">
+                <div class="nav-item"><a href="#"><i class='bx bxs-dashboard'></i><span class="nav-text">Dashboard</span></a></div>
+                <div class="nav-item"><a href="#"><i class='bx bx-notepad'></i><span class="nav-text">Orders</span><span class="badge">3</span></a></div>
+                <div class="nav-item"><a href="#"><i class='bx bx-group'></i><span class="nav-text">Customers</span></a></div>
+                <div class="nav-item"><a href="#"><i class='bx bx-package'></i><span class="nav-text">Inventory</span></a></div>
+                <div class="nav-item"><a href="#"><i class='bx bx-cog'></i><span class="nav-text">Settings</span></a></div>
+                <div class="nav-item employee active">
+                    <a href="#"><i class='bx bxs-user'></i><span class="nav-text">Employee</span></a>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="#" class="contact-support"><i class='bx bx-headphone'></i><span class="nav-text">Contact Support</span></a>
+                <a href="#" class="logout"><i class='bx bx-log-out'></i><span class="nav-text">Logout</span></a>
+            </div>
+        </aside>
+        <div class="main">
+            <main class="main-content">
+                <header class="top-header">
+                    <div class="page-heading">
+                        <i class='bx bx-arrow-back'></i> Add New Staff Member
+                    </div>
+                    <div class="user-actions">
+                        <i class='bx bx-bell'></i>
+                        <i class='bx bxs-user-circle user-avatar'></i>
+                    </div>
+                </header>
+
+                <div class="page-container">
+                    <div class="breadcrumb">
+                        <a href="#">Employee</a> → <span class="current">Add New Staff Member</span>
+                    </div>
+                    <div class="page-title">Fill in the details to add a new staff member to the system</div>
+
+                    <div class="form-card">
+                        <div class="form-header">
+                            <h3>Staff Information</h3>
+                            <p>Fill in the details to add a new staff member to the system</p>
+                        </div>
+
+                        <div class="avatar-section">
+                            <div class="avatar-upload-area">
+                                <div class="avatar-preview" id="preview"></div>
+                                <div>
+                                    <div class="upload-zone" id="dropZone">
+                                        <p style="margin:0; color:var(--sub-text-color); font-size:14px;">
+                                            <i class='bx bx-cloud-upload' style="font-size:28px; color:var(--secondary-blue);"></i><br>
+                                            <strong>Click to upload</strong> or drag and drop
+                                        </p>
+                                        <p style="margin:12px 0 0; font-size:12px; color:#a0aec0;">
+                                            Allowed JPG, GIF or PNG. Max size of 2MB
+                                        </p>
+                                        <button class="upload-btn">Choose File</button>
+                                    </div>
+                                    <input type="file" id="fileInput" accept="image/*" hidden>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group"><label>Full Name</label><input type="text" value="Nguyễn Văn A"></div>
+                            <div class="form-group"><label>Email Address</label><input type="email" value="hndk@gmail.com"></div>
+                            <div class="form-group"><label>Phone Number</label><input type="text" value="0927876378"></div>
+                            <div class="form-group"><label>Department</label>
+                                <select>
+                                    <option>Part-time</option>
+                                    <option>Full-time</option>
+                                    
+                                </select>
+                            </div>
+                            <div class="form-group"><label>Role</label><input type="text" value="Staff"></div>
+                            <div class="form-group"><label>Status</label>
+                                <select>
+                                    <option>Active</option>
+                                    <option>Inactive</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width"><label>Join Date</label><input type="date" value="2025-05-10"></div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn-cancel">Cancel</button>
+                            <button class="btn-add">Add Staff Member</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFiles);
+
+        ['dragover', 'dragenter'].forEach(e => dropZone.addEventListener(e, ev => {
+            ev.preventDefault();
+            dropZone.classList.add('dragover');
+        }));
+
+        ['dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, ev => {
+            ev.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e === 'drop' && ev.dataTransfer.files.length) {
+                fileInput.files = ev.dataTransfer.files;
+                handleFiles();
+            }
+        }));
+
+        function handleFiles() {
+            const file = fileInput.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.style.backgroundImage = `url(${e.target.result})`;
+                    preview.style.backgroundSize = 'cover';
+                    preview.style.backgroundPosition = 'center';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+
+</html>

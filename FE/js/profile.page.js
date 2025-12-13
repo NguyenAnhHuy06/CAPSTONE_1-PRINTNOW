@@ -11,6 +11,7 @@
 
   const avatar = document.querySelector("#avatar");
   const btnEdit = document.querySelector("#btnEditProfile");
+  const btnEditLabel = document.querySelector("#btnEditLabel");
 
   // Profile card (heading)
   const profileName = document.querySelector("#profile_name");
@@ -20,7 +21,7 @@
   const emailDisplay = document.querySelector("#email_display");
   const phoneDisplay = document.querySelector("#phone_display");
   const addressDisplay = document.querySelector("#address_display");
-  const joinedText = document.querySelector("#joined_text");
+  const joinedDateSpan = document.querySelector("#joined_date");
 
   // Activity counters
   const elStatOrders = document.querySelector("#stat_orders");
@@ -43,17 +44,50 @@
   const avatarUpload = document.querySelector("#avatarUpload");
 
   let editing = false;
+  let userCreatedAt = null;
+
+  function updateEditButton() {
+    if (!btnEdit || !btnEditLabel) return;
+
+    const key = editing ? "profile.btn_save" : "profile.btn_edit";
+    // cập nhật data-i18n để lần translateDom tiếp theo dùng đúng key
+    btnEditLabel.setAttribute("data-i18n", key);
+
+    if (window.i18n) {
+      btnEditLabel.textContent = i18n.t(key);
+    } else {
+      btnEditLabel.textContent = editing ? "Save" : "Edit";
+    }
+
+    const icon = btnEdit.querySelector("i");
+    if (icon) {
+      icon.className = editing ? "bx bx-save" : "bx bx-edit-alt";
+      icon.setAttribute("aria-hidden", "true");
+    }
+  }
+
 
   function formatJoinedMonthYear(iso) {
     if (!iso) return "—";
     try {
       const d = new Date(iso);
-      // Giữ style như thiết kế cũ: "January 2024"
-      return d.toLocaleString("en-US", { month: "long", year: "numeric" });
+      const lang = window.i18n ? i18n.getLang() : "en";
+      const locale = lang === "vi" ? "vi-VN" : "en-US";
+      return d.toLocaleDateString(locale, {
+        month: "long",
+        year: "numeric",
+      });
     } catch {
       return "—";
     }
   }
+
+  window.addEventListener("lang-changed", () => {
+    updateEditButton();
+    if (joinedDateSpan && userCreatedAt) {
+      joinedDateSpan.textContent = formatJoinedMonthYear(userCreatedAt);
+    }
+  });
 
   async function load() {
     try {
@@ -83,10 +117,11 @@
       if (phoneInput) phoneInput.value = u.phone || "";
       if (addressInput) addressInput.value = u.address || "";
       // Joined: từ createdAt
-      if (joinedText)
-        joinedText.textContent = `Joined: ${formatJoinedMonthYear(
-          u.createdAt
-        )}`;
+      userCreatedAt = u.createdAt;
+      if (joinedDateSpan) {
+        joinedDateSpan.textContent = formatJoinedMonthYear(userCreatedAt);
+      }
+
 
       // Load activity sau khi có user
       await loadActivity();
@@ -121,17 +156,11 @@
     document.querySelectorAll(".edit-field").forEach((el) => {
       el.style.display = on ? "block" : "none";
     });
-    [fullNameDisplay, emailDisplay, phoneDisplay, addressDisplay].forEach(
-      (p) => {
-        if (p) p.style.display = on ? "none" : "block";
-      }
-    );
-    // button label
-    if (btnEdit) {
-      btnEdit.innerHTML = on
-        ? `<i class="bx bx-save" aria-hidden="true"></i> Save`
-        : `<i class="bx bx-edit-alt" aria-hidden="true"></i> Edit`;
-    }
+    [fullNameDisplay, emailDisplay, phoneDisplay, addressDisplay].forEach((p) => {
+      if (p) p.style.display = on ? "none" : "block";
+    });
+
+    updateEditButton();
   }
 
   async function save() {

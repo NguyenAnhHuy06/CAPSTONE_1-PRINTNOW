@@ -1,0 +1,1656 @@
+<!--FE/html/Customer_Details.html-->
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Customer</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary: #4a90e2;
+        --success: #28a745;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --border: #dee2e6;
+        --text: #333;
+        --text-light: #6c757d;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", sans-serif;
+      }
+
+      body {
+        background: #f8f9fa;
+        color: var(--text);
+      }
+
+      .dashboard-container {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* SIDEBAR */
+
+      .sidebar {
+        width: 80px;
+        background: white;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1000;
+      }
+
+      .logo {
+        width: 42px;
+        height: 42px;
+        background: #043873;
+        border-radius: 40%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 40px;
+      }
+
+      .logo i {
+        color: white;
+        font-size: 24px;
+      }
+
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .nav-item {
+        font-size: 24px;
+        color: #6c757d;
+        padding: 10px;
+        border-radius: 8px;
+        transition: 0.3s;
+      }
+
+      .nav-item:hover {
+        background: #ebf2fa;
+        color: var(--primary);
+      }
+
+      .nav-item.customer {
+        background: #ebf2fa;
+        color: var(--primary);
+      }
+
+      .nav-item.logout {
+        color: #e74c3c !important;
+      }
+
+      .nav-item.logout:hover {
+        background: #fdf2f2;
+        transform: scale(1.15);
+      }
+
+      .sidebar-bottom {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      /* MAIN */
+
+      .main-content {
+        flex-grow: 1;
+        padding: 0 30px;
+        margin-left: 80px;
+      }
+
+      .header {
+        margin: 0 -30px;
+        padding: 20px 30px;
+        background: white;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .page-title {
+        font-size: 26px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .breadcrumb {
+        font-size: 14px;
+        color: var(--text-light);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 6px;
+      }
+
+      .home-icon {
+        color: var(--primary);
+      }
+
+      .active-breadcrumb {
+        color: #1e90ff;
+        font-weight: 600;
+      }
+
+      .header-right i {
+        font-size: 25px;
+        color: #6c757d;
+        cursor: pointer;
+      }
+
+      .header-right .fa-bell {
+        padding: 10px;
+        color: #3a7bd5;
+      }
+
+      .customer-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 30px 0 20px;
+      }
+
+      .customer-id-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 14px;
+        color: var(--text-light);
+      }
+
+      .order-id-copy {
+        background: #f1f3f5;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-family: monospace;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .copy-btn {
+        position: relative;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6c757d;
+      }
+
+      .copy-btn:hover {
+        color: var(--primary);
+      }
+
+      .copy-tooltip {
+        position: absolute;
+        top: -40px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: white;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.25s;
+      }
+
+      .copy-btn.active .copy-tooltip {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .action-btns {
+        display: flex;
+        gap: 12px;
+      }
+
+      .btn-edit,
+      .btn-suspend {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        transition: 0.25s;
+      }
+
+      .btn-edit {
+        background: #222;
+        color: white;
+      }
+
+      .btn-edit:hover {
+        background: #000;
+        transform: translateY(-1px);
+      }
+
+      .btn-suspend {
+        background: #e74c3c;
+        color: white;
+      }
+
+      .btn-suspend:hover {
+        background: #c0392b;
+        transform: translateY(-1px);
+      }
+
+      .btn-edit i {
+        font-size: 12px;
+        transition: 0.2s;
+      }
+
+      .btn-edit:hover i {
+        transform: translateY(2px);
+      }
+
+      .customer-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .info-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .info-card h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        color: var(--text-light);
+      }
+
+      .info-row strong {
+        color: var(--text);
+      }
+
+      .status.active {
+        background: #d4edda;
+        color: #28a745;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .orders-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+
+      .table-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .search-bar {
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 12px;
+        width: 300px;
+      }
+
+      .search-bar i {
+        color: var(--text-light);
+        margin-right: 10px;
+      }
+
+      .search-bar input {
+        border: none;
+        outline: none;
+        width: 100%;
+      }
+
+      /* ==================== 2 NÚT FILTER ĐẸP + DROPDOWN ==================== */
+
+      .btn-control {
+        padding: 8px 15px;
+        border: 1px solid var(--border);
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        transition: 0.2s;
+        position: relative;
+      }
+
+      .btn-control:hover {
+        background: #f8f9fa;
+      }
+
+      .filter-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        width: 320px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        padding: 20px;
+        margin-top: 8px;
+        border: 1px solid var(--border);
+        z-index: 1000;
+        display: none;
+      }
+
+      .filter-dropdown.show {
+        display: block !important;
+      }
+
+      .filter-dropdown h4 {
+        font-size: 16px;
+        margin: 0 0 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border);
+        font-weight: 600;
+      }
+
+      .filter-section {
+        margin-bottom: 18px;
+      }
+
+      .filter-section h5 {
+        font-size: 14px;
+        margin: 0 0 8px;
+        font-weight: 500;
+      }
+
+      .filter-select,
+      .date-input-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+      }
+
+      .date-input-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-apply-filter {
+        width: 100%;
+        background: #222;
+        color: white;
+        border: none;
+        padding: 11px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+
+      .btn-apply-filter:hover {
+        background: #000;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+
+      th {
+        background: #f8f9fa;
+        color: var(--text-light);
+        font-weight: 500;
+      }
+
+      .status {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status.completed {
+        background: #d4edda;
+        color: #28a745;
+      }
+
+      .status.pending {
+        background: #fff3cd;
+        color: #ffc107;
+      }
+
+      .status.progress {
+        background: #d1ecf1;
+        color: #17a2b8;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="dashboard-container">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="logo"><i class="bx bx-printer"></i></div>
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-item order"><i class="fas fa-box"></i></a>
+          <a href="#" class="nav-item customer"
+            ><i class="fas fa-user-friends"></i
+          ></a>
+          <a href="#" class="nav-item setting"><i class="fas fa-cog"></i></a>
+          <a href="#" class="nav-item chat"
+            ><i class="fas fa-headphones"></i
+          ></a>
+        </nav>
+        <div class="sidebar-bottom">
+          <a href="#" class="nav-item logout"
+            ><i class="fas fa-sign-out-alt"></i
+          ></a>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+        <header class="header">
+          <div class="header-main">
+            <div>
+              <h1 class="page-title" data-i18n="customers.page_title"></h1>
+              <div class="breadcrumb">
+                <i class="fa-solid fa-house home-icon"></i>
+                <span> / </span>
+                <span data-i18n="customers.breadcrumb"></span>
+                <span> / </span>
+                <span
+                  class="active-breadcrumb"
+                  data-i18n="customer_details.breadcrumb_view"
+                ></span>
+              </div>
+            </div>
+            <div class="header-right">
+              <i class="fa-solid fa-bell"></i>
+              <i class="fa-solid fa-user-circle"></i>
+            </div>
+          </div>
+        </header>
+
+        <!-- Customer Info + Actions -->
+        <div class="customer-actions">
+          <div class="customer-id-info">
+            <span><strong>Customer ID #743648</strong></span>
+            <span>Customer Since 12 Sept 2022 - 12:55 pm</span>
+            <div class="order-id-copy">
+              <span class="order-id-text">9348jfr73</span>
+              <button class="copy-btn" data-copy="9348jfr73">
+                <i class="far fa-copy"></i>
+                <span class="copy-tooltip">Copied!</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="action-btns">
+            <button
+              class="btn-suspend"
+              id="deleteCustomerBtn"
+              data-i18n="customer_details.btn_delete"
+            ></button>
+          </div>
+        </div>
+        <!-- đóng .customer-actions bị thiếu -->
+
+        <!-- 3 Cards -->
+        <div class="customer-info-grid">
+          <div class="info-card">
+            <h3><i class="fas fa-user"></i> Nguyễn Việt Anh</h3>
+            <div class="info-row">
+              <span>Last Order</span><strong>12 Oct 2022</strong>
+            </div>
+            <div class="info-row">
+              <span>Phone</span><strong>+84 085 656 063</strong>
+            </div>
+            <div class="info-row">
+              <span>Email</span><strong>vanh@gmail.com</strong>
+            </div>
+            <div style="margin-top: 15px">
+              <span class="status active">Active</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <h3><i class="fas fa-home"></i> Home Address</h3>
+            <p style="color: var(--text-light); line-height: 1.6">
+              10 Nguyễn Văn Linh, Thanh Khê, Đà Nẵng
+            </p>
+          </div>
+
+          <div class="info-card">
+            <h3><i class="fas fa-shopping-cart"></i> Total Orders</h3>
+            <div style="font-size: 28px; font-weight: 700; margin: 20px 0">
+              ₫25,000.00
+            </div>
+            <div style="text-align: right">
+              <select
+                style="
+                  padding: 5px 10px;
+                  border-radius: 6px;
+                  border: 1px solid var(--border);
+                "
+              >
+                <option>All time</option>
+                <option>This month</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Table + Filter đẹp -->
+        <section class="orders-section">
+          <h2 class="section-title">Nguyễn Việt Anh Orders</h2>
+
+          <div class="table-controls">
+            <div class="search-bar">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                data-i18n-placeholder="customer_details.search_placeholder"
+              />
+            </div>
+
+            <div
+              class="table-actions"
+              style="display: flex; gap: 10px; position: relative"
+            >
+              <!-- Filter General -->
+              <div class="btn-control" id="generalFilterBtn">
+                <i class="bx bx-filter"></i>
+                <span data-i18n="customer_details.filter_general_button"></span>
+                <div class="filter-dropdown" id="generalFilterDropdown">
+                  <h4 data-i18n="customer_details.filter_general_title"></h4>
+                  <div class="filter-section">
+                    <h5 data-i18n="customer_details.filter_status_label"></h5>
+                    <select class="filter-select" id="statusFilterSelect">
+                      <option
+                        value=""
+                        data-i18n="customer_details.filter_status_all"
+                      ></option>
+                      <option
+                        value="pending"
+                        data-i18n="customer_details.filter_status_pending"
+                      ></option>
+                      <option
+                        value="in-progress"
+                        data-i18n="customer_details.filter_status_in_progress"
+                      ></option>
+                      <option
+                        value="ready"
+                        data-i18n="customer_details.filter_status_ready"
+                      ></option>
+                      <option
+                        value="completed"
+                        data-i18n="customer_details.filter_status_completed"
+                      ></option>
+                      <option
+                        value="cancelled"
+                        data-i18n="customer_details.filter_status_cancelled"
+                      ></option>
+                    </select>
+                  </div>
+                  <div class="filter-section">
+                    <h5 data-i18n="customer_details.filter_payment_label"></h5>
+                    <select class="filter-select">
+                      <option
+                        value=""
+                        data-i18n="customer_details.filter_payment_all"
+                      ></option>
+                      <option
+                        data-i18n="customer_details.filter_payment_online"
+                      ></option>
+                      <option
+                        data-i18n="customer_details.filter_payment_cod"
+                      ></option>
+                      <option
+                        data-i18n="customer_details.filter_payment_direct"
+                      ></option>
+                    </select>
+                  </div>
+                  <button
+                    class="btn-apply-filter"
+                    data-i18n="customer_details.filter_apply"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- Filter by Date -->
+              <div class="btn-control" id="dateFilterBtn">
+                <i class="bx bx-calendar-alt"></i>
+                <span data-i18n="customer_details.filter_date_button"></span>
+                <div class="filter-dropdown" id="dateFilterDropdown">
+                  <h4 data-i18n="customer_details.filter_date_title"></h4>
+                  <div
+                    class="date-filter-options"
+                    style="display: grid; gap: 8px"
+                  >
+                    <label
+                      ><input
+                        type="radio"
+                        name="date_range_customer"
+                        value="today" />
+                      <span
+                        data-i18n="customer_details.filter_date_today"
+                      ></span
+                    ></label>
+                    <label
+                      ><input
+                        type="radio"
+                        name="date_range_customer"
+                        value="this_week"
+                        checked />
+                      <span
+                        data-i18n="customer_details.filter_date_this_week"
+                      ></span
+                    ></label>
+                    <label
+                      ><input
+                        type="radio"
+                        name="date_range_customer"
+                        value="this_month" />
+                      <span
+                        data-i18n="customer_details.filter_date_this_month"
+                      ></span
+                    ></label>
+                    <label
+                      ><input
+                        type="radio"
+                        name="date_range_customer"
+                        value="last_month" />
+                      <span
+                        data-i18n="customer_details.filter_date_last_month"
+                      ></span
+                    ></label>
+                    <label
+                      ><input
+                        type="radio"
+                        name="date_range_customer"
+                        value="this_year" />
+                      <span
+                        data-i18n="customer_details.filter_date_this_year"
+                      ></span
+                    ></label>
+                    <label
+                      ><input
+                        type="radio"
+                        name="date_range_customer"
+                        value="custom" />
+                      <span
+                        data-i18n="customer_details.filter_date_custom"
+                      ></span
+                    ></label>
+                  </div>
+                  <div
+                    id="dateRangeDetails"
+                    style="display: none; margin-top: 15px"
+                  >
+                    <div class="date-input-group">
+                      <input type="date" id="fromDate" />
+                      <input type="date" id="toDate" />
+                    </div>
+                  </div>
+                  <button
+                    class="btn-apply-filter"
+                    style="margin-top: 15px"
+                    data-i18n="customer_details.filter_apply"
+                  ></button>
+                </div>
+              </div>
+
+              <button class="btn-control">
+                <i class="bx bx-share"></i>
+                <span data-i18n="customer_details.share_button"></span>
+              </button>
+              <select class="btn-control" id="bulkActionSelect">
+                <option
+                  value=""
+                  data-i18n="customer_details.bulk_action_label"
+                ></option>
+                <option
+                  value="pending"
+                  data-i18n="customer_details.bulk_action_pending"
+                ></option>
+                <option
+                  value="in-progress"
+                  data-i18n="customer_details.bulk_action_in_progress"
+                ></option>
+                <option
+                  value="ready"
+                  data-i18n="customer_details.bulk_action_ready"
+                ></option>
+                <option
+                  value="completed"
+                  data-i18n="customer_details.bulk_action_completed"
+                ></option>
+                <option
+                  value="cancelled"
+                  data-i18n="customer_details.bulk_action_cancelled"
+                ></option>
+              </select>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th><input type="checkbox" /></th>
+                <th data-i18n="customer_details.th_order_date"></th>
+                <th data-i18n="customer_details.th_payment_method"></th>
+                <th data-i18n="customer_details.th_order_total"></th>
+                <th data-i18n="customer_details.th_status"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td>12 Oct 2025 - 12:25 am</td>
+                <td data-i18n="customer_details.filter_payment_online"></td>
+                <td>25.000VND</td>
+                <td>
+                  <span
+                    class="status completed"
+                    data-i18n="orders.status_completed"
+                  ></span>
+                </td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td>11 Oct 2025 - 09:15 am</td>
+                <td data-i18n="customer_details.filter_payment_direct"></td>
+                <td>42.500VND</td>
+                <td>
+                  <span
+                    class="status pending"
+                    data-i18n="orders.status_pending"
+                  ></span>
+                </td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td>10 Oct 2025 - 03:45 pm</td>
+                <td data-i18n="customer_details.filter_payment_online"></td>
+                <td>18.000VND</td>
+                <td>
+                  <span
+                    class="status progress"
+                    data-i18n="orders.status_in_progress"
+                  ></span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <!-- SCRIPT -->
+    <script src="../js/i18n.js"></script>
+    <script src="../js/apiService.js"></script>
+    <script>
+      // Lấy customerId hiện tại (ưu tiên URL, fallback localStorage)
+      function getCurrentCustomerId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let customerId = urlParams.get("id");
+
+        if (!customerId) {
+          customerId = localStorage.getItem("selectedCustomerId");
+        }
+
+        return customerId;
+      }
+
+      // Format currency
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        }).format(amount || 0);
+      }
+
+      // Format date
+      function formatDate(dateString) {
+        if (!dateString) return "-";
+        const date = new Date(dateString);
+        return date.toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      // Format date only
+      function formatDateOnly(dateString) {
+        if (!dateString) return "-";
+        const date = new Date(dateString);
+        return date.toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      }
+
+      // Simple i18n helper
+      function tr(key, fallback) {
+        if (window.i18n && typeof window.i18n.t === "function") {
+          return window.i18n.t(key);
+        }
+        return typeof fallback === "string" ? fallback : key;
+      }
+
+      // Get status class (chuẩn hóa lower-case để tránh lệch hoa/thường)
+      function getStatusClass(status) {
+        const normalized = String(status || "").toLowerCase();
+        const statusMap = {
+          completed: "completed",
+          new: "pending",
+          pending: "pending",
+          processing: "progress",
+          ready: "progress",
+          cancelled: "pending",
+          canceled: "pending",
+        };
+        return statusMap[normalized] || "pending";
+      }
+
+      // Get status text (i18n) - dùng lower-case
+      function getStatusText(status) {
+        const normalized = String(status || "").toLowerCase();
+        const keyMap = {
+          completed: "orders.status_completed",
+          new: "orders.status_pending",
+          pending: "orders.status_pending",
+          processing: "orders.status_in_progress",
+          ready: "orders.status_ready",
+          cancelled: "orders.status_cancelled",
+          canceled: "orders.status_cancelled",
+        };
+        const key = keyMap[normalized];
+        return key ? tr(key) : status;
+      }
+
+      // Biến global để lưu dữ liệu
+      let allOrdersData = [];
+      let currentCustomer = null;
+
+      // Filter state
+      const filters = {
+        status: "",
+        dateRange: "this_week",
+        fromDate: null,
+        toDate: null,
+        search: "",
+      };
+
+      // Render orders table với filter
+      function renderOrdersTable(orders) {
+        const ordersTableBody = document.querySelector(".orders-section tbody");
+        if (!ordersTableBody) return;
+
+        if (orders.length === 0) {
+          ordersTableBody.innerHTML = `
+                    <tr>
+                                                <td colspan="5" style="text-align:center; padding:20px;">${tr(
+                                                  "customer_details.empty_message",
+                                                  "Không có đơn hàng nào phù hợp với bộ lọc."
+                                                )}</td>
+                    </tr>
+                `;
+          return;
+        }
+
+        ordersTableBody.innerHTML = orders
+          .map(
+            (order) => `
+                <tr>
+                    <td><input type="checkbox" class="order-checkbox" data-order-id="${
+                      order.id
+                    }"></td>
+                    <td>${formatDate(order.orderDate)}</td>
+                    <td>-</td>
+                    <td>${formatCurrency(order.totalAmount)}</td>
+                    <td><span class="status ${getStatusClass(
+                      order.status
+                    )}">${getStatusText(order.status)}</span></td>
+                </tr>
+            `
+          )
+          .join("");
+      }
+
+      // Apply filters
+      function applyFilters() {
+        let filtered = [...allOrdersData];
+
+        // console.log("🔍 Apply filters:", filters);
+        // console.log("📦 Total orders:", allOrdersData.length);
+        // console.log(
+        //   "📊 Orders statuses:",
+        //   allOrdersData.map((o) => o.status)
+        // );
+
+        // Filter by status
+        if (filters.status) {
+          const statusMap = {
+            pending: ["new", "pending"],
+            "in-progress": ["processing"],     // chỉ processing
+            ready: ["ready"],                  // ready riêng
+            completed: ["completed"],
+            cancelled: ["cancelled", "canceled"],
+          };
+
+          const current = filters.status.toLowerCase();
+          const statuses = statusMap[current] || [];
+
+          // Nếu cần debug nhẹ thì giữ 1 log này, còn không có thể comment luôn
+          // console.log("🎯 Filtering by status:", filters.status, "→", statuses);
+
+          if (statuses.length > 0) {
+            filtered = filtered.filter((order) => {
+              const normalizedStatus = String(order.status || "").toLowerCase();
+              return statuses.includes(normalizedStatus);
+            });
+            // console.log("✅ After status filter:", filtered.length, "orders");
+          }
+        }
+
+        // Filter by date range (chỉ áp dụng nếu dateRange được set và không phải empty string)
+        if (filters.dateRange && filters.dateRange !== "") {
+          const now = new Date();
+          let startDate = null;
+          let endDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            23,
+            59,
+            59
+          );
+
+          switch (filters.dateRange) {
+            case "today":
+              startDate = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                0,
+                0,
+                0
+              );
+              break;
+            case "this_week":
+              const dayOfWeek = now.getDay();
+              startDate = new Date(now);
+              startDate.setDate(now.getDate() - dayOfWeek);
+              startDate.setHours(0, 0, 0, 0);
+              break;
+            case "this_month":
+              startDate = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                1,
+                0,
+                0,
+                0
+              );
+              break;
+            case "last_month":
+              startDate = new Date(
+                now.getFullYear(),
+                now.getMonth() - 1,
+                1,
+                0,
+                0,
+                0
+              );
+              endDate = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                0,
+                23,
+                59,
+                59
+              );
+              break;
+            case "this_year":
+              startDate = new Date(now.getFullYear(), 0, 1, 0, 0, 0);
+              break;
+            case "custom":
+              if (filters.fromDate && filters.toDate) {
+                startDate = new Date(filters.fromDate);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(filters.toDate);
+                endDate.setHours(23, 59, 59, 999);
+              }
+              break;
+          }
+
+          if (startDate) {
+            filtered = filtered.filter((order) => {
+              const orderDate = order.orderDate
+                ? new Date(order.orderDate)
+                : null;
+              if (!orderDate) return false;
+              return orderDate >= startDate && orderDate <= endDate;
+            });
+          }
+        }
+
+        // Filter by search (search in order date or amount)
+        if (filters.search) {
+          const searchLower = filters.search.toLowerCase();
+          filtered = filtered.filter((order) => {
+            const dateStr = formatDate(order.orderDate).toLowerCase();
+            const amountStr = order.totalAmount.toString();
+            return (
+              dateStr.includes(searchLower) || amountStr.includes(searchLower)
+            );
+          });
+        }
+
+        renderOrdersTable(filtered);
+      }
+
+      // Load customer details
+      async function loadCustomerDetails() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          // Lấy customer ID hiện tại (URL hoặc localStorage)
+          const customerId = getCurrentCustomerId();
+
+          if (!customerId) {
+            alert(
+              tr(
+                "customer_details.error_missing_id",
+                "Không tìm thấy ID khách hàng. Vui lòng truy cập từ trang danh sách khách hàng."
+              )
+            );
+            window.location.href = "ManageCustomer_Employee.html";
+            return;
+          }
+          // Dùng api() -> tự gửi cookie auth, không dùng Bearer token nữa
+          const res = await api(`/customers/${customerId}`);
+
+          if (res.status === 401) {
+            alert(
+              tr(
+                "alert.session_expired",
+                "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
+              )
+            );
+            window.location.href = "Login.html";
+            return;
+          }
+
+          if (!res.ok) {
+            const errorData = await res.json();
+            alert(
+              errorData.message ||
+                tr(
+                  "customer_details.error_load_failed",
+                  "Không thể tải chi tiết khách hàng."
+                )
+            );
+            window.location.href = "ManageCustomer_Employee.html";
+            return;
+          }
+
+          const result = await res.json();
+          if (!result.success) {
+            alert(
+              result.message ||
+                tr(
+                  "customer_details.error_load_failed",
+                  "Không thể tải chi tiết khách hàng."
+                )
+            );
+            return;
+          }
+
+          const { customer, stats, orders } = result.data;
+
+          // Lưu vào biến global
+          allOrdersData = orders;
+          currentCustomer = customer;
+
+          // Cập nhật Customer ID và Customer Since
+          const customerIdInfo = document.querySelector(".customer-id-info");
+          if (customerIdInfo) {
+            const idLabel = tr(
+              "customer_details.customer_id_label",
+              "Customer ID"
+            );
+            const sinceLabel = tr(
+              "customer_details.customer_since",
+              "Customer Since"
+            );
+            const copiedText = tr("customer_details.copied", "Copied!");
+            customerIdInfo.innerHTML = `
+                        <span><strong>${idLabel} #${customer.id}</strong></span>
+                        <span>${sinceLabel} ${formatDateOnly(
+              customer.joinedDate
+            )}</span>
+                        <div class="order-id-copy">
+                            <span class="order-id-text">${customer.id}</span>
+                            <button class="copy-btn" data-copy="${customer.id}">
+                                <i class="far fa-copy"></i>
+                                <span class="copy-tooltip">${copiedText}</span>
+                            </button>
+                        </div>
+                    `;
+          }
+
+          // Cập nhật 3 cards
+          const infoCards = document.querySelectorAll(".info-card");
+
+          // Card 1: Customer Info
+          if (infoCards[0]) {
+            const lastOrderLabel = tr(
+              "customer_details.card_basic_last_order",
+              "Last Order"
+            );
+            const phoneLabel = tr("customer_details.card_basic_phone", "Phone");
+            const emailLabel = tr("customer_details.card_basic_email", "Email");
+            const noOrdersText = tr(
+              "customer_details.card_basic_no_orders",
+              "Chưa có đơn hàng"
+            );
+
+            const isActive =
+              customer.status === "Active" ||
+              customer.status === "ACTIVE" ||
+              customer.status === "active";
+            const isInactive =
+              customer.status === "Inactive" ||
+              customer.status === "INACTIVE" ||
+              customer.status === "In-Active" ||
+              customer.status === "in-active";
+
+            let statusText = customer.status || "";
+            if (isActive) {
+              statusText = tr(
+                "customer_details.card_basic_status_active",
+                customer.status
+              );
+            } else if (isInactive) {
+              statusText = tr(
+                "customer_details.card_basic_status_inactive",
+                customer.status
+              );
+            }
+
+            infoCards[0].innerHTML = `
+                        <h3><i class="fas fa-user"></i> ${customer.name}</h3>
+                        <div class="info-row">
+                          <span>${lastOrderLabel}</span>
+                          <strong>${
+                            stats.lastOrderDate
+                              ? formatDateOnly(stats.lastOrderDate)
+                              : noOrdersText
+                          }</strong>
+                        </div>
+                        <div class="info-row">
+                          <span>${phoneLabel}</span>
+                          <strong>${customer.phone || "-"}</strong>
+                        </div>
+                        <div class="info-row">
+                          <span>${emailLabel}</span>
+                          <strong>${customer.email}</strong>
+                        </div>
+                        <div style="margin-top:15px;">
+                          <span class="status ${isActive ? "active" : ""}">
+                            ${statusText || "-"}
+                          </span>
+                        </div>
+                    `;
+          }
+
+          // Card 2: Address
+          if (infoCards[1]) {
+            const addrTitle = tr(
+              "customer_details.card_address_title",
+              "Home Address"
+            );
+            const emptyAddr = tr(
+              "customer_details.card_address_empty",
+              "Chưa có địa chỉ"
+            );
+            infoCards[1].innerHTML = `
+                        <h3><i class="fas fa-home"></i> ${addrTitle}</h3>
+                        <p style="color:var(--text-light); line-height:1.6;">${
+                          customer.address || emptyAddr
+                        }</p>
+                    `;
+          }
+
+          // Card 3: Total Orders
+          if (infoCards[2]) {
+            const totalTitle = tr(
+              "customer_details.card_total_title",
+              "Total Orders"
+            );
+            const allTimeText = tr(
+              "customer_details.card_total_filter_all",
+              "All time"
+            );
+            const thisMonthText = tr(
+              "customer_details.card_total_filter_month",
+              "This month"
+            );
+            infoCards[2].innerHTML = `
+                        <h3><i class="fas fa-shopping-cart"></i> ${totalTitle}</h3>
+                        <div style="font-size:28px; font-weight:700; margin:20px 0;">${formatCurrency(
+                          stats.totalSpent
+                        )}</div>
+                        <div style="text-align:right;">
+                            <select id="orderTimeFilter" style="padding:5px 10px; border-radius:6px; border:1px solid var(--border);">
+                                <option value="all">${allTimeText}</option>
+                                <option value="month">${thisMonthText}</option>
+                            </select>
+                        </div>
+                    `;
+          }
+
+          // Cập nhật section title
+          const sectionTitle = document.querySelector(".section-title");
+          if (sectionTitle) {
+            sectionTitle.textContent =
+              window.i18n && typeof window.i18n.f === "function"
+                ? window.i18n.f("customer_details.section_orders_title", {
+                    name: customer.name,
+                  })
+                : `${customer.name} Orders`;
+          }
+
+          // Render orders table với filter
+          applyFilters();
+
+          // Re-attach copy button event
+          document.querySelectorAll(".copy-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const text = btn.dataset.copy;
+              await navigator.clipboard.writeText(text);
+              btn.classList.add("active");
+              setTimeout(() => btn.classList.remove("active"), 1200);
+            });
+          });
+        } catch (error) {
+          console.error("Lỗi khi tải chi tiết khách hàng:", error);
+          alert(
+            tr(
+              "customer_details.error_generic",
+              "Có lỗi xảy ra khi tải dữ liệu"
+            )
+          );
+        }
+      }
+
+      // Setup filter event listeners
+      function setupFilters() {
+        // Filter dropdown toggle
+        const generalFilterBtn = document.getElementById("generalFilterBtn");
+        const generalFilterDropdown = document.getElementById(
+          "generalFilterDropdown"
+        );
+        const dateFilterBtn = document.getElementById("dateFilterBtn");
+        const dateFilterDropdown =
+          document.getElementById("dateFilterDropdown");
+
+        if (generalFilterBtn && generalFilterDropdown) {
+          generalFilterBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            generalFilterDropdown.classList.toggle("show");
+            if (dateFilterDropdown) dateFilterDropdown.classList.remove("show");
+          });
+        }
+
+        if (dateFilterBtn && dateFilterDropdown) {
+          dateFilterBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            dateFilterDropdown.classList.toggle("show");
+            if (generalFilterDropdown)
+              generalFilterDropdown.classList.remove("show");
+          });
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener("click", (e) => {
+          if (
+            generalFilterDropdown &&
+            !generalFilterBtn.contains(e.target) &&
+            !generalFilterDropdown.contains(e.target)
+          ) {
+            generalFilterDropdown.classList.remove("show");
+          }
+          if (
+            dateFilterDropdown &&
+            !dateFilterBtn.contains(e.target) &&
+            !dateFilterDropdown.contains(e.target)
+          ) {
+            dateFilterDropdown.classList.remove("show");
+          }
+        });
+
+        // Status filter
+        const statusSelect = document.getElementById("statusFilterSelect");
+        if (statusSelect) {
+          statusSelect.addEventListener("change", (e) => {
+            const value = e.target.value;
+            filters.status = value === "" ? "" : value;
+            applyFilters();
+          });
+        }
+
+        // Date range filter
+        const dateRangeRadios = document.querySelectorAll(
+          'input[name="date_range_customer"]'
+        );
+        dateRangeRadios.forEach((radio) => {
+          radio.addEventListener("change", (e) => {
+            filters.dateRange = e.target.value;
+            const dateRangeDetails =
+              document.getElementById("dateRangeDetails");
+            if (dateRangeDetails) {
+              dateRangeDetails.style.display =
+                e.target.value === "custom" ? "block" : "none";
+            }
+            if (e.target.value !== "custom") {
+              applyFilters();
+            }
+          });
+        });
+
+        // Custom date range
+        const fromDateInput = document.getElementById("fromDate");
+        const toDateInput = document.getElementById("toDate");
+        if (fromDateInput) {
+          fromDateInput.addEventListener("change", () => {
+            filters.fromDate = fromDateInput.value;
+            if (filters.toDate) applyFilters();
+          });
+        }
+        if (toDateInput) {
+          toDateInput.addEventListener("change", () => {
+            filters.toDate = toDateInput.value;
+            if (filters.fromDate) applyFilters();
+          });
+        }
+
+        // Apply filter buttons
+        const applyFilterBtns = document.querySelectorAll(".btn-apply-filter");
+        applyFilterBtns.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (generalFilterDropdown)
+              generalFilterDropdown.classList.remove("show");
+            if (dateFilterDropdown) dateFilterDropdown.classList.remove("show");
+            applyFilters();
+          });
+        });
+
+        // Search bar
+        const searchInput = document.querySelector(".search-bar input");
+        if (searchInput) {
+          searchInput.addEventListener("input", (e) => {
+            filters.search = e.target.value;
+            applyFilters();
+          });
+        }
+
+        // Bulk action dropdown - Dùng để filter theo status
+        const bulkActionSelect = document.getElementById("bulkActionSelect");
+        if (bulkActionSelect) {
+          bulkActionSelect.addEventListener("change", (e) => {
+            const selectedValue = e.target.value;
+
+            // Nếu chọn "Bulk Action" (value = '') thì hiển thị tất cả (reset filters)
+            if (selectedValue === "" || selectedValue === "Bulk Action") {
+              // Reset tất cả filters
+              filters.status = "";
+              filters.dateRange = "";
+              filters.fromDate = null;
+              filters.toDate = null;
+              filters.search = "";
+
+              // Reset UI
+              const statusSelect =
+                document.getElementById("statusFilterSelect");
+              if (statusSelect) statusSelect.value = "";
+
+              const dateRangeRadios = document.querySelectorAll(
+                'input[name="date_range_customer"]'
+              );
+              dateRangeRadios.forEach((radio) => {
+                if (radio.value === "this_week") {
+                  radio.checked = true;
+                  filters.dateRange = "this_week";
+                } else {
+                  radio.checked = false;
+                }
+              });
+
+              const dateRangeDetails =
+                document.getElementById("dateRangeDetails");
+              if (dateRangeDetails) dateRangeDetails.style.display = "none";
+
+              const searchInput = document.querySelector(".search-bar input");
+              if (searchInput) searchInput.value = "";
+
+              // Hiển thị tất cả đơn hàng (không giới hạn thời gian)
+              renderOrdersTable(allOrdersData);
+
+              // Reset dropdown về "Bulk Action"
+              e.target.value = "";
+              return;
+            }
+
+            // Nếu chọn status khác (pending, completed, ...) thì filter theo status đó
+            filters.status = selectedValue;
+
+            // Reset dateRange filter khi chọn status từ Bulk Action để chỉ filter theo status
+            filters.dateRange = "";
+            filters.fromDate = null;
+            filters.toDate = null;
+
+            // Reset date range UI
+            const dateRangeRadios = document.querySelectorAll(
+              'input[name="date_range_customer"]'
+            );
+            dateRangeRadios.forEach((radio) => {
+              radio.checked = false;
+            });
+
+            const dateRangeDetails =
+              document.getElementById("dateRangeDetails");
+            if (dateRangeDetails) dateRangeDetails.style.display = "none";
+
+            // Cập nhật status filter select trong Filter dropdown để đồng bộ
+            const statusSelect = document.getElementById("statusFilterSelect");
+            if (statusSelect) {
+              statusSelect.value = selectedValue;
+            }
+
+            // Áp dụng filter
+            applyFilters();
+          });
+        }
+      }
+
+      // Delete customer function
+      async function deleteCustomer() {
+        try {
+          const customerId = getCurrentCustomerId();
+
+          if (!customerId) {
+            alert(
+              tr(
+                "customer_details.error_missing_id",
+                "Không tìm thấy ID khách hàng. Vui lòng truy cập từ trang danh sách khách hàng."
+              )
+            );
+            return;
+          }
+
+          // Hiển thị thông báo xác nhận
+          const confirmed = confirm(
+            tr(
+              "customer_details.confirm_delete",
+              "Bạn chắc chắn muốn xóa khách hàng này?"
+            )
+          );
+          if (!confirmed) {
+            return;
+          }
+
+          // Dùng api() -> cookie auth
+          const res = await api(`/customers/${customerId}`, {
+            method: "DELETE",
+          });
+
+          if (res.status === 401) {
+            alert(
+              tr(
+                "alert.session_expired",
+                "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
+              )
+            );
+            window.location.href = "Login.html";
+            return;
+          }
+
+          if (!res.ok) {
+            const errorData = await res.json();
+            alert(
+              errorData.message ||
+                tr(
+                  "customer_details.error_delete_failed",
+                  "Không thể xóa khách hàng."
+                )
+            );
+            return;
+          }
+
+          const result = await res.json();
+          if (!result.success) {
+            alert(
+              result.message ||
+                tr(
+                  "customer_details.error_delete_failed",
+                  "Không thể xóa khách hàng."
+                )
+            );
+            return;
+          }
+
+          // Xóa thành công: dọn localStorage & chuyển về trang quản lý khách hàng
+          try {
+            localStorage.removeItem("selectedCustomerId");
+          } catch (e) {
+            console.warn(
+              "Không thể xóa selectedCustomerId khỏi localStorage:",
+              e
+            );
+          }
+          alert(
+            tr("customer_details.delete_success", "Xóa khách hàng thành công!")
+          );
+          window.location.href = "ManageCustomer_Employee.html";
+        } catch (error) {
+          console.error("Lỗi khi xóa khách hàng:", error);
+          alert(
+            tr(
+              "customer_details.error_delete_failed",
+              "Không thể xóa khách hàng."
+            )
+          );
+        }
+      }
+
+      // Load data when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.i18n && typeof window.i18n.t === "function") {
+          document.title = window.i18n.t("customer_details.page_title");
+        }
+
+        loadCustomerDetails();
+        setupFilters();
+
+        // Setup delete button
+        const deleteBtn = document.getElementById("deleteCustomerBtn");
+        if (deleteBtn) {
+          deleteBtn.addEventListener("click", deleteCustomer);
+        }
+      });
+    </script>
+  </body>
+</html>

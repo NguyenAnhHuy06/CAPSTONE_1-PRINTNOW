@@ -25,6 +25,7 @@
         padding: 0;
         color: #333;
       }
+
       /* ------------------------------------- */
       /* HEADER (NAVIGATION BAR) */
       /* ------------------------------------- */
@@ -42,6 +43,7 @@
         justify-content: space-between;
         align-items: center;
       }
+
       /* Logo Styles */
 
       .logo {
@@ -160,6 +162,7 @@
         margin-top: 0;
         font-weight: 500;
       }
+
       /* --- SERVICE CARDS GRID (2 Cột) --- */
 
       .service-grid {
@@ -179,6 +182,7 @@
         flex-direction: column;
         justify-content: space-between;
       }
+
       /* Icon và Tiêu đề */
 
       .card-header {
@@ -199,6 +203,7 @@
         font-size: 50px;
         color: #1a4a8d;
       }
+
       /* Icon Tùy chỉnh: Frame icon */
 
       .card-icon-wrapper .frame-icon {
@@ -268,6 +273,7 @@
         font-size: 1.1rem;
         line-height: 1;
       }
+
       /* --- FOOTER --- */
 
       .card-footer {
@@ -359,41 +365,51 @@
         .container {
           padding: 20px 10px 0 10px;
         }
+
         .header {
           padding: 10px 15px;
         }
+
         .nav-bar {
           flex-direction: column;
           gap: 15px;
         }
+
         .nav-links {
           justify-content: center;
           gap: 15px;
           margin: 0;
         }
+
         .login-btn {
           width: auto;
           padding: 8px 15px;
         }
+
         .page-header h1 {
           font-size: 1.8rem;
         }
+
         .service-grid {
           grid-template-columns: 1fr;
           gap: 15px;
           padding-bottom: 40px;
         }
+
         .card-features {
           grid-template-columns: 1fr;
         }
+
         .help-section {
           padding: 30px 15px;
         }
+
         .contact-info {
           display: flex;
           flex-direction: column;
           gap: 10px;
         }
+
         .contact-info .bx-envelope {
           margin-left: 0;
         }
@@ -473,6 +489,7 @@
         border-top: 1px solid rgba(255, 255, 255, 0.2);
         margin: 20px 0;
       }
+
       /* Responsive */
 
       @media (max-width: 768px) {
@@ -480,6 +497,7 @@
           flex-direction: column;
           gap: 20px;
         }
+
         .footer-bottom {
           flex-direction: column;
           gap: 10px;
@@ -519,23 +537,35 @@
             </div>
             <div class="text">
               <h1>PrintNow</h1>
-              <p>Print service</p>
+              <p data-i18n="nav.tagline">Print service</p>
             </div>
           </div>
 
           <ul class="nav-links">
-            <li><a href="/home" class="home">Home</a></li>
             <li>
-              <a href="/service/print" class="service" aria-current="page"
-                >Services</a
-              >
+              <a href="/home" class="home" data-i18n="nav.home">Home</a>
             </li>
-            <li><a href="/about-us" class="introduce">About Us</a></li>
+            <li>
+              <a
+                href="/service/print"
+                class="service"
+                aria-current="page"
+                data-i18n="nav.services"
+              >
+                Services
+              </a>
+            </li>
+            <li>
+              <a href="/about-us" class="introduce" data-i18n="nav.about">
+                About Us
+              </a>
+            </li>
           </ul>
 
           <div id="authArea" class="auth-area">
             <a href="/login" class="login-btn">
-              <i class="bx bx-log-in" aria-hidden="true"></i> Login
+              <i class="bx bx-log-in" aria-hidden="true"></i>
+              <span data-i18n="nav.login">Login</span>
             </a>
           </div>
         </nav>
@@ -543,8 +573,10 @@
 
       <div class="container">
         <div class="page-header">
-          <h1>Printing Service</h1>
-          <p>Choose the service that suits your needs</p>
+          <h1 data-i18n="service.print_title">Printing Service</h1>
+          <p data-i18n="service.print_subtitle">
+            Choose the service that suits your needs
+          </p>
         </div>
 
         <div class="service-grid">
@@ -555,29 +587,43 @@
                   <i class="bx bx-file" aria-hidden="true"></i>
                 </div>
                 <div class="card-title-block">
-                  <h2>Print Document</h2>
-                  <p>Print PDF, Word, PowerPoint files with many options</p>
+                  <h2 data-i18n="service.doc_title">Print Document</h2>
+                  <p data-i18n="service.doc_desc">
+                    Print PDF, Word, PowerPoint files with many options
+                  </p>
                 </div>
               </div>
 
               <div class="card-features">
                 <ul>
-                  <li>Black White & Color</li>
-                  <li>Thesis Binding</li>
+                  <li data-i18n="service.doc_feature1">Black White & Color</li>
+                  <li data-i18n="service.doc_feature2">Thesis Binding</li>
                 </ul>
                 <ul>
-                  <li>Multiple Paper Sizes</li>
-                  <li>Double-Sided Printing</li>
+                  <li data-i18n="service.doc_feature3">Multiple Paper Sizes</li>
+                  <li data-i18n="service.doc_feature4">
+                    Double-Sided Printing
+                  </li>
                 </ul>
               </div>
             </div>
 
             <div class="card-footer">
               <div class="price-block">
-                <span class="label">Price from</span>
-                <div class="price">500 VND/page</div>
+                <span class="label" data-i18n="service.price_from">
+                  Price from
+                </span>
+                <div class="price" data-i18n="service.doc_price">
+                  500 VND/page
+                </div>
               </div>
-              <a class="select-btn" href="/print/document">Select service</a>
+              <a
+                class="select-btn"
+                href="/print/document"
+                data-i18n="service.select_btn"
+              >
+                Select service
+              </a>
             </div>
           </div>
 
@@ -588,29 +634,41 @@
                   <i class="bx bx-image" aria-hidden="true"></i>
                 </div>
                 <div class="card-title-block">
-                  <h2>Print Photos</h2>
-                  <p>Print high quality photos in a variety of sizes</p>
+                  <h2 data-i18n="service.photo_title">Print Photos</h2>
+                  <p data-i18n="service.photo_desc">
+                    Print high quality photos in a variety of sizes
+                  </p>
                 </div>
               </div>
 
               <div class="card-features">
                 <ul>
-                  <li>Various Sizes</li>
-                  <li>High Quality</li>
+                  <li data-i18n="service.photo_feature1">Various Sizes</li>
+                  <li data-i18n="service.photo_feature2">High Quality</li>
                 </ul>
                 <ul>
-                  <li>Glossy/Matte Paper</li>
-                  <li>Color Correction</li>
+                  <li data-i18n="service.photo_feature3">Glossy/Matte Paper</li>
+                  <li data-i18n="service.photo_feature4">Color Correction</li>
                 </ul>
               </div>
             </div>
 
             <div class="card-footer">
               <div class="price-block">
-                <span class="label">Price from</span>
-                <div class="price">5,000 VND/Photo</div>
+                <span class="label" data-i18n="service.price_from">
+                  Price from
+                </span>
+                <div class="price" data-i18n="service.photo_price">
+                  5,000 VND/Photo
+                </div>
               </div>
-              <a class="select-btn" href="/print/photo">Select service</a>
+              <a
+                class="select-btn"
+                href="/print/photo"
+                data-i18n="service.select_btn"
+              >
+                Select service
+              </a>
             </div>
           </div>
 
@@ -621,31 +679,41 @@
                   <i class="bx bx-id-card" aria-hidden="true"></i>
                 </div>
                 <div class="card-title-block">
-                  <h2>Print business cards</h2>
-                  <p>Professional Business Card Printing from Your Design</p>
+                  <h2 data-i18n="service.card_title">Print business cards</h2>
+                  <p data-i18n="service.card_desc">
+                    Professional Business Card Printing from Your Design
+                  </p>
                 </div>
               </div>
 
               <div class="card-features">
                 <ul>
-                  <li>From Your Design</li>
-                  <li>Fast Printing</li>
+                  <li data-i18n="service.card_feature1">From Your Design</li>
+                  <li data-i18n="service.card_feature2">Fast Printing</li>
                 </ul>
                 <ul>
-                  <li>Various Paper Types</li>
-                  <li>High Quality</li>
+                  <li data-i18n="service.card_feature3">Various Paper Types</li>
+                  <li data-i18n="service.card_feature4">High Quality</li>
                 </ul>
               </div>
             </div>
 
             <div class="card-footer">
               <div class="price-block">
-                <span class="label">Price from</span>
-                <div class="price">200,000 VND/box</div>
+                <span class="label" data-i18n="service.price_from">
+                  Price from
+                </span>
+                <div class="price" data-i18n="service.card_price">
+                  200,000 VND/box
+                </div>
               </div>
-              <a class="select-btn" href="/print/business-card"
-                >Select service</a
+              <a
+                class="select-btn"
+                href="/print/business-card"
+                data-i18n="service.select_btn"
               >
+                Select service
+              </a>
             </div>
           </div>
 
@@ -656,44 +724,63 @@
                   <i class="bx bx-coffee" aria-hidden="true"></i>
                 </div>
                 <div class="card-title-block">
-                  <h2>Print Cups</h2>
-                  <p>Print logos and designs on paper cups and plastic cups</p>
+                  <h2 data-i18n="service.cup_title">Print Cups</h2>
+                  <p data-i18n="service.cup_desc">
+                    Print logos and designs on paper cups and plastic cups
+                  </p>
                 </div>
               </div>
 
               <div class="card-features">
                 <ul>
-                  <li>Paper & Plastic Cups</li>
-                  <li>Large Quantity</li>
+                  <li data-i18n="service.cup_feature1">Paper & Plastic Cups</li>
+                  <li data-i18n="service.cup_feature2">Large Quantity</li>
                 </ul>
                 <ul>
-                  <li>Logo/Design Printing</li>
-                  <li>Business Use</li>
+                  <li data-i18n="service.cup_feature3">Logo/Design Printing</li>
+                  <li data-i18n="service.cup_feature4">Business Use</li>
                 </ul>
               </div>
             </div>
 
             <div class="card-footer">
               <div class="price-block">
-                <span class="label">Price from</span>
-                <div class="price">2,000 VND/cup</div>
+                <span class="label" data-i18n="service.price_from">
+                  Price from
+                </span>
+                <div class="price" data-i18n="service.cup_price">
+                  2,000 VND/cup
+                </div>
               </div>
-              <a class="select-btn" href="/print/cup">Select service</a>
+              <a
+                class="select-btn"
+                href="/print/cup"
+                data-i18n="service.select_btn"
+              >
+                Select service
+              </a>
             </div>
           </div>
         </div>
       </div>
 
       <div class="help-section">
-        <h3>Need help?</h3>
-        <p>Contact us for detailed advice on the service</p>
+        <h3 data-i18n="service.help_title">Need help?</h3>
+        <p data-i18n="service.help_subtitle">
+          Contact us for detailed advice on the service
+        </p>
         <div class="contact-info">
           <span>
-            <i class="bx bxs-phone" aria-hidden="true"></i> Hotline: 1900169874
+            < <i class="bx bxs-phone" aria-hidden="true"></i>
+            <span data-i18n="service.contact_hotline">
+              Hotline: 1900169874
+            </span>
           </span>
           <span class="email-icon">
-            <i class="bx bxs-envelope" aria-hidden="true"></i> Email:
-            print@gmail.com
+            <i class="bx bxs-envelope" aria-hidden="true"></i>
+            <span data-i18n="service.contact_email">
+              Email: print@gmail.com
+            </span>
           </span>
         </div>
       </div>
@@ -716,16 +803,37 @@
         <div class="footer-columns">
           <div class="footer-column">
             <h6>PrintNow</h6>
-            <p>Fast & reliable printing services.</p>
+            <p data-i18n="service.footer_desc">
+              Fast & reliable printing services.
+            </p>
           </div>
           <!-- Có thể thêm cột khác tại đây -->
         </div>
         <hr />
         <div class="footer-bottom">
-          <span>© 2025 PrintNow</span>
+          <span data-i18n="service.footer_copyright"> © 2025 PrintNow </span>
         </div>
       </footer>
     </main>
     <script src="/js/authHeader.js"></script>
+    <script src="/js/i18n.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.i18n) {
+          // Áp dụng theo localStorage trước
+          i18n.translateDom();
+
+          // Nếu đã đăng nhập thì đọc language từ server
+          fetch("/api/settings/me", { credentials: "include" })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data?.success && data.setting?.language) {
+                i18n.setLang(data.setting.language);
+              }
+            })
+            .catch(() => {});
+        }
+      });
+    </script>
   </body>
 </html>

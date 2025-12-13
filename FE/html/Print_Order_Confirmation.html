@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Order Confirmation</title>
+    <title data-i18n="order_confirm.page_title">Order Confirmation</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
@@ -360,25 +360,30 @@
         body {
           padding: 20px 10px;
         }
+
         .container {
           flex-direction: column;
           gap: 15px;
           padding: 15px;
         }
+
         .content-wrapper {
           flex-direction: column;
           gap: 15px;
         }
+
         .right-panel {
           width: 100%;
           order: -1;
         }
+
         .page-header {
           padding-left: 30px;
           margin-bottom: 15px;
           align-items: flex-start;
           text-align: left;
         }
+
         .page-header a.btn-back {
           left: 0;
           top: 50%;
@@ -408,25 +413,38 @@
           <a href="#" class="btn-back" id="backButton"
             ><i class="bx bx-arrow-back"></i
           ></a>
-          <h2>Order Confirmation</h2>
-          <p>Review your order details before proceeding to payment</p>
+          <h2 data-i18n="order_confirm.title">Order Confirmation</h2>
+          <p data-i18n="order_confirm.subtitle">
+            Review your order details before proceeding to payment
+          </p>
         </div>
 
         <div class="content-wrapper">
           <div class="left-panel">
             <div class="section" id="serviceSection">
               <h3 class="config-title">
-                <i class="bx bxs-file"></i> Document Printing
+                <i class="bx bxs-file"></i>
+                <span data-i18n="order_confirm.service_title_doc">
+                  Document Printing
+                </span>
               </h3>
               <div class="order-code-block">
-                <span class="code-label">Order Code:</span>
+                <span
+                  class="code-label"
+                  data-i18n="order_confirm.label_order_code"
+                >
+                  Order Code:
+                </span>
                 <span class="code-value">No data</span>
               </div>
             </div>
 
             <div class="section">
               <h3 class="config-title">
-                <i class="bx bx-user"></i> Customer Information
+                <i class="bx bx-user"></i>
+                <span data-i18n="order_confirm.customer_info_title">
+                  Customer Information
+                </span>
               </h3>
               <div class="input-group">
                 <div class="input-field">
@@ -442,7 +460,10 @@
 
             <div class="section">
               <h3 class="config-title">
-                <i class="bx bxs-file"></i> List of Documents to Print
+                <i class="bx bxs-file"></i>
+                <span data-i18n="order_confirm.file_list_title_doc">
+                  List of Documents to Print
+                </span>
               </h3>
               <div id="fileListConfirmation">
                 <!-- Content will be dynamically rendered -->
@@ -453,7 +474,10 @@
           <div class="right-panel">
             <div>
               <div class="order-summary-header">
-                <i class="bx bx-list-ul"></i> <span>Order Summary</span>
+                <i class="bx bx-list-ul"></i>
+                <span data-i18n="order_confirm.summary_title">
+                  Order Summary
+                </span>
               </div>
 
               <div class="order-file-list">
@@ -463,27 +487,60 @@
 
             <div class="order-summary-footer">
               <div class="d-flex">
-                <span>Number of Documents:</span>
+                <span data-i18n="order_confirm.summary_count_label">
+                  Number of Documents:
+                </span>
                 <span id="fileCountDisplay">0 documents</span>
               </div>
               <div class="d-flex total-row">
-                <span>Total:</span>
+                <span data-i18n="order_confirm.summary_total_label">
+                  Total:
+                </span>
                 <span id="totalPriceDisplay">0₫</span>
               </div>
 
-              <button class="btn-payment">Proceed to Payment</button>
+              <button
+                class="btn-payment"
+                data-i18n="order_confirm.btn_proceed_payment"
+              >
+                Proceed to Payment
+              </button>
 
               <div class="service-benefits">
                 <ul>
-                  <li>Completion Time: 2-5 business days</li>
-                  <li>Email notification upon completion</li>
-                  <li>Support for in-store and online payment</li>
+                  <li data-i18n="order_payment.benefit_time">
+                    Completion Time: 2-5 business days
+                  </li>
+                  <li data-i18n="order_payment.benefit_email">
+                    Email notification upon completion
+                  </li>
+                  <li data-i18n="order_payment.benefit_payment_support">
+                    Support for in-store and online payment
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- i18n -->
+      <script src="/js/i18n.js"></script>
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          if (window.i18n) {
+            i18n.translateDom();
+            fetch("/api/settings/me", { credentials: "include" })
+              .then((r) => r.json())
+              .then((data) => {
+                if (data?.success && data.setting?.language) {
+                  i18n.setLang(data.setting.language);
+                }
+              })
+              .catch(() => {});
+          }
+        });
+      </script>
 
       <script>
         function formatCurrency(amount) {
@@ -492,15 +549,50 @@
         }
 
         function buildFileDetails(file) {
+          const tr = (key, fallback) => (window.i18n ? i18n.t(key) : fallback);
+
+          // Chuẩn hóa mode (Black & White / Color → có thể dịch)
+          const normalizeMode = (mode) => {
+            const m = String(mode || "").toLowerCase();
+            if (m.includes("black") || m.includes("đen")) {
+              return tr("order_confirm.file_detail_mode_bw", "Black & White");
+            }
+            if (m.includes("color") || m.includes("màu")) {
+              return tr("order_confirm.file_detail_mode_color", "Color");
+            }
+            return mode || "";
+          };
+
           if (file.type === "Photo") {
-            // Details for photo printing
-            let details = `${file.pages} photos × ${file.copies} copies`;
-            details += `<br>${file.size} • ${file.mode}${
-              file.borderless ? " • Borderless" : ""
+            const photoUnit =
+              Number(file.pages) === 1
+                ? tr("order_confirm.file_detail_photo", "photo")
+                : tr("order_confirm.file_detail_photos", "photos");
+            const copyUnit =
+              Number(file.copies) === 1
+                ? tr("order_confirm.file_detail_copy", "copy")
+                : tr("order_confirm.file_detail_copies", "copies");
+
+            const modeText = normalizeMode(file.mode);
+
+            let details = `${file.pages} ${photoUnit} × ${file.copies} ${copyUnit}`;
+            details += `<br>${file.size} • ${modeText}${
+              file.borderless
+                ? " • " +
+                  tr("order_confirm.file_detail_borderless", "Borderless")
+                : ""
             }`;
             return details;
           } else {
-            // Details for document printing
+            const pageUnit =
+              Number(file.pages) === 1
+                ? tr("order_confirm.file_detail_page", "page")
+                : tr("order_confirm.file_detail_pages", "pages");
+            const copyUnit =
+              Number(file.copies) === 1
+                ? tr("order_confirm.file_detail_copy", "copy")
+                : tr("order_confirm.file_detail_copies", "copies");
+
             let sideText = "N/A";
             if (file.side) {
               let sideValue = String(file.side).toLowerCase();
@@ -511,7 +603,10 @@
                 sideValue.includes("1-sided") ||
                 sideValue === "1"
               ) {
-                sideText = "Single-sided";
+                sideText = tr(
+                  "order_confirm.file_detail_side_single",
+                  "Single-sided"
+                );
               } else if (
                 sideValue.includes("2 side") ||
                 sideValue.includes("double") ||
@@ -519,17 +614,29 @@
                 sideValue.includes("2-sided") ||
                 sideValue === "2"
               ) {
-                sideText = "Double-sided";
+                sideText = tr(
+                  "order_confirm.file_detail_side_double",
+                  "Double-sided"
+                );
               } else {
                 sideText = file.side;
               }
             }
-            let details = `${file.pages} pages × ${file.copies} copies`;
-            details += `<br>${file.size} • ${sideText} • ${file.mode}`;
+
+            const modeText = normalizeMode(file.mode);
+
+            let details = `${file.pages} ${pageUnit} × ${file.copies} ${copyUnit}`;
+            details += `<br>${file.size} • ${sideText} • ${modeText}`;
+
             if (file.type === "Thesis/Report") {
-              details += `${file.binding ? " • Bound" : ""}${
-                file.coverPage ? " • Cover Page" : ""
-              }`; // Sửa từ file.cover thành file.coverPage
+              if (file.binding) {
+                details +=
+                  " • " + tr("order_confirm.file_detail_bound", "Bound");
+              }
+              if (file.coverPage) {
+                details +=
+                  " • " + tr("order_confirm.file_detail_cover", "Cover Page");
+              }
             }
             return details;
           }
@@ -553,16 +660,22 @@
             paymentButton
           ) {
             const noticeHtml = `
-            <div id="depositNotice" class="deposit-notice">
-                <i class='bx bxs-bell-ring'></i>
-                <div class="text-content">
-                    <strong>Important Notice</strong>
-                    <p>Orders above ${formatCurrency(
-                      DEPOSIT_THRESHOLD
-                    )} require a 50% deposit before processing.</p>
-                </div>
-            </div>
-        `;
+              <div id="depositNotice" class="deposit-notice">
+                  <i class='bx bxs-bell-ring'></i>
+                  <div class="text-content">
+                      <strong
+                        data-i18n="order_payment.deposit_title"
+                      >
+                        50% deposit required
+                      </strong>
+                      <p
+                        data-i18n="order_payment.deposit_desc"
+                      >
+                        Orders over 100.000 VND require 50% prepayment
+                      </p>
+                  </div>
+              </div>
+          `;
             const tempDiv = document.createElement("div");
             tempDiv.innerHTML = noticeHtml.trim();
             const depositNoticeElement = tempDiv.firstChild;
@@ -570,6 +683,9 @@
               depositNoticeElement,
               paymentButton
             );
+            if (window.i18n) {
+              i18n.translateDom(depositNoticeElement);
+            }
           }
         }
 
@@ -612,22 +728,31 @@
             // Determine service type based on orderCode
             const isPhotoOrder =
               orderData.orderCode && orderData.orderCode.startsWith("PHOTO-");
-            const serviceTitle = isPhotoOrder
-              ? "Photo Printing"
-              : "Document Printing";
             const serviceIcon = isPhotoOrder ? "bxs-image" : "bxs-file";
-            const fileListTitle = isPhotoOrder
-              ? "List of Photos to Print"
-              : "List of Documents to Print";
             const fileListIcon = isPhotoOrder ? "bxs-image-alt" : "bxs-file";
-            const countLabel = isPhotoOrder ? "photos" : "documents";
 
             // Update service section title and icon
             if (serviceSection) {
               const serviceHeader =
                 serviceSection.querySelector(".config-title");
               if (serviceHeader) {
-                serviceHeader.innerHTML = `<i class='bx ${serviceIcon}'></i> ${serviceTitle}`;
+                const iconEl = serviceHeader.querySelector("i");
+                if (iconEl) {
+                  iconEl.className = `bx ${serviceIcon}`;
+                }
+                const textSpan =
+                  serviceHeader.querySelector("span") || serviceHeader;
+                const serviceTitleKey = isPhotoOrder
+                  ? "order_confirm.service_title_photo"
+                  : "order_confirm.service_title_doc";
+                textSpan.setAttribute("data-i18n", serviceTitleKey);
+                if (window.i18n) {
+                  textSpan.textContent = i18n.t(serviceTitleKey);
+                } else {
+                  textSpan.textContent = isPhotoOrder
+                    ? "Photo Printing"
+                    : "Document Printing";
+                }
               }
             }
 
@@ -636,7 +761,23 @@
               const fileListHeader =
                 fileListSection.querySelector(".config-title");
               if (fileListHeader) {
-                fileListHeader.innerHTML = `<i class='bx ${fileListIcon}'></i> ${fileListTitle}`;
+                const iconEl = fileListHeader.querySelector("i");
+                if (iconEl) {
+                  iconEl.className = `bx ${fileListIcon}`;
+                }
+                const textSpan =
+                  fileListHeader.querySelector("span") || fileListHeader;
+                const fileListTitleKey = isPhotoOrder
+                  ? "order_confirm.file_list_title_photo"
+                  : "order_confirm.file_list_title_doc";
+                textSpan.setAttribute("data-i18n", fileListTitleKey);
+                if (window.i18n) {
+                  textSpan.textContent = i18n.t(fileListTitleKey);
+                } else {
+                  textSpan.textContent = isPhotoOrder
+                    ? "List of Photos to Print"
+                    : "List of Documents to Print";
+                }
               }
             }
 
@@ -662,10 +803,18 @@
               specialRequestSection.classList.add("section");
               specialRequestSection.style.marginTop = "20px";
               specialRequestSection.innerHTML = `
-                <h3 class="config-title"><i class='bx bx-message-square-detail'></i> Special Requests</h3>
-                <div class="info-display" style="white-space: pre-wrap; margin-top: 0; font-size: 15px;">${orderData.specialRequest}</div>
-            `;
+                                  <h3 class="config-title">
+                    <i class='bx bx-message-square-detail'></i>
+                    <span data-i18n="order_confirm.special_requests_title">
+                      Special Requests
+                    </span>
+                  </h3>
+                  <div class="info-display" style="white-space: pre-wrap; margin-top: 0; font-size: 15px;">${orderData.specialRequest}</div>
+              `;
               leftPanel.insertBefore(specialRequestSection, fileListSection);
+              if (window.i18n) {
+                i18n.translateDom(specialRequestSection);
+              }
             }
 
             // Display file details
@@ -676,14 +825,14 @@
                 const detailItem = document.createElement("div");
                 detailItem.classList.add("list-file-item");
                 detailItem.innerHTML = `
-                    <div class="list-file-info">
-                        <strong>${file.name}</strong>
-                        <small>${detailsHtml}</small>
-                    </div>
-                    <div class="list-file-price">${formatCurrency(
-                      file.price
-                    )}</div>
-                `;
+                      <div class="list-file-info">
+                          <strong>${file.name}</strong>
+                          <small>${detailsHtml}</small>
+                      </div>
+                      <div class="list-file-price">${formatCurrency(
+                        file.price
+                      )}</div>
+                  `;
                 fileListConfirmation.appendChild(detailItem);
               }
 
@@ -691,11 +840,11 @@
                 const summaryItem = document.createElement("div");
                 summaryItem.classList.add("order-file-item");
                 summaryItem.innerHTML = `
-                    <span class="file-name">${file.name}</span>
-                    <span class="file-price">${formatCurrency(
-                      file.price
-                    )}</span>
-                `;
+                      <span class="file-name">${file.name}</span>
+                      <span class="file-price">${formatCurrency(
+                        file.price
+                      )}</span>
+                  `;
                 orderFileList.appendChild(summaryItem);
               }
             });
@@ -703,15 +852,28 @@
             // Display order summary
             const count = orderData.summary.fileCount;
             const totalAmount = orderData.summary.totalPrice;
-            fileCountDisplay.textContent = `${count} ${
-              isPhotoOrder
-                ? count > 1
-                  ? "photos"
-                  : "photo"
-                : count > 1
-                ? "documents"
-                : "document"
-            }`;
+            let unitKey;
+            if (isPhotoOrder) {
+              unitKey =
+                count > 1
+                  ? "order_confirm.count_photos_plural"
+                  : "order_confirm.count_photos_singular";
+            } else {
+              unitKey =
+                count > 1
+                  ? "order_confirm.count_docs_plural"
+                  : "order_confirm.count_docs_singular";
+            }
+            const unitText = window.i18n
+              ? i18n.t(unitKey)
+              : isPhotoOrder
+              ? count > 1
+                ? "photos"
+                : "photo"
+              : count > 1
+              ? "documents"
+              : "document";
+            fileCountDisplay.textContent = `${count} ${unitText}`;
             totalPriceDisplay.textContent = formatCurrency(totalAmount);
 
             displayDepositNotice(totalAmount);

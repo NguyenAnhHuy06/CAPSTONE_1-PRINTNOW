@@ -328,14 +328,22 @@
           </div>
           <div class="text">
             <h1>PrintNow</h1>
-            <p>Print service</p>
+            <p data-i18n="nav.tagline">Print service</p>
           </div>
         </div>
 
         <ul class="nav-links">
-          <li><a href="/home" class="home">Home</a></li>
-          <li><a href="/service/print" class="service">Services</a></li>
-          <li><a href="/about-us" class="about">About Us</a></li>
+          <li><a href="/home" class="home" data-i18n="nav.home">Home</a></li>
+          <li>
+            <a href="/service/print" class="service" data-i18n="nav.services">
+              Services
+            </a>
+          </li>
+          <li>
+            <a href="/about-us" class="about" data-i18n="nav.about">
+              About Us
+            </a>
+          </li>
         </ul>
 
         <div class="header-right">
@@ -343,7 +351,7 @@
             href="/notifications"
             class="icon-btn"
             aria-label="Notifications"
-            title="Notifications"
+            data-i18n-title="notif.bell_title"
           >
             <span class="bell"
               ><i class="bx bx-bell" aria-hidden="true"></i
@@ -357,9 +365,10 @@
     </div>
     <main role="main">
       <div class="container">
-        <h1>Order Details</h1>
-        <p class="subtitle">Review full information of your order.</p>
-
+        <h1 data-i18n="order.title">Order Details</h1>
+        <p class="subtitle" data-i18n="order.subtitle">
+          Review full information of your order.
+        </p>
         <div class="order-info">
           <div class="info-box">
             <h3>Order Info</h3>
@@ -381,10 +390,10 @@
         <table>
           <thead>
             <tr>
-              <th>Product</th>
-              <th>Quantity</th>
-              <th>Unit Price</th>
-              <th>Total</th>
+              <th data-i18n="order.table_product">Product</th>
+              <th data-i18n="order.table_quantity">Quantity</th>
+              <th data-i18n="order.table_unit_price">Unit Price</th>
+              <th data-i18n="order.table_total">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -404,27 +413,48 @@
         </table>
 
         <div class="summary">
-          <p>Subtotal: 150,000 VND</p>
-          <p class="total">Total: 150,000 VND</p>
+          <p>
+            <span data-i18n="order.summary_subtotal">Subtotal</span>: 150,000
+            VND
+          </p>
+          <p class="total">
+            <span data-i18n="order.summary_total">Total</span>: 150,000 VND
+          </p>
         </div>
 
         <div class="actions">
-          <button class="btn btn-primary" id="btnReorder">Reorder</button>
+          <button
+            class="btn btn-primary"
+            id="btnReorder"
+            data-i18n="order.btn_reorder"
+          >
+            Reorder
+          </button>
           <button
             class="btn btn-secondary"
             id="btnCancel"
             style="display: none"
+            data-i18n="order.btn_cancel"
           >
             Cancel
           </button>
-          <button class="btn btn-secondary" onclick="window.history.back()">
+          <button
+            class="btn btn-secondary"
+            onclick="window.history.back()"
+            data-i18n="order.btn_return"
+          >
             Return
           </button>
         </div>
       </div>
     </main>
+    <script src="/js/i18n.js"></script>
     <script>
       (function () {
+        const tt = (key) =>
+          window.i18n && typeof window.i18n.t === "function"
+            ? window.i18n.t(key)
+            : key;
         const qs = new URLSearchParams(location.search);
         const id = qs.get("id");
         if (!id) return;
@@ -439,7 +469,13 @@
             pending: "pending",
           };
           const cls = map[s] || "processing";
-          const label = (s || "").replace(/^\w/, (c) => c.toUpperCase());
+          const labelMap = {
+            completed: tt("order.status_completed"),
+            processing: tt("order.status_processing"),
+            cancelled: tt("order.status_cancelled"),
+            pending: tt("order.status_pending"),
+          };
+          const label = labelMap[s] || s;
           return `<span class="status ${cls}">${label}</span>`;
         };
 
@@ -452,34 +488,38 @@
             const btnCancel = document.getElementById("btnCancel");
             const btnReorder = document.getElementById("btnReorder");
 
-            // Fill header info
-            document.querySelector(".container h1").textContent =
-              "Order Details";
-            document.querySelector(".subtitle").textContent =
-              "Review full information of your order.";
-
             const infoBoxes = document.querySelectorAll(".info-box");
             infoBoxes[0].innerHTML = `
-        <h3>Order Info</h3>
-        <p><strong>Order ID:</strong> ${data.code || "#" + data.id}</p>
-        <p><strong>Date:</strong> ${new Date(data.createdAt).toLocaleDateString(
-          "vi-VN",
-          { day: "2-digit", month: "short", year: "numeric" }
-        )}</p>
-                <p><strong>Status:</strong> ${statusHtml(data.status)}</p>
+        <h3>${tt("order.box_order_info")}</h3>
+        <p><strong>${tt("order.field_order_id")}:</strong> ${
+              data.code || "#" + data.id
+            }</p>
+        <p><strong>${tt("order.field_date")}:</strong> ${new Date(
+              data.createdAt
+            ).toLocaleDateString("vi-VN", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}</p>
+        <p><strong>${tt("order.field_status")}:</strong> ${statusHtml(
+              data.status
+            )}</p>
         ${
           data.status === "cancelled" || data.note
-            ? `<p><strong>Reason:</strong> ${(data.note || "").replace(
-                /User cancel:\s*/i,
-                ""
-              )}</p>`
+            ? `<p><strong>${tt("order.field_reason")}:</strong> ${(
+                data.note || ""
+              ).replace(/User cancel:\s*/i, "")}</p>`
             : ""
         }
       `;
             infoBoxes[1].innerHTML = `
-        <h3>Customer</h3>
-        <p><strong>Name:</strong> ${data.user?.fullName || ""}</p>
-        <p><strong>Email:</strong> ${data.user?.email || ""}</p>
+        <h3>${tt("order.box_customer")}</h3>
+        <p><strong>${tt("order.field_name")}:</strong> ${
+              data.user?.fullName || ""
+            }</p>
+        <p><strong>${tt("order.field_email")}:</strong> ${
+              data.user?.email || ""
+            }</p>
       `;
 
             // Items table
@@ -529,21 +569,28 @@
             const discount = Math.max(0, subtotal - total);
 
             let html = "";
-            html += `<p>Subtotal: ${fmtMoney(subtotal)}</p>`;
+            html += `<p>${tt("order.summary_subtotal")}: ${fmtMoney(
+              subtotal
+            )}</p>`;
             if (discount > 0)
-              html += `<p>Adjustment: -${fmtMoney(discount)}</p>`;
-            html += `<p class="total">Total: ${fmtMoney(total)}</p>`;
+              html += `<p>${tt("order.summary_adjustment")}: -${fmtMoney(
+                discount
+              )}</p>`;
+            html += `<p class="total">${tt("order.summary_total")}: ${fmtMoney(
+              total
+            )}</p>`;
             sum.innerHTML = html;
 
             // === Cancel button ===
             if (data.cancellable) {
               btnCancel.style.display = "";
               btnCancel.onclick = async () => {
-                // Hỏi xác nhận giống trang lịch sử
-                if (!confirm("Bạn chắc chắn muốn hủy đơn này?")) return;
+                // Hỏi xác nhận (đa ngôn ngữ)
+                if (!confirm(tt("order.cancel_confirm"))) return;
 
                 try {
-                  const reason = prompt("Lý do hủy (tuỳ chọn):", "") || "";
+                  const reason =
+                    prompt(tt("order.cancel_reason_placeholder"), "") || "";
 
                   // dùng order code nếu có (giống OH dùng data-code)
                   const orderCode =
@@ -566,13 +613,13 @@
                   if (!res.ok || !js?.success)
                     throw new Error(js?.message || "Hủy đơn thất bại");
 
-                  alert("Đã hủy đơn.");
+                  alert(tt("order.cancel_success"));
 
                   // Cập nhật nhanh UI: đổi status -> Cancelled & ẩn nút (y hệt cách làm ở OH)
                   const st = document.querySelector(".info-box .status");
                   st?.classList.remove("completed", "processing", "pending");
                   st?.classList.add("cancelled");
-                  st.textContent = "Cancelled";
+                  st.textContent = tt("order.status_cancelled");
                   btnCancel.style.display = "none";
 
                   // Mở trang lịch sử với tab Cancelled được chọn sẵn
@@ -580,13 +627,29 @@
                   window.location.href = "/order/history";
                 } catch (err) {
                   console.error("cancel error", err);
-                  alert("Không thể hủy đơn. Vui lòng thử lại.");
+                  alert(tt("order.cancel_failed"));
                 }
               };
             }
           })
           .catch(console.error);
       })();
+    </script>
+    <script>
+      // Áp dụng i18n & sync language từ server (giống các trang khác)
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.i18n) {
+          i18n.translateDom();
+          fetch("/api/settings/me", { credentials: "include" })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data?.success && data.setting?.language) {
+                i18n.setLang(data.setting.language);
+              }
+            })
+            .catch(() => {});
+        }
+      });
     </script>
     <script src="/js/authHeader.js"></script>
   </body>
