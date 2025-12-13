@@ -145,25 +145,31 @@ Sau khi server khởi động thành công:
 
 ---
 
-## CẤU TRÚC DỰ ÁN
+## CẤU TRÚC DỰ ÁN (SAU KHI TÁCH BE/FE)
 
 ```text
-D:\cap1\
-├── FE/                    # Frontend
-│   ├── html/              # HTML pages
-│   ├── css/               # CSS styles
-│   └── js/                # JavaScript files
-├── config/                # Database config
-├── middleware/            # Express middleware
-├── models/                # Sequelize models
-├── routes/                # API routes
-├── services/              # Business logic
-├── uploads/               # Uploaded files (được .gitignore)
-├── scripts/               # Scripts seed database, tạo bảng, v.v.
-├── server.js              # Main server file
-├── start-server.bat       # Startup script (Windows)
-├── package.json           # Dependencies & scripts
-└── env.example            # Mẫu cấu hình môi trường
+CAPSTONE_1-PRINTNOW/
+├── BE/                       # Backend (Node/Express)
+│   ├── config/               # Database config
+│   ├── controllers/          # Controllers
+│   ├── middleware/           # Express middleware
+│   ├── models/               # Sequelize models
+│   ├── routes/               # API routes
+│   ├── services/             # Business logic
+│   ├── scripts/              # Seed/utility scripts
+│   ├── mysql-schema.sql      # Schema MySQL
+│   ├── package.json          # Dependencies & scripts
+│   ├── package-lock.json
+│   ├── server.js             # Main server file
+│   ├── start-server.bat      # Startup script (Windows)
+│   └── env.example           # Mẫu cấu hình môi trường
+├── FE/
+│   └── src/                  # Frontend static
+│       ├── html/             # HTML pages
+│       ├── css/              # CSS styles
+│       └── js/               # JavaScript files
+├── uploads/                  # Uploaded files (BỊ IGNORE bởi .gitignore)
+└── README.md
 ```
 
 ---

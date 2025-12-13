@@ -8,7 +8,8 @@ const fs = require("fs");
 const cookieParser = require("cookie-parser");
 const { connectDB } = require("./config/database");
 
-const feHtml = (name) => path.join(__dirname, "FE/html", name);
+const feRoot = path.join(__dirname, "..", "FE", "src");
+const feHtml = (name) => path.join(feRoot, "html", name);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,7 +43,7 @@ app.use(cookieParser()); // để đọc cookie từ request
 ======================= */
 app.use(
   "/uploads",
-  express.static(path.join(__dirname, "uploads"), {
+  express.static(path.join(__dirname, "..", "uploads"), {
     etag: true,
     lastModified: true,
     setHeaders: (res, filePath) => {
@@ -55,14 +56,11 @@ app.use(
     },
   })
 );
-// phục vụ toàn bộ FE dưới prefix /FE (để /FE/js/i18n.js, /FE/html/... hoạt động)
-app.use("/FE", express.static(path.join(__dirname, "FE")));
-// các alias cũ vẫn giữ lại nếu đang dùng ở chỗ khác
-app.use("/css", express.static(path.join(__dirname, "FE/css")));
-app.use("/js", express.static(path.join(__dirname, "FE/js")));
-app.use(express.static(path.join(__dirname, "FE/html")));
-// ở gần chỗ bạn dùng express.static cho FE/html
-app.use("/service", express.static(path.join(__dirname, "FE", "html")));
+app.use("/FE", express.static(feRoot));
+app.use("/css", express.static(path.join(feRoot, "css")));
+app.use("/js", express.static(path.join(feRoot, "js")));
+app.use(express.static(path.join(feRoot, "html")));
+app.use("/service", express.static(path.join(feRoot, "html")));
 
 /* Helper: gửi file HTML với no-cache để tránh dính cache khi dev/OTP */
 function sendHtmlNoCache(res, absPath) {
