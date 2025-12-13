@@ -1,61 +1,79 @@
+# =========================
 # Dependencies
+# =========================
 node_modules/
+**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# Environment variables
+# =========================
+# Environment variables (KHÔNG push secrets)
+# =========================
 .env
+.env.*
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+!.env.example
+!env.example
 
-# Uploads
-uploads/*
+# =========================
+# Uploads / Runtime data (KHÔNG push dữ liệu người dùng)
+# =========================
+uploads/
+**/uploads/
+temp-analysis/
+**/temp-analysis/
 !uploads/.gitkeep
+!uploads/avatars/.gitkeep
+!uploads/temp-analysis/.gitkeep
 
+# =========================
 # Logs
-logs
+# =========================
+logs/
 *.log
 
-# Runtime data
-pids
+# =========================
+# Runtime pid files
+# =========================
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
+# =========================
+# Coverage
+# =========================
 coverage/
+.nyc_output/
 
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
+# =========================
+# Misc caches
+# =========================
+.npm/
 .node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
 .yarn-integrity
+*.tgz
+.cache/
 
-# IDE
+# =========================
+# IDE / OS
+# =========================
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-# Build
+# =========================
+# Build outputs
+# =========================
 build/
 dist/
+out/
