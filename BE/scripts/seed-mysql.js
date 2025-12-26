@@ -1,3 +1,4 @@
+// cap1/BE/scripts/seed-mysql.js
 const User = require('../models/User');
 const { sequelize } = require('../config/database');
 require('dotenv').config();

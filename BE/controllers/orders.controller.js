@@ -7,8 +7,43 @@ const { sequelize } = require("../config/database");
 const RealtimeHub = require("../services/realtimeHub");
 
 // ----- Helper: Fully-qualified table name theo DB hiện tại -----
-const DB = (sequelize.config && sequelize.config.database) || process.env.DB_NAME;
-const T = (name) => `\`${DB}\`.\`${name}\``;  // ví dụ: `printnow`.`payments`
+const DB =
+  (sequelize.config && sequelize.config.database) || process.env.DB_NAME;
+const T = (name) => `\`${DB}\`.\`${name}\``; // ví dụ: `printnow`.`payments`
+
+// ===== cache helpers (avoid heavy INFORMATION_SCHEMA queries repeatedly) =====
+let __hasOrderStatusHistoryTable = null; // true/false after first check
+let __lastOverdueRunAt = 0;
+
+async function hasOrderStatusHistoryTable() {
+  if (typeof __hasOrderStatusHistoryTable === "boolean") return __hasOrderStatusHistoryTable;
+  try {
+    const [row] = await sequelize.query(
+      `
+        SELECT 1 AS ok
+        FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'order_status_history'
+        LIMIT 1
+      `,
+      { type: QueryTypes.SELECT }
+    );
+    __hasOrderStatusHistoryTable = !!row?.ok;
+  } catch {
+    __hasOrderStatusHistoryTable = false;
+  }
+  return __hasOrderStatusHistoryTable;
+}
+
+function shouldRunOverdueNow() {
+  const isDev = String(process.env.NODE_ENV || "development") !== "production";
+  // dev: allow frequent; prod: at most every 60s (or tune to 300s)
+  const minIntervalMs = isDev ? 2000 : 60 * 1000;
+  const now = Date.now();
+  if (now - __lastOverdueRunAt < minIntervalMs) return false;
+  __lastOverdueRunAt = now;
+  return true;
+}
 
 // Các bước hiển thị trên UI khách (progress steps)
 const ORDER_STAGES = [
@@ -24,11 +59,18 @@ const ORDER_STAGES = [
 function isPrivileged(user) {
   if (!user) return false;
   const role = String(user.role || "").toLowerCase();
-  if (role === "admin" || role === "staff") return true;
+  if (role === "admin" || role === "staff" || role === "owner") return true;
   const email = String(user.email || "").toLowerCase();
   const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || "").toLowerCase();
   const STAFF_EMAIL = String(process.env.STAFF_EMAIL || "").toLowerCase();
-  return (!!ADMIN_EMAIL && email === ADMIN_EMAIL) || (!!STAFF_EMAIL && email === STAFF_EMAIL);
+  const OWNER_EMAIL = String(process.env.OWNER_EMAIL || "").toLowerCase();
+  return (
+    (!!ADMIN_EMAIL && email === ADMIN_EMAIL) ||
+    (!!STAFF_EMAIL && email === STAFF_EMAIL) ||
+    (!!OWNER_EMAIL && email === OWNER_EMAIL)
+  );
+  // OR owner
+  // return ((!!ADMIN_EMAIL && email === ADMIN_EMAIL) || (!!STAFF_EMAIL && email === STAFF_EMAIL) || (!!OWNER_EMAIL && email === OWNER_EMAIL));
 }
 function assertPrivileged(req) {
   if (!req.user) {
@@ -45,7 +87,9 @@ function assertPrivileged(req) {
 
 // Parse "#ORD-YYYY-000123" => 123
 function resolveOrderIdFromOrderCode(orderCode) {
-  const s = String(orderCode || "").toUpperCase().trim();
+  const s = String(orderCode || "")
+    .toUpperCase()
+    .trim();
   // ORD với hoặc không có #, và cho phép mọi ký tự ngăn cách không-phải-số
   let m = s.match(/#?ORD\D?(\d{4})\D?(\d{1,6})$/i);
   if (m) return Number(m[2]);
@@ -71,8 +115,395 @@ function genOrderCode(o) {
   return `#ORD-${year}-${pad}`;
 }
 
+// ===================== STAFF/OWNER Notifications =====================
+async function getStaffRecipients() {
+  // staff/owner/admin đều nhận (role) + fallback theo email env (nếu role DB chưa set)
+  const emails = [
+    String(process.env.ADMIN_EMAIL || "").toLowerCase(),
+    String(process.env.STAFF_EMAIL || "").toLowerCase(),
+    String(process.env.OWNER_EMAIL || "").toLowerCase(),
+  ].filter(Boolean);
+
+  // Support different schemas: role / roleCode / role_code
+  // Your User model has "role" (ENUM customer/staff/admin/owner).
+  // Only include columns that exist in User model to avoid SQL errors.
+  const roleFields = [];
+  try {
+    const ra = db?.User?.rawAttributes || {};
+    const candidates = ["role", "roleCode", "role_code"];
+    for (const k of candidates) {
+      if (ra[k]) roleFields.push(ra[k].field || k);
+    }
+  } catch { }
+
+  const roleConds =
+    roleFields.length
+      ? roleFields.map((fieldName) =>
+        sqlWhere(fn("LOWER", col(fieldName)), {
+          [Op.in]: ["staff", "owner", "admin"],
+        })
+      )
+      : [];
+
+  const users = await db.User.findAll({
+    where: {
+      [Op.or]: [
+        ...roleConds,
+        ...(emails.length
+          ? [sqlWhere(fn("LOWER", col("email")), { [Op.in]: emails })]
+          : []),
+      ],
+    },
+    attributes: ["id"],
+  });
+  return users.map((u) => Number(u.id));
+}
+
+// Tạo notification cho tất cả staff/owner
+async function createStaffNotification({
+  type,
+  title,
+  message,
+  orderCode,
+  link,
+  tag = "important",
+  dedupeMinutes = 0, // nếu >0: tránh spam trong khoảng thời gian này theo (userId,type,title,link)
+}) {
+  try {
+    const recipientIds = await getStaffRecipients();
+    if (!recipientIds.length) return;
+
+    // ✅ Prefer providing a safe link so FE can always resolve orderCode/details.
+    // Notification_Employee.html already converts /order/status?orderCode=... to Employee_Dashboard search.
+    // Keeping link helps E2E tests & avoids relying on parsing title/body.
+    const href =
+      link ||
+      (orderCode ? `/order/status?orderCode=${encodeURIComponent(orderCode)}` : null);
+
+    // Dedupe theo cửa sổ thời gian (tránh tạo trùng khi staff refresh / listAllOrders gọi nhiều lần)
+    let filteredRecipients = recipientIds;
+    if (dedupeMinutes > 0) {
+      const since = new Date(Date.now() - dedupeMinutes * 60 * 1000);
+      const existed = await Notification.findAll({
+        where: {
+          userId: { [Op.in]: recipientIds },
+          type,
+          title,
+          ...(href ? { link: href } : {}),
+          created_at: { [Op.gte]: since },
+        },
+        attributes: ["userId"],
+      });
+      const existedSet = new Set(existed.map((r) => Number(r.userId)));
+      filteredRecipients = recipientIds.filter(
+        (uid) => !existedSet.has(Number(uid))
+      );
+      if (!filteredRecipients.length) return;
+    }
+
+    // tạo 1 notif cho mỗi staff/owner
+    const rows = filteredRecipients.map((uid) => ({
+      userId: uid,
+      title,
+      message,
+      type,
+      tag,
+      link: href,
+      isRead: 0,
+    }));
+
+    await Notification.bulkCreate(rows, { validate: true });
+
+    // broadcast realtime theo từng user để FE bell cập nhật
+    for (const uid of filteredRecipients) {
+      const unreadCount = await Notification.count({
+        where: { userId: uid, isRead: 0 },
+      });
+      RealtimeHub.publish({
+        type: "notifications.new",
+        ts: Date.now(),
+        data: {
+          userId: uid,
+          unreadCount,
+          notification: {
+            id: null, // FE không bắt buộc id trong event, nhưng nếu muốn đúng tuyệt đối -> query last row
+            userId: uid,
+            title,
+            body: message,
+            type,
+            isRead: false,
+            createdAt: new Date().toISOString(),
+            data: {
+              link: href,
+              linkText: null,
+              tag,
+              important: tag === "important",
+              orderCode: orderCode || null,
+            },
+          },
+        },
+      });
+    }
+  } catch (e) {
+    console.error("createStaffNotification error:", e);
+  }
+}
+
+// ====== 3 CASES THÔNG BÁO CHO STAFF ======
+// Khi có đơn hàng mới tạo
+async function notifyStaffNewOrder(orderOrRaw) {
+  const o = orderOrRaw?.toJSON ? orderOrRaw.toJSON() : orderOrRaw;
+  const code = genOrderCode(o);
+  return createStaffNotification({
+    type: "new_order",
+    title: `New order created: ${code}`,
+    message: `A new order ${code} has been created. Please review and process it.`,
+    orderCode: code,
+    tag: "important",
+    dedupeMinutes: 30, // tránh spam trong 30 phút
+  });
+}
+
+// Khi khách yêu cầu hủy đơn
+async function notifyStaffCancelOrder(orderCode, reason) {
+  return createStaffNotification({
+    type: "cancel_order",
+    title: `Cancellation request: ${orderCode}`,
+    message: reason
+      ? `Customer requested to cancel ${orderCode}. Reason: ${reason}`
+      : `Customer requested to cancel ${orderCode}.`,
+    orderCode,
+    tag: "important",
+    dedupeMinutes: 60, // tránh spam trong 60 phút
+  });
+}
+
+// Khi nhận thanh toán thành công
+async function notifyStaffPaymentSuccess(orderCode, amount, method = "VNPAY") {
+  const amtNum = Math.round(Number(amount) || 0);
+  const formatted = amtNum.toLocaleString("vi-VN") + "₫";
+  return createStaffNotification({
+    type: "payment_success",
+    title: `Payment confirmed: ${orderCode}`,
+    message: `Payment (${method}) of ${formatted} has been received for order ${orderCode}.`,
+    orderCode,
+    tag: "important",
+    dedupeMinutes: 60, // tránh spam trong 60 phút
+  });
+}
+
+// ====== 2 CASES OVERDUE (STAFF) ======
+async function notifyStaffOverdueUnassigned(orderCode) {
+  const isDev = String(process.env.NODE_ENV || "development") !== "production";
+  return createStaffNotification({
+    type: "overdue_unassigned",
+    title: `URGENT: Unpaid order overdue: ${orderCode}`,
+    message: `Order ${orderCode} has been waiting for payment/deposit for too long. Please contact customer or guide payment/checkout.`,
+    orderCode,
+    tag: "important",
+    // tránh spam (mỗi 6h tối đa 1 lần cho cùng (type,title,link,user))
+    // ✅ tối ưu: dev ~ 10-30s, prod ~ 6h
+    dedupeMinutes: Number(process.env.OVERDUE_UNASSIGNED_DEDUPE_MINUTES || (isDev ? 0.5 : 360)),
+  });
+}
+
+// Khi đơn in xong nhưng bị kẹt lâu trong processing/ready
+async function notifyStaffOverduePrinted(orderCode, phase = "processing") {
+  const isDev = String(process.env.NODE_ENV || "development") !== "production";
+  const p = String(phase || "processing").toLowerCase();
+  const title =
+    p === "ready"
+      ? `URGENT: Ready order stuck: ${orderCode}`
+      : `URGENT: Processing order overdue: ${orderCode}`;
+  const message =
+    p === "ready"
+      ? `Order ${orderCode} has been in READY for too long. Please arrange pickup/delivery or mark completed/cancelled.`
+      : `Order ${orderCode} has been in PROCESSING for too long. Please check printing/QC and update status.`;
+
+  return createStaffNotification({
+    type: "overdue_printed",
+    title,
+    message,
+    orderCode,
+    tag: "important",
+    // tránh spam (mỗi 6h tối đa 1 lần cho cùng (type,title,link,user))
+    // ✅ tối ưu: dev ~ 2-5 phút, prod ~ 6h
+    dedupeMinutes: Number(process.env.OVERDUE_PRINTED_DEDUPE_MINUTES || (isDev ? 3 : 360)),
+  });
+}
+
+// Heuristic check (không có deadline field trong DB => dùng “tuổi đơn” + status)
+async function checkAndNotifyOverdueOrders() {
+  try {
+    // ✅ kill-switch: tắt toàn bộ overdue scan nếu cần
+    const enabled = String(process.env.ENABLE_OVERDUE_CHECK || "1");
+    if (enabled !== "1" && enabled.toLowerCase() !== "true") return;
+
+    // throttle to avoid being executed too frequently (e.g., dashboard spam refresh)
+    if (!shouldRunOverdueNow()) return;
+
+    // // NEW/pending quá X phút => overdue_unassigned
+    // const minutesUnassigned = Math.max(
+    //   0.01,
+    //   Number(process.env.OVERDUE_UNASSIGNED_MINUTES || 120)
+    // );
+    // // processing quá X giờ => overdue_printed
+    // const hoursProcessing = Math.max(
+    //   0.01,
+    //   Number(process.env.OVERDUE_PROCESSING_HOURS || 24)
+    // );
+    // // ready quá X giờ => overdue_printed (nhưng message khác)
+    // const hoursReady = Math.max(
+    //   0.01,
+    //   Number(process.env.OVERDUE_READY_HOURS || 48)
+    // );
+    const isDev = String(process.env.NODE_ENV || "development") !== "production";
+    const MIN_UNASSIGNED = isDev ? 0.01 : 10; // prod tối thiểu 10 phút
+    const MIN_HOURS = isDev ? 0.001 : 1;      // prod tối thiểu 1 giờ
+
+    const defUnassigned = isDev ? 0.01 : 120;
+    const defProcHours = isDev ? 0.001 : 24;
+    const defReadyHours = isDev ? 0.001 : 48;
+
+    const envUnassigned = Number(process.env.OVERDUE_UNASSIGNED_MINUTES);
+    const envProcHours = Number(process.env.OVERDUE_PROCESSING_HOURS);
+    const envReadyHours = Number(process.env.OVERDUE_READY_HOURS);
+
+    const minutesUnassigned = Math.max(
+      MIN_UNASSIGNED,
+      Number.isFinite(envUnassigned) && envUnassigned > 0 ? envUnassigned : defUnassigned
+    );
+    const hoursProcessing = Math.max(
+      MIN_HOURS,
+      Number.isFinite(envProcHours) && envProcHours > 0 ? envProcHours : defProcHours
+    );
+    const hoursReady = Math.max(
+      MIN_HOURS,
+      Number.isFinite(envReadyHours) && envReadyHours > 0 ? envReadyHours : defReadyHours
+    );
+
+    const cutoffUnassigned = new Date(
+      Date.now() - minutesUnassigned * 60 * 1000
+    );
+    const cutoffProcessing = new Date(
+      Date.now() - hoursProcessing * 60 * 60 * 1000
+    );
+    const cutoffReady = new Date(Date.now() - hoursReady * 60 * 60 * 1000);
+
+    // 1) NEW/pending quá lâu + CHƯA có payment SUCCESS => overdue_unassigned
+    //    (coi là chưa thanh toán/đặt cọc)
+    const unassigned = await sequelize.query(
+      `
+        SELECT o.id, o.status, o.createdAt
+        FROM ${T("orders")} o
+        WHERE LOWER(o.status) IN ('new','pending')
+          AND o.createdAt <= :cutoff
+          AND NOT EXISTS (
+            SELECT 1 FROM ${T("payments")} p
+            WHERE p.order_id = o.id AND p.status = 'SUCCESS'
+          )
+        ORDER BY o.createdAt ASC
+      `,
+      { type: QueryTypes.SELECT, replacements: { cutoff: cutoffUnassigned } }
+    );
+    for (const o of unassigned) {
+      const code = genOrderCode(o);
+      await notifyStaffOverdueUnassigned(code);
+    }
+
+    // 2) processing/ready bị kẹt quá lâu kể từ lần vào trạng thái hiện tại
+    const hasHist = await hasOrderStatusHistoryTable();
+    const processingStuck = hasHist
+      ? await sequelize.query(
+        `
+            SELECT
+              o.id, o.status, o.createdAt, o.updatedAt,
+              COALESCE(
+                (SELECT MAX(h.changed_at)
+                 FROM ${T("order_status_history")} h
+                 WHERE h.order_id = o.id AND LOWER(h.to_status) = 'processing'),
+                o.updatedAt,
+                o.createdAt
+              ) AS statusSince
+            FROM ${T("orders")} o
+            WHERE LOWER(o.status) = 'processing'
+              AND COALESCE(
+                (SELECT MAX(h.changed_at)
+                 FROM ${T("order_status_history")} h
+                 WHERE h.order_id = o.id AND LOWER(h.to_status) = 'processing'),
+                o.updatedAt,
+                o.createdAt
+              ) <= :cutoff
+            ORDER BY statusSince ASC
+          `,
+        { type: QueryTypes.SELECT, replacements: { cutoff: cutoffProcessing } }
+      )
+      : await sequelize.query(
+        `
+            SELECT o.id, o.status, o.createdAt, o.updatedAt, o.updatedAt AS statusSince
+            FROM ${T("orders")} o
+            WHERE LOWER(o.status) = 'processing'
+              AND COALESCE(o.updatedAt, o.createdAt) <= :cutoff
+            ORDER BY COALESCE(o.updatedAt, o.createdAt) ASC
+          `,
+        { type: QueryTypes.SELECT, replacements: { cutoff: cutoffProcessing } }
+      );
+    for (const o of processingStuck) {
+      const code = genOrderCode(o);
+      await notifyStaffOverduePrinted(code, "processing");
+    }
+
+    const readyStuck = hasHist
+      ? await sequelize.query(
+        `
+            SELECT
+              o.id, o.status, o.createdAt, o.updatedAt,
+              COALESCE(
+                (SELECT MAX(h.changed_at)
+                 FROM ${T("order_status_history")} h
+                 WHERE h.order_id = o.id AND LOWER(h.to_status) = 'ready'),
+                o.updatedAt,
+                o.createdAt
+              ) AS statusSince
+            FROM ${T("orders")} o
+            WHERE LOWER(o.status) = 'ready'
+              AND COALESCE(
+                (SELECT MAX(h.changed_at)
+                 FROM ${T("order_status_history")} h
+                 WHERE h.order_id = o.id AND LOWER(h.to_status) = 'ready'),
+                o.updatedAt,
+                o.createdAt
+              ) <= :cutoff
+            ORDER BY statusSince ASC
+          `,
+        { type: QueryTypes.SELECT, replacements: { cutoff: cutoffReady } }
+      )
+      : await sequelize.query(
+        `
+            SELECT o.id, o.status, o.createdAt, o.updatedAt, o.updatedAt AS statusSince
+            FROM ${T("orders")} o
+            WHERE LOWER(o.status) = 'ready'
+              AND COALESCE(o.updatedAt, o.createdAt) <= :cutoff
+            ORDER BY COALESCE(o.updatedAt, o.createdAt) ASC
+          `,
+        { type: QueryTypes.SELECT, replacements: { cutoff: cutoffReady } }
+      );
+    for (const o of readyStuck) {
+      const code = genOrderCode(o);
+      await notifyStaffOverduePrinted(code, "ready");
+    }
+  } catch (e) {
+    console.error("checkAndNotifyOverdueOrders error:", e);
+  }
+}
+
 // 🔔 Helper: tạo Notification khi nhận thanh toán thành công
-async function createPaymentNotification(orderId, amount, method = "VNPAY", orderCode) {
+async function createPaymentNotification(
+  orderId,
+  amount,
+  method = "VNPAY",
+  orderCode
+) {
   try {
     const order = await db.Order.findByPk(orderId, {
       attributes: ["id", "customerId", "createdAt"],
@@ -87,9 +518,8 @@ async function createPaymentNotification(orderId, amount, method = "VNPAY", orde
 
     const title = "Payment successful";
     const message =
-      method === "CASH"
-        ? `We have received your cash payment of ${formatted} for order ${code}. The order is now being processed.`
-        : `Payment of ${formatted} for order ${code} has been received successfully.`;
+      `Payment of ${formatted} for order ${code} has been received successfully. ` +
+      `Your order is now being processed.`;
 
     const link = `/order/status?orderCode=${encodeURIComponent(code)}`;
 
@@ -133,7 +563,7 @@ async function createOrderCreatedNotification(orderOrRaw) {
       userId,
       title,
       message,
-      type: "info",      // tạo đơn xong -> thông tin
+      type: "info", // tạo đơn xong -> thông tin
       tag: "none",
       link,
       isRead: 0,
@@ -144,7 +574,11 @@ async function createOrderCreatedNotification(orderOrRaw) {
 }
 
 // 🔔 Helper: tạo Notification khi admin/staff đổi trạng thái đơn + broadcast realtime cho bell
-async function createOrderStatusNotification(orderOrRaw, frontendStatus, orderCodeFromRoute) {
+async function createOrderStatusNotification(
+  orderOrRaw,
+  frontendStatus,
+  orderCodeFromRoute
+) {
   try {
     const o = orderOrRaw?.toJSON ? orderOrRaw.toJSON() : orderOrRaw;
     if (!o || !o.customerId) return;
@@ -152,7 +586,9 @@ async function createOrderStatusNotification(orderOrRaw, frontendStatus, orderCo
     const userId = o.customerId;
     const code = orderCodeFromRoute || genOrderCode(o);
 
-    const fe = String(frontendStatus || mapDbStatusToFrontend(o.status) || "").toLowerCase();
+    const fe = String(
+      frontendStatus || mapDbStatusToFrontend(o.status) || ""
+    ).toLowerCase();
 
     let title;
     let message;
@@ -187,8 +623,10 @@ async function createOrderStatusNotification(orderOrRaw, frontendStatus, orderCo
     const link = `/order/status?orderCode=${encodeURIComponent(code)}`;
 
     const notifType =
-      fe === "cancelled" ? "error"
-        : fe === "ready" || fe === "completed" ? "success"
+      fe === "cancelled"
+        ? "error"
+        : fe === "ready" || fe === "completed"
+          ? "success"
           : "info";
     const notifTag =
       fe === "ready" || fe === "completed" || fe === "cancelled"
@@ -283,20 +721,20 @@ function buildProductName(it) {
   if (ex.fileName) return ex.fileName;
   if (ex.name) return ex.name;
 
-  const type = String(it.printType || '').toUpperCase();
-  if (type === 'DOCUMENT') {
-    const size = ex.size || 'A4';
-    const side = ex.side || ex.twoSides ? '2 sides' : (ex.side || '1 side');
-    const mode = ex.mode || ex.docType || 'Black & White';
+  const type = String(it.printType || "").toUpperCase();
+  if (type === "DOCUMENT") {
+    const size = ex.size || "A4";
+    const side = ex.side ? String(ex.side) : (ex.twoSides ? "2 sides" : "1 side");
+    const mode = ex.mode || ex.docType || "Black & White";
     return `Document • ${size} • ${side} • ${mode}`;
   }
-  if (type === 'PHOTO') {
-    const size = ex.sizeCode || '10x15';
-    const paper = ex.paper || 'Glossy';
-    const bl = ex.borderless ? ' • Borderless' : '';
+  if (type === "PHOTO") {
+    const size = ex.sizeCode || "10x15";
+    const paper = ex.paper || "Glossy";
+    const bl = ex.borderless ? " • Borderless" : "";
     return `Photo • ${size} • ${paper}${bl}`;
   }
-  return it.printType || 'Item';
+  return it.printType || "Item";
 }
 
 function normalizeStatus(s) {
@@ -325,13 +763,20 @@ function mapDbStatusToFrontend(dbStatus) {
 // Map trạng thái FE (Pending / Received / In-Progress / Completed / Successful)
 // sang enum status trong DB (NEW/pending/processing/ready/completed/cancelled)
 function mapFrontendStatusToDbStatus(feStatus) {
-  const s = String(feStatus || "").toLowerCase();
-  if (s === "pending") return "pending";
-  if (s === "in-progress") return "processing";
+  const s = String(feStatus || "").toLowerCase().trim();
+
+  // accept both "pending" and "new" as pending
+  if (s === "pending" || s === "new") return "pending";
+
+  // accept multiple spellings
+  if (s === "in-progress" || s === "processing" || s === "paid") return "processing";
   if (s === "ready") return "ready";
   if (s === "completed") return "completed";
-  if (s === "cancelled") return "cancelled";
-  return "processing";
+  if (s === "cancelled" || s.startsWith("cancel")) return "cancelled";
+
+  // IMPORTANT: default MUST be pending (not processing),
+  // otherwise new orders can skip overdue_unassigned condition.
+  return "pending";
 }
 
 // Map FE status sang progress + currentStage cho UI khách hàng
@@ -365,22 +810,55 @@ function calcDeposit(total) {
 exports.getMyOrderByCode = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
 
     const oc = String(req.params.orderCode || "").toUpperCase();
     const id = resolveOrderIdFromOrderCode(oc);
-    if (!id) return res.status(404).json({ success: false, message: "Invalid order code" });
+    if (!id)
+      return res
+        .status(404)
+        .json({ success: false, message: "Invalid order code" });
+
+    // ✅ Allow privileged (staff/admin/owner) to view any order by code
+    const whereClause = { id };
+    if (!isPrivileged(req.user)) whereClause.customerId = userId;
 
     const order = await db.Order.findOne({
-      where: { id, customerId: userId },
-      attributes: ["id", "status", "note", "totalAmount", "createdAt", "updatedAt"],
+      where: whereClause,
+      attributes: [
+        "id",
+        "status",
+        "note",
+        "totalAmount",
+        "createdAt",
+        "updatedAt",
+      ],
       include: [
-        { model: db.User, as: "customer", attributes: ["id", "fullName", "email"] },
-        { model: db.OrderItem, as: "items", attributes: ["id", "printType", "quantity", "unitPrice", "lineTotal", "extraOptions"] },
+        {
+          model: db.User,
+          as: "customer",
+          attributes: ["id", "fullName", "email"],
+        },
+        {
+          model: db.OrderItem,
+          as: "items",
+          attributes: [
+            "id",
+            "printType",
+            "quantity",
+            "unitPrice",
+            "lineTotal",
+            "extraOptions",
+          ],
+        },
       ],
       order: [[{ model: db.OrderItem, as: "items" }, "id", "ASC"]],
     });
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!order)
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
 
     const raw = order.toJSON();
     const items = (raw.items || []).map((it) => ({
@@ -405,12 +883,16 @@ exports.getMyOrderByCode = async (req, res) => {
       user: raw.customer,
       items,
       // Cho phép khách hủy khi đơn còn ở trạng thái NEW/PENDING (đồng bộ với listMyOrders & getMyOrderById)
-      cancellable: ['pending', 'new'].includes(String(raw.status).toLowerCase()),
+      cancellable: ["pending", "new"].includes(
+        String(raw.status).toLowerCase()
+      ),
     };
     return res.json({ success: true, data: payload });
   } catch (err) {
     console.error("getMyOrderByCode error:", err);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -419,7 +901,8 @@ exports.getMyOrderByCode = async (req, res) => {
 const sseClientsByOrder = new Map();
 
 function addSseClient(orderCode, res) {
-  if (!sseClientsByOrder.has(orderCode)) sseClientsByOrder.set(orderCode, new Set());
+  if (!sseClientsByOrder.has(orderCode))
+    sseClientsByOrder.set(orderCode, new Set());
   sseClientsByOrder.get(orderCode).add(res);
 }
 function removeSseClient(orderCode, res) {
@@ -478,7 +961,9 @@ exports.streamOrderPayment = (req, res) => {
 
   // 🔁 Heartbeat mỗi 25s để giữ kết nối qua proxy
   const iv = setInterval(() => {
-    try { res.write(`event: ping\ndata: "ok"\n\n`); } catch { }
+    try {
+      res.write(`event: ping\ndata: "ok"\n\n`);
+    } catch { }
   }, 25000);
 
   // 🔁 Replay trạng thái gần nhất (nếu có thể resolve code -> id)
@@ -488,7 +973,7 @@ exports.streamOrderPayment = (req, res) => {
       if (!id) return;
       // Lấy order + payment tối thiểu để suy ra FE status
       const [ord] = await sequelize.query(
-        `SELECT status, createdAt FROM ${T('orders')} WHERE id = :id LIMIT 1`,
+        `SELECT status, createdAt FROM ${T("orders")} WHERE id = :id LIMIT 1`,
         { type: QueryTypes.SELECT, replacements: { id } }
       );
       if (!ord) return;
@@ -496,15 +981,17 @@ exports.streamOrderPayment = (req, res) => {
       const prog = mapFrontendStatusToProgress(feStatus);
       const payload = {
         status: feStatus,
-        dbStatus: String(ord.status || '').toLowerCase(),
+        dbStatus: String(ord.status || "").toLowerCase(),
         progress: prog.progress,
         currentStage: prog.currentStage,
         stages: ORDER_STAGES,
         updatedAt: new Date().toISOString(),
-        replay: true
+        replay: true,
       };
       const data = JSON.stringify({ type: "status", ...payload });
-      try { res.write(`data: ${data}\n\n`); } catch { }
+      try {
+        res.write(`data: ${data}\n\n`);
+      } catch { }
     } catch { }
   })();
 
@@ -528,7 +1015,8 @@ exports.webhookCassoLike = async (req, res) => {
     // 1) Payload thật từ Casso V2 (qua smee) thường nằm ở body.data
     const data = req.body?.data || req.body || {};
     const desc =
-      (data.description || data.content || req.body?.description || "") + " " +
+      (data.description || data.content || req.body?.description || "") +
+      " " +
       (data.reference || "");
 
     // 2) Số tiền
@@ -544,10 +1032,12 @@ exports.webhookCassoLike = async (req, res) => {
     let pool = [
       String(data.description || req.body?.description || ""),
       String(data.reference || req.body?.reference || ""),
-      String(desc || "")
-    ].map(s => s.toUpperCase()).join(" ");
+      String(desc || ""),
+    ]
+      .map((s) => s.toUpperCase())
+      .join(" ");
     // optional: nén khoảng trắng
-    pool = pool.replace(/\s+/g, ' ').trim();
+    pool = pool.replace(/\s+/g, " ").trim();
 
     // 1) DOC-000123 | DOC000123 | PHOTO-000123
     let m = pool.match(/(DOC|PHOTO)[-.\s]?(\d{1,10})/);
@@ -588,60 +1078,111 @@ exports.webhookCassoLike = async (req, res) => {
       return res.status(200).json({ ok: true, ignored: true });
     }
 
+    // canonical orderCode để broadcast/notify đồng nhất UI (#ORD-YYYY-XXX)
+    const orderForCode = await db.Order.findByPk(orderId, {
+      attributes: ["id", "createdAt", "status"],
+    });
+    const canonicalCode = orderForCode ? genOrderCode(orderForCode) : oc;
+
     await sequelize.transaction(async (t) => {
       // Upsert payment VNPAY -> SUCCESS
       await sequelize.query(
-        `INSERT INTO ${T('payments')} (order_id, method, status, amount, currency, paid_at, created_at, updated_at)
-     VALUES (:orderId, 'VNPAY', 'SUCCESS', :amount, 'VND', NOW(), NOW(), NOW())
-     ON DUPLICATE KEY UPDATE
-       method     = 'VNPAY',
-       status     = 'SUCCESS',
-       amount     = VALUES(amount),
-       currency   = 'VND',
-       paid_at    = NOW(),
-       updated_at = NOW()`,
-        { type: QueryTypes.INSERT, transaction: t, replacements: { orderId, amount: amt } }
+        `INSERT INTO ${T("payments")}
+           (order_id, method, status, amount, currency, paid_at, created_at, updated_at,
+            callback_count, last_callback_at, provider_payload)
+         VALUES
+           (:orderId, 'VNPAY', 'SUCCESS', :amount, 'VND', NOW(), NOW(), NOW(),
+            1, NOW(), JSON_ARRAY(CAST(:providerPayload AS JSON)))
+        ON DUPLICATE KEY UPDATE
+           method = 'VNPAY',
+           status = 'SUCCESS',
+           amount = VALUES(amount),
+           currency = 'VND',
+           paid_at = NOW(),
+           updated_at = NOW(),
+          callback_count = callback_count + 1,
+           last_callback_at = NOW(),
+           provider_payload =
+             JSON_ARRAY_APPEND(
+               COALESCE(provider_payload, JSON_ARRAY()),
+               '$',
+               CAST(:providerPayload AS JSON)
+             )`,
+        {
+          type: QueryTypes.INSERT,
+          transaction: t,
+          replacements: {
+            orderId,
+            amount: amt,
+            providerPayload: JSON.stringify({ ts: Date.now(), raw: req.body }),
+          },
+        }
       );
 
-      // Lấy total hiện tại để quyết định tổng sau giảm
-      const [rows] = await sequelize.query(
-        `SELECT totalAmount FROM ${T('orders')} WHERE id = :orderId FOR UPDATE`,
-        { type: QueryTypes.SELECT, transaction: t, replacements: { orderId } }
-      );
-      const currentTotal = Number(rows?.totalAmount ?? 0);
-      const finalTotal = Math.min(currentTotal || amt, amt || currentTotal); // phản ánh giảm giá
-      // Hoàn tất đơn ngay khi nhận thanh toán
+      // Khi nhận thanh toán/đặt cọc thành công:
+      // - nếu đơn còn NEW/pending -> chuyển sang processing
+      // - nếu đơn đang processing/ready/completed rồi -> giữ nguyên (tránh rollback trạng thái)
       await sequelize.query(
-        `UPDATE ${T('orders')}
-           SET status='completed',
-               totalAmount = :finalTotal,
+        `UPDATE ${T("orders")}
+           SET status = CASE
+                         WHEN LOWER(status) IN ('new','pending') THEN 'processing'
+                         ELSE status
+                       END,
+               completedAt = CASE
+                              WHEN LOWER(status) IN ('new','pending') THEN NULL
+                              ELSE completedAt
+                           END,
                updatedAt = NOW()
          WHERE id = :orderId`,
-        { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId, finalTotal } }
+        { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId } }
       );
     });
 
     // Sau khi lưu DB thành công mới phát SSE (để UI sync đúng)
     // 1) Báo realtime tiền đã vào (type: "paid")
-    broadcastPaid(oc, { paidAmount: amt });
+    broadcastPaid(canonicalCode, { paidAmount: amt });
 
     // 2) Đồng thời broadcast trạng thái đơn đã hoàn tất (type: "status")
-    const prog = mapFrontendStatusToProgress("completed");
-    broadcastOrderStatus(oc, {
-      status: "Completed",
-      dbStatus: "completed",         // trạng thái thực trong DB
-      progress: prog.progress,       // ~100%
-      currentStage: prog.currentStage, // "Completed"
+    // broadcast status theo trạng thái thực trong DB sau update
+    let dbSt = "processing";
+    try {
+      const [ord] = await sequelize.query(
+        `SELECT status FROM ${T("orders")} WHERE id = :id LIMIT 1`,
+        { type: QueryTypes.SELECT, replacements: { id: orderId } }
+      );
+      dbSt = String(ord?.status || "processing").toLowerCase();
+    } catch { }
+    const feSt = mapDbStatusToFrontend(dbSt);
+    const prog = mapFrontendStatusToProgress(
+      String(feSt).toLowerCase() === "in-progress"
+        ? "in-progress"
+        : String(feSt).toLowerCase()
+    );
+    broadcastOrderStatus(canonicalCode, {
+      status: feSt,
+      dbStatus: dbSt,
+      progress: prog.progress,
+      currentStage: prog.currentStage,
       stages: ORDER_STAGES,
       updatedAt: new Date().toISOString(),
     });
     // 📣 Dashboard: phát sự kiện cập nhật 1 đơn
     try {
       const [row] = await sequelize.query(
-        `SELECT id, status, totalAmount, createdAt, note FROM ${T('orders')} WHERE id = :id LIMIT 1`,
-        { type: QueryTypes.SELECT, replacements: { id: resolveOrderIdFromOrderCode(oc) } }
+        `SELECT id, status, totalAmount, createdAt, note FROM ${T(
+          "orders"
+        )} WHERE id = :id LIMIT 1`,
+        {
+          type: QueryTypes.SELECT,
+          replacements: { id: resolveOrderIdFromOrderCode(oc) },
+        }
       );
-      if (row) RealtimeHub.publish({ type: 'orders.updated', ts: Date.now(), data: toDashboardRow(row) });
+      if (row)
+        RealtimeHub.publish({
+          type: "orders.updated",
+          ts: Date.now(),
+          data: toDashboardRow(row),
+        });
     } catch { }
 
     // 📊 Đồng bộ lại 3 card summary (this_week / this_month / this_year)
@@ -652,12 +1193,18 @@ exports.webhookCassoLike = async (req, res) => {
     }
     // 🔔 Tạo notification "Payment successful" cho chủ đơn
     try {
-      await createPaymentNotification(orderId, amt, "VNPAY", oc);
+      await createPaymentNotification(orderId, amt, "VNPAY", canonicalCode);
     } catch (e) {
       console.error("createPaymentNotification error (webhookCassoLike):", e);
     }
-    return res.json({ ok: true });
 
+    // 🔔 STAFF/OWNER notification: payment success
+    try {
+      await notifyStaffPaymentSuccess(canonicalCode, amt, "VNPAY");
+    } catch (e) {
+      console.error("notifyStaffPaymentSuccess error (webhookCassoLike):", e);
+    }
+    return res.json({ ok: true });
   } catch (e) {
     console.error("webhookCassoLike error", e);
     return res.status(500).json({ ok: false });
@@ -667,37 +1214,49 @@ exports.webhookCassoLike = async (req, res) => {
 // POST /api/orders/:orderCode/mark-paid  {paidAmount}
 exports.markPaidManual = async (req, res) => {
   // ===== P0: chỉ staff/admin mới được đánh dấu paid thủ công
-  try { assertPrivileged(req); } catch (e) { return res.status(e.status || 403).json({ ok: false, error: e.message }); }
+  try {
+    assertPrivileged(req);
+  } catch (e) {
+    return res.status(e.status || 403).json({ ok: false, error: e.message });
+  }
   const oc = String(req.params.orderCode || "").trim();
   const amt = Math.round(Number(req.body?.paidAmount || 0));
-  if (!oc || !amt) return res.status(400).json({ ok: false, error: "invalid_body" });
+  if (!oc || !amt)
+    return res.status(400).json({ ok: false, error: "invalid_body" });
 
   const orderId = resolveOrderIdFromOrderCode(oc);
-  if (!orderId) return res.status(404).json({ ok: false, error: "invalid_order_code" });
+  if (!orderId)
+    return res.status(404).json({ ok: false, error: "invalid_order_code" });
 
   await sequelize.transaction(async (t) => {
     // Lưu/ghi đè payment (đánh dấu SUCCESS)
     await sequelize.query(
-      `INSERT INTO ${T('payments')} (order_id, method, status, amount, currency, paid_at, created_at, updated_at)
+      `INSERT INTO ${T(
+        "payments"
+      )} (order_id, method, status, amount, currency, paid_at, created_at, updated_at)
        VALUES (:orderId, 'VNPAY', 'SUCCESS', :amount, 'VND', NOW(), NOW(), NOW())
        ON DUPLICATE KEY UPDATE
          method='VNPAY', status='SUCCESS', amount=VALUES(amount), currency='VND', paid_at=NOW(), updated_at=NOW()`,
-      { type: QueryTypes.INSERT, transaction: t, replacements: { orderId, amount: amt } }
+      {
+        type: QueryTypes.INSERT,
+        transaction: t,
+        replacements: { orderId, amount: amt },
+      }
     );
-    // Chốt đơn  cập nhật tổng sau giảm
-    const [rows] = await sequelize.query(
-      `SELECT totalAmount FROM ${T('orders')} WHERE id = :orderId FOR UPDATE`,
-      { type: QueryTypes.SELECT, transaction: t, replacements: { orderId } }
-    );
-    const currentTotal = Number(rows?.totalAmount ?? 0);
-    const finalTotal = Math.min(currentTotal || amt, amt || currentTotal);
+
     await sequelize.query(
-      `UPDATE ${T('orders')}
-         SET status='completed',
-             totalAmount = :finalTotal,
+      `UPDATE ${T("orders")}
+         SET status = CASE
+                       WHEN LOWER(status) IN ('new','pending') THEN 'processing'
+                       ELSE status
+                     END,
+             completedAt = CASE
+                            WHEN LOWER(status) IN ('new','pending') THEN NULL
+                            ELSE completedAt
+                          END,
              updatedAt = NOW()
        WHERE id = :orderId`,
-      { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId, finalTotal } }
+      { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId } }
     );
   });
 
@@ -708,14 +1267,21 @@ exports.markPaidManual = async (req, res) => {
     console.error("createPaymentNotification error (markPaidManual):", e);
   }
 
+  // 🔔 STAFF/OWNER notification
+  try {
+    await notifyStaffPaymentSuccess(oc, amt, "VNPAY");
+  } catch (e) {
+    console.error("notifyStaffPaymentSuccess error (markPaidManual):", e);
+  }
+
   // Báo về FE (SSE) để các trang khác đang mở tự cập nhật
   // 1) Thanh toán thành công
   broadcastPaid(oc, { paidAmount: amt });
   // 2) Trạng thái đơn đã hoàn tất
-  const prog = mapFrontendStatusToProgress("completed");
+  const prog = mapFrontendStatusToProgress("in-progress");
   broadcastOrderStatus(oc, {
-    status: "Completed",
-    dbStatus: "completed",
+    status: "In-Progress",
+    dbStatus: "processing",
     progress: prog.progress,
     currentStage: prog.currentStage,
     stages: ORDER_STAGES,
@@ -725,10 +1291,20 @@ exports.markPaidManual = async (req, res) => {
   // Dashboard update
   try {
     const [row] = await sequelize.query(
-      `SELECT id, status, totalAmount, createdAt, note FROM ${T('orders')} WHERE id = :id LIMIT 1`,
-      { type: QueryTypes.SELECT, replacements: { id: resolveOrderIdFromOrderCode(oc) } }
+      `SELECT id, status, totalAmount, createdAt, note FROM ${T(
+        "orders"
+      )} WHERE id = :id LIMIT 1`,
+      {
+        type: QueryTypes.SELECT,
+        replacements: { id: resolveOrderIdFromOrderCode(oc) },
+      }
     );
-    if (row) RealtimeHub.publish({ type: 'orders.updated', ts: Date.now(), data: toDashboardRow(row) });
+    if (row)
+      RealtimeHub.publish({
+        type: "orders.updated",
+        ts: Date.now(),
+        data: toDashboardRow(row),
+      });
   } catch { }
   // 3 card summary realtime
   try {
@@ -738,12 +1314,25 @@ exports.markPaidManual = async (req, res) => {
   }
 };
 
+// expose helpers
+exports._notifyStaffNewOrder = notifyStaffNewOrder;
+exports._notifyStaffCancelOrder = notifyStaffCancelOrder;
+exports._notifyStaffPaymentSuccess = notifyStaffPaymentSuccess;
+exports._notifyStaffOverdueUnassigned = notifyStaffOverdueUnassigned;
+exports._notifyStaffOverduePrinted = notifyStaffOverduePrinted;
+
 // PATCH /api/orders/:orderCode/status  {status}
 // Nhân viên cập nhật trạng thái -> lưu DB + broadcast SSE cho khách hàng
 exports.updateStatusByCode = async (req, res) => {
   try {
     // ===== P0: bắt buộc quyền staff/admin
-    try { assertPrivileged(req); } catch (e) { return res.status(e.status || 403).json({ success: false, message: e.message }); }
+    try {
+      assertPrivileged(req);
+    } catch (e) {
+      return res
+        .status(e.status || 403)
+        .json({ success: false, message: e.message });
+    }
 
     const orderCode = String(req.params.orderCode || "").trim();
     const frontendStatus = req.body?.status;
@@ -771,6 +1360,10 @@ exports.updateStatusByCode = async (req, res) => {
     // Map FE status -> enum status DB
     const dbStatus = mapFrontendStatusToDbStatus(frontendStatus);
     order.status = dbStatus;
+    // set/clear completedAt theo schema
+    if (String(dbStatus).toLowerCase() === "completed")
+      order.completedAt = new Date();
+    else order.completedAt = null;
     await order.save();
 
     // 🔔 Tạo notification cho chủ đơn khi trạng thái thay đổi
@@ -778,7 +1371,10 @@ exports.updateStatusByCode = async (req, res) => {
     try {
       await createOrderStatusNotification(order, frontendStatus, orderCode);
     } catch (e) {
-      console.error("createOrderStatusNotification error (updateStatusByCode):", e);
+      console.error(
+        "createOrderStatusNotification error (updateStatusByCode):",
+        e
+      );
     }
 
     // Chuẩn bị dữ liệu tiến độ cho UI khách hàng
@@ -815,17 +1411,23 @@ exports.updateStatusByCode = async (req, res) => {
 // Monkey-patch nhẹ bằng cách bọc hàm gốc: (giữ nguyên xử lý trên)
 const _origUpdate = exports.updateStatusByCode;
 exports.updateStatusByCode = async function (req, res) {
-  const orderCode = String(req.params.orderCode || '').trim();
+  const orderCode = String(req.params.orderCode || "").trim();
   const r = await _origUpdate.call(this, req, res);
   try {
     const id = resolveOrderIdFromOrderCode(orderCode);
     if (id) {
       const order = await db.Order.findByPk(id, {
-        include: [{ model: db.User, as: "customer", attributes: ["fullName", "email"] },
-        { model: db.OrderItem, as: "items", attributes: ["printType"] }]
+        include: [
+          { model: db.User, as: "customer", attributes: ["fullName", "email"] },
+          { model: db.OrderItem, as: "items", attributes: ["printType"] },
+        ],
       });
       if (order) {
-        RealtimeHub.publish({ type: 'orders.updated', ts: Date.now(), data: toDashboardRow(order) });
+        RealtimeHub.publish({
+          type: "orders.updated",
+          ts: Date.now(),
+          data: toDashboardRow(order),
+        });
       }
     }
   } catch { }
@@ -842,25 +1444,46 @@ exports.updateStatusByCode = async function (req, res) {
 exports.cancelMyOrder = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
-    const oc = String(req.params.orderCode || '').trim().toUpperCase();
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    const oc = String(req.params.orderCode || "")
+      .trim()
+      .toUpperCase();
     const id = resolveOrderIdFromOrderCode(oc);
-    if (!id) return res.status(404).json({ success: false, message: 'Invalid order code' });
+    if (!id)
+      return res
+        .status(404)
+        .json({ success: false, message: "Invalid order code" });
 
     const order = await db.Order.findOne({
       where: { id, customerId: userId },
       // cần customerId để gửi notification cho đúng user
-      attributes: ['id', 'status', 'note', 'customerId'],
+      attributes: ["id", "status", "note", "customerId"],
     });
-    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (!order)
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     const st = String(order.status).toLowerCase();
-    if (!['pending', 'new'].includes(st)) {
-      return res.status(409).json({ success: false, message: 'ONLY_PENDING_CAN_BE_CANCELLED' });
+    if (!["pending", "new"].includes(st)) {
+      return res
+        .status(409)
+        .json({ success: false, message: "ONLY_PENDING_CAN_BE_CANCELLED" });
     }
     await order.update({
-      status: 'cancelled',
-      note: req.body?.reason ? `${order.note ? order.note + ' | ' : ''}User cancel: ${req.body.reason}` : order.note,
+      status: "cancelled",
+      note: req.body?.reason
+        ? `${order.note ? order.note + " | " : ""}User cancel: ${req.body.reason
+        }`
+        : order.note,
     });
+
+    // 🔔 STAFF/OWNER notification: cancel request
+    try {
+      await notifyStaffCancelOrder(oc, req.body?.reason);
+    } catch (e) {
+      console.error("notifyStaffCancelOrder error:", e);
+    }
 
     // 🔔 Gửi notification cho chủ đơn: "Order ... cancelled"
     try {
@@ -878,17 +1501,19 @@ exports.cancelMyOrder = async (req, res) => {
       stages: ORDER_STAGES,
       updatedAt: new Date().toISOString(),
     });
-    res.json({ success: true, message: 'ORDER_CANCELLED' });
+    res.json({ success: true, message: "ORDER_CANCELLED" });
 
     // 📣 Dashboard: phát sự kiện cập nhật 1 đơn (đã bị hủy)
     try {
       const [row] = await sequelize.query(
-        `SELECT id, status, totalAmount, createdAt, note FROM ${T('orders')} WHERE id = :id LIMIT 1`,
+        `SELECT id, status, totalAmount, createdAt, note FROM ${T(
+          "orders"
+        )} WHERE id = :id LIMIT 1`,
         { type: QueryTypes.SELECT, replacements: { id } }
       );
       if (row) {
         RealtimeHub.publish({
-          type: 'orders.updated',
+          type: "orders.updated",
           ts: Date.now(),
           data: toDashboardRow(row),
         });
@@ -903,15 +1528,18 @@ exports.cancelMyOrder = async (req, res) => {
     });
     return;
   } catch (e) {
-    console.error('cancelMyOrder error:', e);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    console.error("cancelMyOrder error:", e);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
 
 exports.listMyOrders = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
 
     const { status, from, to, page = 1, pageSize = 10, sort } = req.query;
 
@@ -948,10 +1576,10 @@ exports.listMyOrders = async (req, res) => {
       const raw = String(o.status).toLowerCase();
       return {
         ...o,
-        rawStatus: raw,                              // ✅ dùng biến raw đúng
+        rawStatus: raw, // ✅ dùng biến raw đúng
         status: normalizeStatus(o.status),
         code: genOrderCode(o),
-        cancellable: ['pending', 'new'].includes(raw) // ✅ cho hủy khi NEW
+        cancellable: ["pending", "new"].includes(raw), // ✅ cho hủy khi NEW
       };
     });
 
@@ -967,7 +1595,9 @@ exports.listMyOrders = async (req, res) => {
     });
   } catch (err) {
     console.error("listMyOrders error:", err);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -976,9 +1606,15 @@ exports.listMyOrders = async (req, res) => {
 exports.listAllOrders = async (req, res) => {
   try {
     if (!isPrivileged(req.user)) {
-      return res
-        .status(403)
-        .json({ success: false, message: "Forbidden" });
+      return res.status(403).json({ success: false, message: "Forbidden" });
+    }
+
+    // Tạo 2 case overdue cho staff khi dashboard gọi list
+    // Await để E2E test thấy notifications ngay sau khi mở dashboard.
+    // ✅ tối ưu: không scan overdue theo refresh dashboard (tránh throttle/dedupe gây cảm giác "lọc")
+    // Scheduler/server sẽ chạy độc lập.
+    if (String(process.env.OVERDUE_SCAN_ON_DASHBOARD || "0") === "1") {
+      await checkAndNotifyOverdueOrders().catch(() => { });
     }
 
     const {
@@ -1000,7 +1636,7 @@ exports.listAllOrders = async (req, res) => {
       if (s === "pending") {
         whereClause.status = { [Op.in]: ["pending", "new", "NEW"] };
       } else if (s === "in-progress") {
-        whereClause.status = { [Op.in]: ["processing", "paid"] };
+        whereClause.status = { [Op.in]: ["processing"] };
       } else if (s === "ready") {
         whereClause.status = "ready";
       } else if (s === "completed") {
@@ -1060,7 +1696,7 @@ exports.listAllOrders = async (req, res) => {
         attributes: ["id", "printType"],
         // Filter theo loại đơn (DOCUMENT / PHOTO / BANNER ...)
         ...(orderType && orderType !== "All"
-          ? { where: { printType: orderType }, required: true }   // inner join khi có filter
+          ? { where: { printType: orderType }, required: true } // inner join khi có filter
           : { required: false }),
       },
     ];
@@ -1075,8 +1711,8 @@ exports.listAllOrders = async (req, res) => {
       offset,
       order: parseSort(sort),
       attributes: ["id", "status", "totalAmount", "createdAt", "note"],
-      distinct: true,   // cần để count đúng khi có include
-      subQuery: false,  // tránh đẩy điều kiện include vào subquery
+      distinct: true, // cần để count đúng khi có include
+      subQuery: false, // tránh đẩy điều kiện include vào subquery
     });
 
     const data = rows.map((r) => {
@@ -1088,13 +1724,12 @@ exports.listAllOrders = async (req, res) => {
       return {
         id: o.id,
         code: genOrderCode(o),
-        status: feStatus,        // FE dùng để hiển thị  dropdown
-        rawStatus,               // nếu cần debug
+        status: feStatus, // FE dùng để hiển thị  dropdown
+        rawStatus, // nếu cần debug
         totalAmount: Number(o.totalAmount || 0),
         createdAt: o.createdAt,
         note: o.note || null,
-        customerName:
-          o.customer?.fullName || o.customer?.email || "N/A",
+        customerName: o.customer?.fullName || o.customer?.email || "N/A",
         customer: o.customer || null,
         orderType: firstItem?.printType || null,
         items: (o.items || []).map((it) => ({
@@ -1142,23 +1777,53 @@ exports.listAllOrders = async (req, res) => {
 exports.getMyOrderById = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
 
     const id = req.params.id;
 
+    // ✅ Allow privileged (staff/admin/owner) to view any order by id
+    const whereClause = { id };
+    if (!isPrivileged(req.user)) whereClause.customerId = userId;
+
     const order = await db.Order.findOne({
-      where: { id, customerId: userId },
+      where: whereClause,
       // Trả thêm note (và có thể giữ subtotal nếu muốn hiển thị)
-      attributes: ["id", "status", "note", "totalAmount", "createdAt", "updatedAt"],
+      attributes: [
+        "id",
+        "status",
+        "note",
+        "totalAmount",
+        "createdAt",
+        "updatedAt",
+      ],
       include: [
-        { model: db.User, as: "customer", attributes: ["id", "fullName", "email"] },
+        {
+          model: db.User,
+          as: "customer",
+          attributes: ["id", "fullName", "email"],
+        },
         // Đảm bảo có printType + extraOptions để FE Reorder
-        { model: db.OrderItem, as: "items", attributes: ["id", "printType", "quantity", "unitPrice", "lineTotal", "extraOptions"] },
+        {
+          model: db.OrderItem,
+          as: "items",
+          attributes: [
+            "id",
+            "printType",
+            "quantity",
+            "unitPrice",
+            "lineTotal",
+            "extraOptions",
+          ],
+        },
       ],
       order: [[{ model: db.OrderItem, as: "items" }, "id", "ASC"]],
     });
 
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!order)
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
 
     // 👇 FIX: cần chuyển sang JSON để có biến raw
     const raw = order.toJSON();
@@ -1186,48 +1851,72 @@ exports.getMyOrderById = async (req, res) => {
       updatedAt: raw.updatedAt,
       user: raw.customer,
       items,
-      cancellable: ['pending', 'new'].includes(String(raw.status).toLowerCase()),
+      cancellable: ["pending", "new"].includes(
+        String(raw.status).toLowerCase()
+      ),
     };
     return res.json({ success: true, data: payload });
   } catch (err) {
     console.error("getMyOrderById error:", err);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
 
 exports.confirmStorePayment = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
 
     const id = Number(req.params.id);
-    if (!id) return res.status(400).json({ success: false, message: "Invalid order id" });
+    if (!id)
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid order id" });
 
     // Chỉ cho chủ đơn
     const order = await db.Order.findOne({ where: { id, customerId: userId } });
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!order)
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
 
     // Tính số tiền phải thanh toán ngay (tiền cọc hoặc đủ)
     const amount = calcDeposit(order.totalAmount);
 
-
     await sequelize.transaction(async (t) => {
       // Tạo/đồng bộ bản ghi payments (CASH, PENDING) với amount hợp lệ
       await sequelize.query(
-        `INSERT INTO ${T('payments')} (order_id, method, status, amount, currency, paid_at, created_at, updated_at)
+        `INSERT INTO ${T(
+          "payments"
+        )} (order_id, method, status, amount, currency, paid_at, created_at, updated_at)
          VALUES (:orderId, 'CASH', 'PENDING', :amount, 'VND', NULL, NOW(), NOW())
          ON DUPLICATE KEY UPDATE
            method = 'CASH',
            -- nếu đã SUCCESS thì giữ nguyên amount cũ, không ghi đè
-           amount = IF(${T('payments')}.status='SUCCESS', ${T('payments')}.amount, VALUES(amount)),
+           amount = IF(${T("payments")}.status='SUCCESS', ${T(
+          "payments"
+        )}.amount, VALUES(amount)),
            currency = 'VND',
            updated_at = NOW()`,
-        { type: QueryTypes.INSERT, transaction: t, replacements: { orderId: id, amount } }
+        {
+          type: QueryTypes.INSERT,
+          transaction: t,
+          replacements: { orderId: id, amount },
+        }
       );
 
-      // Cập nhật trạng thái đơn sang processing (đã xác nhận trả tại cửa hàng)
+      // Chỉ chuyển NEW/PENDING -> PROCESSING, tránh regress READY/COMPLETED
       await sequelize.query(
-        `UPDATE ${T('orders')} SET status='processing', updatedAt=NOW() WHERE id=:orderId`,
+        `UPDATE ${T("orders")}
+            SET status = CASE
+                          WHEN LOWER(status) IN ('new','pending') THEN 'processing'
+                          ELSE status
+                        END,
+                updatedAt = NOW()
+          WHERE id = :orderId`,
         { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId: id } }
       );
     });
@@ -1238,7 +1927,7 @@ exports.confirmStorePayment = async (req, res) => {
     const prog = mapFrontendStatusToProgress("in-progress");
     broadcastOrderStatus(orderCode, {
       status: "In-Progress",
-      dbStatus: "processing",      // trạng thái trong DB
+      dbStatus: "processing", // trạng thái trong DB
       progress: prog.progress,
       currentStage: prog.currentStage,
       stages: ORDER_STAGES,
@@ -1249,7 +1938,7 @@ exports.confirmStorePayment = async (req, res) => {
     const payment = await sequelize.query(
       `SELECT id, order_id AS orderId, method, status, amount, currency,
             paid_at AS paidAt, created_at AS createdAt, updated_at AS updatedAt
-     FROM ${T('payments')}
+     FROM ${T("payments")}
      WHERE order_id = :orderId
      LIMIT 1`,
       { type: QueryTypes.SELECT, replacements: { orderId: id } }
@@ -1260,12 +1949,14 @@ exports.confirmStorePayment = async (req, res) => {
     // 📣 Dashboard: phát sự kiện cập nhật 1 đơn (đã chuyển sang processing)
     try {
       const [row] = await sequelize.query(
-        `SELECT id, status, totalAmount, createdAt, note FROM ${T('orders')} WHERE id = :id LIMIT 1`,
+        `SELECT id, status, totalAmount, createdAt, note FROM ${T(
+          "orders"
+        )} WHERE id = :id LIMIT 1`,
         { type: QueryTypes.SELECT, replacements: { id } }
       );
       if (row) {
         RealtimeHub.publish({
-          type: 'orders.updated',
+          type: "orders.updated",
           ts: Date.now(),
           data: toDashboardRow(row),
         });
@@ -1278,12 +1969,17 @@ exports.confirmStorePayment = async (req, res) => {
     try {
       await broadcastDashboardSummariesDefaultRanges();
     } catch (e) {
-      console.error("broadcastDashboardSummaries error (confirmStorePayment):", e);
+      console.error(
+        "broadcastDashboardSummaries error (confirmStorePayment):",
+        e
+      );
     }
     return;
   } catch (e) {
-    console.error('confirmStorePayment error:', e);
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    console.error("confirmStorePayment error:", e);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -1294,6 +1990,7 @@ exports._broadcastStatus = broadcastOrderStatus;
 // Dùng lại genOrderCode & mapping nếu cần
 exports._genOrderCode = genOrderCode;
 exports._mapFrontendStatusToProgress = mapFrontendStatusToProgress;
+exports._mapFrontendStatusToDbStatus = mapFrontendStatusToDbStatus;
 exports._mapFrontendStatusToDbStatus = mapFrontendStatusToDbStatus;
 exports._ORDER_STAGES = ORDER_STAGES;
 exports._toDashboardRow = toDashboardRow;
@@ -1339,12 +2036,25 @@ function endOfYear(d) {
 }
 function getRange(key, now = new Date()) {
   const n = new Date(now);
-  if (key === "this_week") return { from: startOfWeek(n), to: endOfWeek(n), prevKey: "last_week" };
-  if (key === "last_week") { const d = new Date(n); d.setDate(d.getDate() - 7); return { from: startOfWeek(d), to: endOfWeek(d), prevKey: "prev_week" }; }
-  if (key === "this_month") return { from: startOfMonth(n), to: endOfMonth(n), prevKey: "last_month" };
-  if (key === "last_month") { const d = new Date(n.getFullYear(), n.getMonth() - 1, 1); return { from: startOfMonth(d), to: endOfMonth(d), prevKey: "prev_month" }; }
-  if (key === "this_year") return { from: startOfYear(n), to: endOfYear(n), prevKey: "last_year" };
-  if (key === "last_year") { const d = new Date(n.getFullYear() - 1, 0, 1); return { from: startOfYear(d), to: endOfYear(d), prevKey: "prev_year" }; }
+  if (key === "this_week")
+    return { from: startOfWeek(n), to: endOfWeek(n), prevKey: "last_week" };
+  if (key === "last_week") {
+    const d = new Date(n);
+    d.setDate(d.getDate() - 7);
+    return { from: startOfWeek(d), to: endOfWeek(d), prevKey: "prev_week" };
+  }
+  if (key === "this_month")
+    return { from: startOfMonth(n), to: endOfMonth(n), prevKey: "last_month" };
+  if (key === "last_month") {
+    const d = new Date(n.getFullYear(), n.getMonth() - 1, 1);
+    return { from: startOfMonth(d), to: endOfMonth(d), prevKey: "prev_month" };
+  }
+  if (key === "this_year")
+    return { from: startOfYear(n), to: endOfYear(n), prevKey: "last_year" };
+  if (key === "last_year") {
+    const d = new Date(n.getFullYear() - 1, 0, 1);
+    return { from: startOfYear(d), to: endOfYear(d), prevKey: "prev_year" };
+  }
   // fallback: this_week
   return getRange("this_week", n);
 }
@@ -1362,7 +2072,8 @@ function getPrevOf(key, now = new Date()) {
 function getRangeLoose(key, now = new Date()) {
   // mở rộng cho prev_week/prev_month/prev_year
   if (key === "prev_week") {
-    const d = new Date(now); d.setDate(d.getDate() - 14);
+    const d = new Date(now);
+    d.setDate(d.getDate() - 14);
     return { from: startOfWeek(d), to: endOfWeek(d) };
   }
   if (key === "prev_month") {
@@ -1376,7 +2087,8 @@ function getRangeLoose(key, now = new Date()) {
   return getRange(key, now); // cho this_*, last_* bình thường
 }
 function pctChange(curr, prev) {
-  const c = Number(curr || 0), p = Number(prev || 0);
+  const c = Number(curr || 0),
+    p = Number(prev || 0);
   if (p === 0) return c === 0 ? 0 : 100; // quy ước
   return Math.round(((c - p) / p) * 100);
 }
@@ -1391,7 +2103,7 @@ async function countSummaryBetween(from, to) {
         SUM(CASE WHEN LOWER(status) IN ('pending','new') THEN 1 ELSE 0 END) AS pendingCount,
         SUM(CASE WHEN LOWER(status) = 'completed' THEN 1 ELSE 0 END)             AS completedCount,
         SUM(CASE WHEN LOWER(status) LIKE 'cancel%' THEN 1 ELSE 0 END)            AS canceledCount
-      FROM ${T('orders')}
+      FROM ${T("orders")}
       WHERE ${whereDate}
     `,
     { type: QueryTypes.SELECT, replacements: { from, to } }
@@ -1399,7 +2111,7 @@ async function countSummaryBetween(from, to) {
   const [cust] = await sequelize.query(
     `
       SELECT COUNT(DISTINCT customerId) AS customers
-      FROM ${T('orders')}
+      FROM ${T("orders")}
       WHERE ${whereDate}
     `,
     { type: QueryTypes.SELECT, replacements: { from, to } }
@@ -1413,8 +2125,13 @@ async function countSummaryBetween(from, to) {
     damaged: 0,
     customers: Number(cust?.customers || 0),
     // “abandonedCartRate” tạm tính = canceled / all (%)
-    abandonedRate: (Number(rows?.allCount || 0) === 0) ? 0 :
-      Math.round(100 * Number(rows?.canceledCount || 0) / Number(rows?.allCount || 0))
+    abandonedRate:
+      Number(rows?.allCount || 0) === 0
+        ? 0
+        : Math.round(
+          (100 * Number(rows?.canceledCount || 0)) /
+          Number(rows?.allCount || 0)
+        ),
   };
 }
 
@@ -1426,7 +2143,8 @@ async function buildSummaryPayload(rangeKey, now = new Date()) {
   const prev = await countSummaryBetween(prevRange.from, prevRange.to);
   return {
     range: rangeKey,
-    from, to,
+    from,
+    to,
     counts: curr,
     prevCounts: prev,
     deltas: {
@@ -1466,27 +2184,44 @@ async function broadcastDashboardSummariesDefaultRanges() {
 // GET /api/orders/summary?range=this_week|this_month|this_year|last_week|...
 exports.getOrdersSummary = async (req, res) => {
   try {
-    if (!isPrivileged(req.user)) return res.status(403).json({ success: false, message: "Forbidden" });
+    if (!isPrivileged(req.user))
+      return res.status(403).json({ success: false, message: "Forbidden" });
     const range = String(req.query.range || "this_week");
     const payload = await buildSummaryPayload(range);
     return res.json({ success: true, summary: payload });
   } catch (e) {
     console.error("getOrdersSummary error:", e);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
 
 // GET /api/orders/summary-multi?ranges=this_week,this_month,this_year
 exports.getOrdersSummaryMulti = async (req, res) => {
   try {
-    if (!isPrivileged(req.user)) return res.status(403).json({ success: false, message: "Forbidden" });
+    if (!isPrivileged(req.user))
+      return res.status(403).json({ success: false, message: "Forbidden" });
     const raw = String(req.query.ranges || "").trim();
-    const keys = Array.from(new Set((raw ? raw.split(",") : ["this_week"]).map(s => s.trim()).filter(Boolean)));
+    const keys = Array.from(
+      new Set(
+        (raw ? raw.split(",") : ["this_week"])
+          .map((s) => s.trim())
+          .filter(Boolean)
+      )
+    );
     const out = {};
-    await Promise.all(keys.map(async k => { out[k] = await buildSummaryPayload(k); }));
+    await Promise.all(
+      keys.map(async (k) => {
+        out[k] = await buildSummaryPayload(k);
+      })
+    );
     return res.json({ success: true, summaries: out });
   } catch (e) {
     console.error("getOrdersSummaryMulti error:", e);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 };
+module.exports.__runOverdueNow = checkAndNotifyOverdueOrders;

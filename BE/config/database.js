@@ -45,6 +45,7 @@ const sequelize = new Sequelize(
       charset: 'utf8mb4',
       supportBigNumbers: true,
       bigNumberStrings: true,
+      timezone: '+07:00',
       // connectTimeout (ms) nếu cần: 10000
     },
 

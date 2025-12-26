@@ -1,6 +1,7 @@
 // server.js
 require("dotenv").config(); // nạp .env thật sớm
 
+const ordersCtrl = require("./controllers/orders.controller");
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -142,7 +143,7 @@ const pageMap = [
   ["/service/print", ["Service_Print.html"]],
   ["/print/document", ["PrintDocument.html"]],
   ["/print/photo", ["PrintPhoto.html"]],
-  
+
   // Owner dashboard (khu chủ tiệm / admin)
   ["/owner/dashboard", ["Owner_Dashboard.html"]],
 ];
@@ -256,6 +257,31 @@ app.use("/api", (req, res) => {
       console.log(`📱 Frontend: http://localhost:${PORT}`);
       console.log(`🔌 API: http://localhost:${PORT}/api`);
     });
+
+    // ✅ Scheduler chạy overdue độc lập với việc staff refresh dashboard
+    const enableOverdue =
+      String(process.env.ENABLE_OVERDUE_CHECK || "0") === "1";
+    if (enableOverdue && typeof ordersCtrl.__runOverdueNow === "function") {
+      const everyMs = Math.max(500, Number(process.env.OVERDUE_SCHEDULER_MS || 30000));
+
+      // chạy 1 lần ngay sau khi server lên (để test không phải chờ lâu)
+      setTimeout(() => {
+        ordersCtrl.__runOverdueNow().catch((e) =>
+          console.error("Overdue scheduler error (startup):", e)
+        );
+      }, 500);
+
+      // chạy định kỳ
+      setInterval(() => {
+        ordersCtrl.__runOverdueNow().catch((e) =>
+          console.error("Overdue scheduler error:", e)
+        );
+      }, everyMs);
+
+      console.log("[overdue] scheduler enabled every", everyMs, "ms");
+    } else {
+      console.log("[overdue] scheduler disabled or __runOverdueNow not found");
+    }
   } catch (err) {
     console.error("Không thể khởi động server do lỗi DB:", err);
     process.exit(1);

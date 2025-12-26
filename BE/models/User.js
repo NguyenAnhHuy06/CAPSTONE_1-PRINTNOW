@@ -99,20 +99,37 @@ const User = sequelize.define(
         },
       },
     },
+    role: {
+      type: DataTypes.ENUM("customer", "staff", "admin", "owner"),
+      allowNull: false,
+      defaultValue: "customer",
+    },
   },
   {
     tableName: "users",
-    timestamps: true, // Bật timestamps vì database có created_at, updated_at
+    timestamps: true, // Bật timestamps vì database có createdAt, updatedAt
+    // Map đúng theo DB snake_case
+    createdAt: "createdAt",
+    updatedAt: "updatedAt",
     indexes: [], // Tắt tất cả indexes để tránh lỗi "Too many keys"
     hooks: {
       beforeCreate: async (user) => {
         if (user.passwordHash) {
+          // tránh hash 2 lần nếu lỡ truyền vào chuỗi bcrypt hash
+          const s = String(user.passwordHash);
+          const looksBcrypt =
+            s.startsWith("$2a$") || s.startsWith("$2b$") || s.startsWith("$2y$");
+          if (looksBcrypt) return;
           const salt = await bcrypt.genSalt(10);
           user.passwordHash = await bcrypt.hash(user.passwordHash, salt);
         }
       },
       beforeUpdate: async (user) => {
         if (user.changed("passwordHash")) {
+          const s = String(user.passwordHash);
+          const looksBcrypt =
+            s.startsWith("$2a$") || s.startsWith("$2b$") || s.startsWith("$2y$");
+          if (looksBcrypt) return;
           const salt = await bcrypt.genSalt(10);
           user.passwordHash = await bcrypt.hash(user.passwordHash, salt);
         }

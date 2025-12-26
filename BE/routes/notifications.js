@@ -8,7 +8,12 @@ const router = express.Router();
 
 // helper: chuẩn hoá bản ghi theo shape FE
 const toFE = (row) => {
-    const createdAt = row.created_at || row.createdAt || row.get?.('created_at');
+    const createdAt =
+        row.created_at ||
+        row.createdAt ||
+        row.get?.("created_at") ||
+        row.get?.("createdAt") ||
+        new Date();
     // parse orderCode từ link (nếu có dạng ...?orderCode=XXX)
     const parseOrderCode = (link) => {
         if (!link) return null;
@@ -25,8 +30,8 @@ const toFE = (row) => {
         title: row.title,
         body: row.message,                        // map từ DB
         type: row.type || 'info',
-        isRead: !!row.isRead,
-        createdAt,                                // FE đang dùng camelCase
+        isRead: Boolean(Number(row.isRead ?? 0)),
+        createdAt,                                // luôn có giá trị để fmtRel không Invalid Date
         // "data" tổng hợp từ các cột có thật trong DB
         data: {
             link: row.link || null,

@@ -1,9 +1,10 @@
-// routes/orders.js
+// BE/routes/orders.js
 const { QueryTypes } = require("sequelize");
 const express = require("express");
 const { body, validationResult } = require("express-validator");
 const { sequelize } = require("../config/database");
-const { Order, OrderItem } = require("../models");
+const { Order, OrderItem, PriceRule } = require("../models");
+const { Op } = require("sequelize");
 const auth = require("../middleware/auth");
 const router = express.Router();
 const controller = require("../controllers/orders.controller");
@@ -19,15 +20,25 @@ const {
   _broadcastDashboardSummaries: broadcastDashboardSummaries,
   _createPaymentNotification: createPaymentNotification,
   _createOrderCreatedNotification: createOrderCreatedNotification,
+  _notifyStaffNewOrder: notifyStaffNewOrder,
+  _notifyStaffPaymentSuccess: notifyStaffPaymentSuccess,
 } = controller;
 
 // ====== Config quyền & tiện ích ======
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@example.com";
-const STAFF_EMAIL = process.env.STAFF_EMAIL || "staff@example.com";
+const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || "admin@example.com").trim().toLowerCase();
+const STAFF_EMAIL = String(process.env.STAFF_EMAIL || "staff@example.com").trim().toLowerCase();
+const OWNER_EMAIL = String(process.env.OWNER_EMAIL || "").trim().toLowerCase();
 const DEFAULT_LIMIT = Number(process.env.API_DEFAULT_LIMIT || 20);
 
-const isPrivileged = (user) =>
-  user && (user.email === ADMIN_EMAIL || user.email === STAFF_EMAIL);
+// Quyền truy cập: admin/staff/owner (theo email env hoặc role nếu có)
+const isPrivileged = (user) => {
+  if (!user) return false;
+  const role = String(user.role || user.roleCode || "").toLowerCase();
+  if (role === "admin" || role === "staff" || role === "owner") return true;
+
+  const email = String(user.email || "").trim().toLowerCase();
+  return (email === ADMIN_EMAIL) || (email === STAFF_EMAIL) || (!!OWNER_EMAIL && email === OWNER_EMAIL);
+};
 
 const idemCache = new Map(); // key -> { orderId, ts }
 function rememberIdem(key, orderId) {
@@ -75,15 +86,16 @@ router.get("/summary-multi", auth, controller.getOrdersSummaryMulti);
 // ====== SSE realtime dashboard stream (nhân viên) ======
 // GET /api/orders/stream?token=...
 router.get("/stream", require("../services/streamAuth"), (req, res) => {
-  // chỉ cho admin/staff
-  const user = req.user;
-  const isPriv =
-    user &&
-    (user.email === (process.env.ADMIN_EMAIL || "").toLowerCase() ||
-      user.email === (process.env.STAFF_EMAIL || "").toLowerCase() ||
-      String(user.role || "").toLowerCase() === "admin" ||
-      String(user.role || "").toLowerCase() === "staff");
-  if (!isPriv) return res.status(403).end();
+  // // chỉ cho admin/staff
+  // const user = req.user;
+  // const isPriv =
+  //   user &&
+  //   (user.email === (process.env.ADMIN_EMAIL || "").toLowerCase() ||
+  //     user.email === (process.env.STAFF_EMAIL || "").toLowerCase() ||
+  //     String(user.role || "").toLowerCase() === "admin" ||
+  //     String(user.role || "").toLowerCase() === "staff");
+  // if (!isPriv) return res.status(403).end();
+  if (!isPrivileged(req.user)) return res.status(403).end();
 
   res.set({
     "Content-Type": "text/event-stream",
@@ -129,17 +141,17 @@ router.patch(
 );
 
 // [PHOTO API HELPERS] ---------------------------------
-async function getIdByCode(table, code) {
+async function getIdByCode(table, code, t = null) {
   const whitelist = new Set(["sides", "color_modes", "paper_sizes"]);
   if (!whitelist.has(String(table))) throw new Error("INVALID_TABLE");
   const rows = await sequelize.query(
     `SELECT id FROM ${table} WHERE code = :code LIMIT 1`,
-    { type: QueryTypes.SELECT, replacements: { code } }
+    { type: QueryTypes.SELECT, replacements: { code }, transaction: t || undefined }
   );
   return rows?.[0]?.id || null;
 }
 
-async function ensurePhotoSizes() {
+async function ensurePhotoSizes(t = null) {
   const defs = [
     { code: "10x15", name: "10 x 15 cm", widthMm: 100.0, heightMm: 150.0 },
     { code: "13x18", name: "13 x 18 cm", widthMm: 130.0, heightMm: 180.0 },
@@ -150,19 +162,19 @@ async function ensurePhotoSizes() {
       `INSERT INTO paper_sizes (code, name, widthMm, heightMm, isActive)
        SELECT :code, :name, :widthMm, :heightMm, 1
        WHERE NOT EXISTS (SELECT 1 FROM paper_sizes WHERE code=:code)`,
-      { type: QueryTypes.INSERT, replacements: d }
+      { type: QueryTypes.INSERT, replacements: d, transaction: t || undefined }
     );
   }
 }
 
 // 👇 THÊM MỚI: đảm bảo ref cơ bản tồn tại (COLOR màu & SINGLE 1 mặt)
-async function ensureBasicRefs() {
+async function ensureBasicRefs(t = null) {
   // color_modes: 'COLOR'
   await sequelize.query(
     `INSERT INTO color_modes (code, description, isActive)
      SELECT 'COLOR', 'Full color', 1
      WHERE NOT EXISTS (SELECT 1 FROM color_modes WHERE code='COLOR')`,
-    { type: QueryTypes.INSERT }
+    { type: QueryTypes.INSERT, transaction: t || undefined }
   );
 
   // sides: 'SINGLE'
@@ -170,7 +182,7 @@ async function ensureBasicRefs() {
     `INSERT INTO sides (code, description, isActive)
      SELECT 'SINGLE', 'Single-sided', 1
      WHERE NOT EXISTS (SELECT 1 FROM sides WHERE code='SINGLE')`,
-    { type: QueryTypes.INSERT }
+    { type: QueryTypes.INSERT, transaction: t || undefined }
   );
 }
 
@@ -192,14 +204,12 @@ router.post("/photo", auth, async (req, res) => {
       return res.status(400).json({ success: false, message: "EMPTY_FILES" });
     }
 
-    // Đảm bảo có ref tối thiểu
-    await ensureBasicRefs();
-    // Đảm bảo có 3 khổ ảnh
-    await ensurePhotoSizes();
+    await ensureBasicRefs(t);
+    await ensurePhotoSizes(t);
 
     // Map danh mục mặc định
-    const sideId = await getIdByCode("sides", "SINGLE"); // In một mặt
-    const colorModeId = await getIdByCode("color_modes", "COLOR"); // Full color
+    const sideId = await getIdByCode("sides", "SINGLE", t); // In một mặt
+    const colorModeId = await getIdByCode("color_modes", "COLOR", t); // Full color
 
     if (!sideId || !colorModeId) {
       await t.rollback();
@@ -301,6 +311,13 @@ router.post("/photo", auth, async (req, res) => {
       success: true,
       order: respOrder,
     });
+
+    // 🔔 STAFF/OWNER: new order created (PHOTO)
+    try {
+      await notifyStaffNewOrder(order);
+    } catch (e) {
+      console.error("notifyStaffNewOrder error (photo order):", e);
+    }
     // Cập nhật realtime 3 card summary cho dashboard
     try {
       await broadcastDashboardSummaries();
@@ -479,6 +496,14 @@ router.post("/:id/mark-cash-paid", auth, async (req, res) => {
       console.error("createPaymentNotification error (mark-cash-paid):", e);
     }
 
+    // 🔔 STAFF/OWNER: payment success (CASH)
+    try {
+      const paidAmount = updated?.amount ?? payment[0].amount ?? 0;
+      if (orderCode) await notifyStaffPaymentSuccess(orderCode, paidAmount, "CASH");
+    } catch (e) {
+      console.error("notifyStaffPaymentSuccess error (mark-cash-paid):", e);
+    }
+
     // Sau khi commit: Broadcast SSE cho UI khách đang mở trang Order Status
     if (orderCode) {
       const prog = mapFrontendStatusToProgress("in-progress"); // ~60%, stage "Printing"
@@ -573,16 +598,68 @@ router.post(
       const { note, orderItems, status: frontendStatus } = req.body;
       const customerId = req.user.id;
 
-      // Tính tổng
-      let subtotal = 0;
-      const itemsToCreate = orderItems.map((it) => {
-        const lineTotal = Number(it.unitPrice) * Number(it.quantity);
-        subtotal += lineTotal;
-        return { ...it, lineTotal };
-      });
+      // Helper lỗi có status
+      const httpErr = (status, message) => {
+        const e = new Error(message);
+        e.status = status;
+        return e;
+      };
 
       // Transaction
       const result = await sequelize.transaction(async (t) => {
+        // Tính lại giá phía BE để:
+        // (1) áp giá mới cho đơn mới
+        // (2) chống user gửi unitPrice giả
+        let subtotal = 0;
+        const itemsToCreate = [];
+
+        for (const it of orderItems) {
+          const printType = String(it.printType || "DOCUMENT").toUpperCase();
+          const pricingMode = String(it.pricingMode || "PER_PAGE").toUpperCase();
+          const pages = Number(it.pages || 0);
+          const quantity = Number(it.quantity || 0);
+          if (pages <= 0 || quantity <= 0) throw httpErr(400, "INVALID_PAGES_OR_QTY");
+
+          let unitPrice = Number(it.unitPrice || 0);
+
+          // DOCUMENT: lấy theo PriceRule hiện hành
+          if (printType === "DOCUMENT" && (pricingMode === "PER_PAGE" || pricingMode === "PER_SHEET")) {
+            const rule = await PriceRule.findOne({
+              where: {
+                paperSizeId: it.paperSizeId,
+                colorModeId: it.colorModeId,
+                sideId: it.sideId,
+                isActive: true,
+                minPages: { [Op.lte]: pages },
+                minQty: { [Op.lte]: quantity },
+              },
+              order: [
+                ["minPages", "DESC"],
+                ["minQty", "DESC"],
+                ["basePricePerPage", "ASC"],
+              ],
+              transaction: t,
+            });
+            if (!rule) throw httpErr(409, "NO_PRICE_RULE");
+            unitPrice = Number(rule.basePricePerPage);
+          }
+
+          // Line total:
+          // - FIXED: unitPrice * quantity
+          // - PER_PAGE / PER_SHEET: unitPrice * pages * quantity
+          const lineTotal =
+            pricingMode === "FIXED"
+              ? unitPrice * quantity
+              : unitPrice * pages * quantity;
+
+          subtotal += lineTotal;
+          itemsToCreate.push({
+            ...it,
+            unitPrice,
+            lineTotal,
+          });
+        }
+
         // Map trạng thái FE (Pending / In-Progress / Ready / Completed)
         // sang trạng thái trong DB (pending / processing / ready / completed / cancelled)
         let dbStatus = mapFrontendStatusToDbStatus(frontendStatus || "pending");
@@ -641,7 +718,17 @@ router.post(
       res
         .status(201)
         .json({ success: true, message: "Tạo đơn hàng thành công", order: result });
+
+      // 🔔 STAFF/OWNER: new order created (DOCUMENT / generic create)
+      try {
+        await notifyStaffNewOrder(result);
+      } catch (e) {
+        console.error("notifyStaffNewOrder error (create order):", e);
+      }
     } catch (error) {
+      if (error?.status) {
+        return res.status(error.status).json({ success: false, message: error.message });
+      }
       console.error("POST /orders error:", error);
       res
         .status(500)

@@ -5,7 +5,9 @@ const createTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 587),
-    secure: String(process.env.SMTP_SECURE || 'false') === 'true',
+    secure: String(
+      process.env.SMTP_SECURE ?? process.env.EMAIL_SECURE ?? 'false'
+    ) === 'true',
     auth: {
       user: process.env.SMTP_USER || process.env.EMAIL_USER,
       pass: process.env.SMTP_PASS || process.env.EMAIL_PASS,
@@ -24,7 +26,7 @@ const sendOTPEmail = async (email, otp, type = 'registration') => {
     const isReset = (type === 'password_reset' || type === 'reset');
     const subject = isReset ? 'Đặt lại mật khẩu - Mã OTP' : 'Xác thực tài khoản - Mã OTP';
     const heading = isReset ? 'Đặt lại mật khẩu' : 'Xác thực tài khoản';
-    const intro   = isReset
+    const intro = isReset
       ? 'Bạn vừa yêu cầu đặt lại mật khẩu. Vui lòng sử dụng mã OTP sau:'
       : 'Bạn đã đăng ký tài khoản. Vui lòng sử dụng mã OTP sau:';
 
@@ -45,7 +47,10 @@ const sendOTPEmail = async (email, otp, type = 'registration') => {
     `;
 
     const info = await transporter.sendMail({
-      from: process.env.SMTP_USER || process.env.EMAIL_USER,
+      from:
+        process.env.EMAIL_FROM ||
+        process.env.SMTP_USER ||
+        process.env.EMAIL_USER,
       to: email,
       subject,
       html

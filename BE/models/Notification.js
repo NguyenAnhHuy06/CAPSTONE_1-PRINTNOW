@@ -4,12 +4,19 @@ const { sequelize } = require('../config/database');
 
 const Notification = sequelize.define('Notification', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  userId: { type: DataTypes.INTEGER, allowNull: false, field: 'user_id' },
+  userId: { type: DataTypes.BIGINT.UNSIGNED, allowNull: false, field: 'user_id' },
 
-  title:   { type: DataTypes.STRING(255), allowNull: false },
+  title: { type: DataTypes.STRING(255), allowNull: false },
   message: { type: DataTypes.TEXT, allowNull: false },          // <— khớp DB
-  type:    {                                                     // <— ENUM khớp DB
-    type: DataTypes.ENUM('success', 'processing', 'info', 'neutral', 'error'),
+  type: {                                                     // <— ENUM khớp DB
+    type: DataTypes.ENUM(
+      'success', 'processing', 'info', 'neutral', 'error',
+      // staff cases (FE Notification_Employee.html)
+      'new_order', 'cancel_order', 'payment_success',
+      'overdue_unassigned', 'overdue_printed', 'overdue',
+      // optional
+      'phase_completed'
+    ),
     allowNull: true,
     defaultValue: 'info'
   },
@@ -18,7 +25,7 @@ const Notification = sequelize.define('Notification', {
     allowNull: false,
     defaultValue: 'none'
   },
-  link:   { type: DataTypes.STRING(255), allowNull: true },
+  link: { type: DataTypes.STRING(255), allowNull: true },
   isRead: { type: DataTypes.TINYINT, defaultValue: 0, field: 'is_read' },
   created_at: { type: DataTypes.DATE, allowNull: true }         // để có thể truy xuất raw
 }, {

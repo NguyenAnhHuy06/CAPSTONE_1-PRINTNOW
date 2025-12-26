@@ -1,60 +1,119 @@
-Ok, mình gửi lại nội dung **HUONG_DAN_CHAY.md** dưới dạng markdown thuần để bạn copy dán thẳng:
-
----
-
+````md
 # HƯỚNG DẪN CHẠY DỰ ÁN PRINTNOW
 
-## YÊU CẦU HỆ THỐNG
-
-* **Node.js** v14 trở lên
-* **MySQL** 5.7 trở lên
-* **Poppler-utils** (cho PDF processing)
+Tài liệu này hướng dẫn chạy dự án PrintNow theo đúng cấu trúc repo hiện tại:  
+**Backend (BE) serve trực tiếp Frontend static (FE)** bằng Express static (không cần chạy FE server riêng).
 
 ---
 
-## CÀI ĐẶT
+## 1) YÊU CẦU HỆ THỐNG
 
-### 1. Cài đặt Dependencies
+- **Node.js**: khuyến nghị **18+** (tối thiểu 14+)
+- **MySQL**: 5.7+
+- **poppler-utils**: dùng để xử lý PDF (pdftoppm, pdfinfo, ...)
 
-Trong thư mục gốc dự án (chứa `package.json`):
+### Kiểm tra nhanh
+- Kiểm tra Node:
+  ```bash
+  node -v
+```
+
+* Kiểm tra MySQL:
+
+  ```bash
+  mysql --version
+  ```
+* Kiểm tra Poppler (PDF):
+
+  ```bash
+  pdftoppm -v
+  ```
+
+> Windows: đảm bảo Poppler đã cài và nằm trong PATH. Nếu vừa thêm PATH, hãy mở terminal mới rồi chạy lại.
+
+---
+
+## 2) CẤU TRÚC DỰ ÁN
+
+```text
+project-root/
+├── BE/
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── scripts/
+│   ├── mysql-schema.sql
+│   ├── server.js
+│   ├── start-server.bat
+│   └── env.example
+├── FE/
+│   └── src/
+│       ├── html/
+│       ├── css/
+│       └── js/
+└── uploads/                 # runtime uploads (khuyến nghị ignore khi commit)
+```
+
+### FE được serve bởi BE như thế nào?
+
+Trong `BE/server.js` đã cấu hình:
+
+* Serve HTML từ: `FE/src/html` (root `/`)
+* Serve CSS từ: `/css` → `FE/src/css`
+* Serve JS từ: `/js` → `FE/src/js`
+* Serve uploads từ: `/uploads` → `uploads/`
+
+---
+
+## 3) CÀI ĐẶT (BE)
+
+> Thực hiện tất cả các bước dưới đây trong thư mục **BE/**.
+
+### Bước 1: Cài dependencies
 
 ```bash
+cd BE
 npm install
 ```
 
 ---
 
-### 2. Cấu hình Environment (.env)
+## 4) CẤU HÌNH MÔI TRƯỜNG (.env)
 
-Dự án sử dụng file **`.env`** để cấu hình các biến môi trường (database, JWT, email,...).
+### Bước 2: Tạo file `.env`
 
-1. **Copy** file `env.example` thành `.env`:
+Copy `env.example` thành `.env`:
 
-   ```bash
-   cp env.example .env
-   # hoặc tự tạo file .env mới và copy nội dung từ env.example
-   ```
+**Windows (PowerShell / CMD):**
 
-2. Mở file `.env` và cập nhật lại các giá trị **thật** cho môi trường của bạn.
+```bash
+copy env.example .env
+```
 
-Ví dụ nội dung `.env` (mô phỏng, KHÔNG dùng giá trị này cho production):
+Sau đó mở `BE/.env` và cập nhật theo máy bạn.
+
+### Mẫu `.env` tham khảo
 
 ```env
-# Cổng server
+# Server
 PORT=5000
+NODE_ENV=development
 
-# Thông tin MySQL Database
+# Database
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=printnow
 DB_USER=your_db_user
 DB_PASSWORD=your_mysql_password
 
-# JWT Secret
-JWT_SECRET=your-very-secret-key-here-change-this-in-production
+# JWT
+JWT_SECRET=your-very-secret-key
 JWT_EXPIRE=7d
 
-# Email Configuration (SMTP Gmail)
+# Email (OTP)
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_SECURE=false
@@ -62,223 +121,177 @@ EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_password
 EMAIL_FROM=PrintNow <your_email@gmail.com>
 
-# Client URL (dùng cho link reset password)
+# Client URL (tạo link reset password)
 CLIENT_URL=http://localhost:5000
 
-# CORS
+# CORS (có thể nhiều origin, phân tách bằng dấu phẩy)
 CORS_ORIGIN=http://localhost:5000
 
-# Khác
-NODE_ENV=development
+# Others
 DB_AUTO_SYNC=false
 SQL_LOG=true
 ADMIN_EMAIL=admin@example.com
 STAFF_EMAIL=staff@example.com
 ```
 
-> 🛑 **Lưu ý quan trọng**
->
-> * Không commit file `.env` lên Git/GitHub (đã được cấu hình trong `.gitignore`).
-> * Thay `your_mysql_password`, `your_jwt_secret_here`, `your_email@gmail.com`, `your_app_password` bằng thông tin thật trên máy bạn.
-> * Nếu dùng Gmail, hãy dùng **App Password**, không dùng mật khẩu đăng nhập tài khoản.
+### Lưu ý bảo mật
+
+* **Không commit `.env`** lên Git/GitHub.
+* Nếu dùng Gmail để gửi OTP: dùng **App Password** (Google) thay vì mật khẩu đăng nhập.
 
 ---
 
-### 3. Import Database Schema
+## 5) TẠO DATABASE & IMPORT SCHEMA
 
-Tạo database `printnow` trong MySQL, sau đó chạy:
+### Bước 3: Tạo database `printnow`
+
+Bạn có thể tạo DB bằng MySQL client:
+
+```sql
+CREATE DATABASE printnow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### Bước 4: Import schema (đang ở BE/)
 
 ```bash
 mysql -u your_db_user -p printnow < mysql-schema.sql
 ```
 
-Nhập đúng `your_db_user` và mật khẩu tương ứng với cấu hình trong `.env`.
+> Nếu bạn muốn chắc chắn schema đã vào DB: đăng nhập mysql và kiểm tra `SHOW TABLES;`.
 
 ---
 
-### 4. Seed Database (Tùy chọn)
+## 6) SEED DỮ LIỆU (TUỲ CHỌN)
 
-Để tạo dữ liệu mẫu:
+### Bước 5: Seed dữ liệu mẫu
 
 ```bash
-node scripts/seed-printnow-data.js
+npm run seed-printnow
 ```
 
 ---
 
-## CHẠY ỨNG DỤNG
+## 7) CHẠY ỨNG DỤNG
 
-### Cách 1: Sử dụng Script (Khuyến nghị nếu đã cấu hình sẵn)
+### Cách 1 (khuyến nghị): chạy bằng npm scripts
 
-**Double-click** vào file `start-server.bat` hoặc chạy:
+```bash
+npm run dev
+# hoặc
+npm start
+```
+
+### Cách 2: chạy bằng BAT (Windows)
+
+Double-click `BE/start-server.bat` hoặc chạy:
 
 ```bash
 start-server.bat
 ```
 
-### Cách 2: Chạy thủ công bằng Node
+Khi chạy thành công, terminal sẽ hiển thị đại loại:
+
+* Server running on port 5000
+* Frontend: [http://localhost:5000](http://localhost:5000)
+* API: [http://localhost:5000/api](http://localhost:5000/api)
+
+---
+
+## 8) TRUY CẬP
+
+* **Frontend**: `http://localhost:5000/`
+* **API root**: `http://localhost:5000/api`
+* **Healthcheck**: `http://localhost:5000/api/health`
+
+### FE Pretty URLs (map sẵn trong `BE/server.js`)
+
+* `/login` → Login.html
+* `/register` → Register.html
+* `/forgot-password` → Forgot_Password.html
+* `/verify-otp` → Verify_OTP.html (server tự dò theo candidates)
+* `/reset-password` → Set_New_Password.html
+* Một số trang khác (nếu có file tương ứng):
+
+  * `/home`, `/profile`, `/settings`, `/order/history`, `/owner/dashboard`, ...
+
+---
+
+## 9) KIỂM TRA NHANH SAU KHI CHẠY (RECOMMENDED)
+
+Mở lần lượt:
+
+1. Healthcheck:
+
+* `http://localhost:5000/api/health`
+  → phải trả JSON `{ ok: true, ... }`
+
+2. API root:
+
+* `http://localhost:5000/api`
+  → trả danh sách endpoint gợi ý
+
+3. FE assets:
+
+* `http://localhost:5000/js/apiService.js`
+* `http://localhost:5000/css/Login.css`
+
+---
+
+## 10) TROUBLESHOOTING
+
+### 10.1 Port 5000 already in use
 
 ```bash
-node server.js
-```
-
-Hoặc nếu bạn có script trong `package.json`:
-
-```bash
-npm run dev
-```
-
----
-
-## TRUY CẬP ỨNG DỤNG
-
-Sau khi server khởi động thành công:
-
-* **Frontend (Giao diện)**: `http://localhost:5000`
-* **Backend API**: `http://localhost:5000/api`
-
-### Một số trang chính (tùy cấu hình FE)
-
-* Login: `http://localhost:5000/Login.html`
-* Register: `http://localhost:5000/Register.html`
-* Print Document: `http://localhost:5000/PrintDocument.html`
-
----
-
-## CẤU TRÚC DỰ ÁN (SAU KHI TÁCH BE/FE)
-
-```text
-CAPSTONE_1-PRINTNOW/
-├── BE/                       # Backend (Node/Express)
-│   ├── config/               # Database config
-│   ├── controllers/          # Controllers
-│   ├── middleware/           # Express middleware
-│   ├── models/               # Sequelize models
-│   ├── routes/               # API routes
-│   ├── services/             # Business logic
-│   ├── scripts/              # Seed/utility scripts
-│   ├── mysql-schema.sql      # Schema MySQL
-│   ├── package.json          # Dependencies & scripts
-│   ├── package-lock.json
-│   ├── server.js             # Main server file
-│   ├── start-server.bat      # Startup script (Windows)
-│   └── env.example           # Mẫu cấu hình môi trường
-├── FE/
-│   └── src/                  # Frontend static
-│       ├── html/             # HTML pages
-│       ├── css/              # CSS styles
-│       └── js/               # JavaScript files
-├── uploads/                  # Uploaded files (BỊ IGNORE bởi .gitignore)
-└── README.md
-```
-
----
-
-## CHỨC NĂNG CHÍNH
-
-### 1. Authentication
-
-* Đăng ký với OTP verification qua email
-* Đăng nhập
-* Quên mật khẩu
-* Đổi mật khẩu
-
-### 2. Print Service
-
-* Upload file (PDF, DOCX, DOC, PPTX, PPT)
-* Tự động đếm số trang
-* Chọn cấu hình in (màu, khổ giấy, 1/2 mặt, đóng gáy, bìa)
-* Tính giá tự động
-* Tạo đơn hàng
-
-### 3. Profile Management
-
-* Xem thông tin cá nhân
-* Cập nhật thông tin
-
----
-
-## TROUBLESHOOTING
-
-### Lỗi: `connect ETIMEDOUT`
-
-**Nguyên nhân**: Không kết nối được database.
-
-**Giải pháp**:
-
-1. Kiểm tra MySQL server có đang chạy không.
-2. Kiểm tra thông tin trong file `.env` (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME).
-3. Kiểm tra firewall/network nếu DB không ở localhost.
-
----
-
-### Lỗi: "Không thể phân tích file PDF"
-
-**Nguyên nhân**: Poppler-utils chưa được cài đặt hoặc chưa có trong PATH.
-
-**Giải pháp**:
-
-1. Kiểm tra Poppler đã cài chưa: `pdftoppm -v`
-2. Thêm thư mục cài Poppler vào PATH (đã có trong `start-server.bat` nếu bạn cấu hình).
-3. Khởi động lại server.
-
----
-
-### Lỗi: `Port 5000 already in use`
-
-**Giải pháp**:
-
-```bash
-# Tìm process đang dùng port 5000
 netstat -ano | findstr :5000
-
-# Kill process
 taskkill /PID <PID_NUMBER> /F
 ```
 
----
+### 10.2 Lỗi DB: ETIMEDOUT / Access denied / Cannot connect
 
-## PHÁT TRIỂN
+* Kiểm tra MySQL service có đang chạy không
+* Kiểm tra `.env`: `DB_HOST, DB_USER, DB_PASSWORD, DB_NAME`
+* Đảm bảo user MySQL có quyền với database `printnow`
 
-### Một số endpoint API chính
+Gợi ý test nhanh kết nối DB:
 
-* `POST /api/auth/register` - Đăng ký
-* `POST /api/auth/verify-otp` - Verify OTP
-* `POST /api/auth/login` - Đăng nhập
-* `POST /api/auth/forgot-password` - Quên mật khẩu
-* `POST /api/auth/reset-password` - Đặt lại mật khẩu
-* `POST /api/auth/change-password` - Đổi mật khẩu
-* `GET /api/profile` - Lấy thông tin profile
-* `POST /api/file-analyzer/analyze` - Phân tích file
-* `GET /api/catalog` - Lấy catalog (paper sizes, colors, sides)
-* `POST /api/orders/calculate-price` - Tính giá
-* `POST /api/orders` - Tạo đơn hàng
+```bash
+mysql -u your_db_user -p -h localhost -P 3306
+```
 
-### Database Models
+### 10.3 Lỗi phân tích PDF / không đếm trang PDF
 
-* `User` - Người dùng
-* `OTP` - Mã OTP
-* `Order` - Đơn hàng
-* `OrderItem` - Chi tiết đơn hàng
-* `File` - File đã upload
-* `PaperSize` - Khổ giấy
-* `ColorMode` - Màu in
-* `Side` - 1 mặt/2 mặt
-* `PriceRule` - Quy tắc tính giá
+Nguyên nhân thường gặp: thiếu Poppler hoặc chưa vào PATH.
 
----
+* Kiểm tra:
 
-## LƯU Ý VỀ BẢO MẬT KHI ĐƯA LÊN GIT/GITHUB
+  ```bash
+  pdftoppm -v
+  ```
+* Nếu không nhận lệnh: cài Poppler và thêm PATH, sau đó mở terminal mới và chạy lại.
 
-1. **Không commit file `.env`** (đã có trong `.gitignore`).
-2. Chỉ commit file `env.example` với giá trị giả.
-3. Không ghi mật khẩu thật / app password / JWT secret thật vào tài liệu public.
-4. Nếu lỡ để lộ mật khẩu / app password:
+### 10.4 Lỗi CORS khi mở từ domain khác
 
-   * Đổi password DB
-   * Thay JWT_SECRET mới
-   * Revoke Gmail App Password cũ và tạo cái mới
+Nếu bạn mở FE từ domain/port khác (ví dụ Live Server `http://127.0.0.1:5500`) thì:
+
+* Thêm origin đó vào `.env`:
+
+  ```env
+  CORS_ORIGIN=http://localhost:5000,http://127.0.0.1:5500
+  ```
+* Restart server.
 
 ---
 
-**Chúc bạn sử dụng và phát triển dự án thành công! 🎉**
+## 11) GỢI Ý CHUẨN HOÁ KHI ĐƯA LÊN GIT/GITHUB
+
+* Không commit `.env`
+* Khuyến nghị ignore `uploads/` (runtime data)
+* Không để lộ Gmail App Password / JWT secret trong tài liệu public
+* Nếu lỡ lộ:
+
+  * đổi DB password
+  * đổi `JWT_SECRET`
+  * revoke Gmail App Password cũ và tạo cái mới
+
+```
+```

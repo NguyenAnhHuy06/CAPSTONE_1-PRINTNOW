@@ -1,9 +1,9 @@
 // routes/auth-sequelize.js
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const { JWT_SECRET, JWT_EXPIRE } = require("../config/jwt");
 const { body, validationResult } = require("express-validator");
 const { Op } = require("sequelize");
-const bcrypt = require("bcryptjs");
 
 const User = require("../models/User");
 const OTP = require("../models/OTP");
@@ -14,9 +14,7 @@ const router = express.Router();
 
 /* Helpers */
 const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET || "fallback_secret", {
-    expiresIn: process.env.JWT_EXPIRE || "7d",
-  });
+  jwt.sign({ id }, JWT_SECRET, { expiresIn: JWT_EXPIRE });
 
 const ok = (res, payload = {}) => res.json({ success: true, ...payload });
 const bad = (res, message, extra = {}, code = 400) =>
@@ -40,11 +38,10 @@ function makeAvatarUrl(req, val) {
 
 /** Cookie Options thống nhất cho auth cookie */
 function cookieOptions(req) {
-  // secure khi production HOẶC khi header nói đang qua HTTPS (x-proto)
+  // ✅ CHỈ secure khi thật sự HTTPS (localhost http không dùng secure cookie được)
   const isHttps =
     req.secure ||
-    req.headers["x-forwarded-proto"] === "https" ||
-    process.env.NODE_ENV === "production";
+    req.headers["x-forwarded-proto"] === "https";
   return {
     httpOnly: true,
     sameSite: "lax",
@@ -52,6 +49,13 @@ function cookieOptions(req) {
     path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
+}
+
+/** Cookie options khi CLEAR (không dùng maxAge/expires để tránh warning express v5) */
+function cookieClearOptions(req) {
+  const opt = cookieOptions(req);
+  delete opt.maxAge;
+  return opt;
 }
 
 /* ---------------------- REGISTER ---------------------- */
@@ -83,12 +87,11 @@ router.post(
         return bad(res, "Số điện thoại này đã được sử dụng");
       }
 
-      const passwordHash = await bcrypt.hash(password, 10);
-
       const user = await User.create({
         fullName,
         email,
-        passwordHash, // đồng bộ với reset
+        // CHỈ truyền plaintext để hook trong model hash (tránh double-hash)
+        passwordHash: password,
         phone,
         emailVerified: false,
         isActive: false,
@@ -172,6 +175,7 @@ router.post(
         token,
         user: {
           id: user.id,
+          role: user.role,
           name: user.fullName,        // giữ trường cũ
           fullName: user.fullName,    // thêm cho nhất quán
           email: user.email,
@@ -188,10 +192,11 @@ router.post(
 );
 
 /* ---------------------- LOGOUT ---------------------- */
-router.post("/logout", auth, async (req, res) => {
+// Logout không cần auth: luôn clear cookie để FE gọi được kể cả khi token đã bị xóa ở client
+router.post("/logout", async (req, res) => {
   try {
-    // Xóa cookie JWT phía client
-    res.clearCookie("auth", { ...cookieOptions(req), maxAge: undefined });
+    // Xóa cookie JWT phía client (đúng options path/samesite/secure)
+    res.clearCookie("auth", cookieClearOptions(req));
     return ok(res, { message: "Đăng xuất thành công" });
   } catch (error) {
     console.error("logout error:", error);
@@ -465,18 +470,13 @@ router.post(
 
       const token = generateToken(user.id);
       // Gắn cookie JWT để FE không cần tự set header Authorization
-      res.cookie("auth", token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: false, // CHỈ bật true khi deploy HTTPS
-        path: "/", // quan trọng: để mọi /api/* đều gửi cookie
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+      res.cookie("auth", token, cookieOptions(req));
       return ok(res, {
         message: "Xác thực tài khoản thành công",
         token,
         user: {
           id: user.id,
+          role: user.role,
           name: user.fullName,
           fullName: user.fullName,
           email: user.email,
@@ -499,6 +499,7 @@ router.get("/me", auth, async (req, res) => {
     return ok(res, {
       user: {
         id: user.id,
+        role: user.role,
         name: user.fullName,
         fullName: user.fullName,
         email: user.email,

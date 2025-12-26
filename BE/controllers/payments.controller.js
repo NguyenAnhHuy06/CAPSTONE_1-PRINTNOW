@@ -23,7 +23,7 @@ function genOrderCodeLocal(id, createdAt) {
 
 // Helper: lưu DB khi thanh toán thành công (không dùng top-level await!)
 async function persistPaymentSuccess(orderId, amount) {
-  await sequelize.transaction(async (t) => {
+  return await sequelize.transaction(async (t) => {
     // 1) Upsert payment -> SUCCESS
     await sequelize.query(
       `INSERT INTO ${T('payments')} (order_id, method, status, amount, currency, paid_at, created_at, updated_at)
@@ -50,14 +50,18 @@ async function persistPaymentSuccess(orderId, amount) {
     const currentTotal = Number(row?.totalAmount ?? 0);
     const finalTotal = Math.min(currentTotal || amount, amount || currentTotal);
 
-    // 3) Hoàn tất đơn
+    // 3) KHÔNG tự động completed khi nhận tiền.
+    //    Chỉ đẩy NEW/PENDING -> PROCESSING; READY/COMPLETED giữ nguyên.
     await sequelize.query(
       `UPDATE ${T('orders')}
-         SET status='completed',
+         SET status = CASE
+                       WHEN LOWER(status) IN ('new','pending') THEN 'processing'
+                       ELSE status
+                     END,
              totalAmount = :finalTotal,
-             completedAt = COALESCE(completedAt, NOW()),
+             -- không đụng completedAt ở đây
              updatedAt = NOW()
-         WHERE id = :orderId`,
+       WHERE id = :orderId`,
       {
         type: QueryTypes.UPDATE,
         transaction: t,
@@ -77,7 +81,8 @@ async function persistPaymentSuccess(orderId, amount) {
 exports.createVnpayPayment = async (req, res) => {
   try {
     const { orderId, amount, payType, returnUrl } = req.body || {};
-    if (!orderId || !amount) {
+        const amtNum = Number(amount);
+    if (!orderId || !amtNum || amtNum <= 0) {
       return res
         .status(400)
         .json({ success: false, message: "Missing params" });
@@ -90,7 +95,7 @@ exports.createVnpayPayment = async (req, res) => {
     memoryPayments.set(id, {
       id,
       orderId: Number(orderId),
-      amount: Number(amount),
+      amount: Math.round(amtNum),
       status: "PENDING", // PENDING | SUCCESS | FAILED | EXPIRED | CANCELLED
       qrImageUrl,
       expireAt,
@@ -103,7 +108,7 @@ exports.createVnpayPayment = async (req, res) => {
       payment: {
         id,
         orderId: Number(orderId),
-        amount: Math.round(Number(amount)),
+        amount: Math.round(amtNum),
         status: "PENDING",
         qrImageUrl,
         expireAt,
@@ -195,13 +200,27 @@ exports.vnpayIpn = async (req, res) => {
       }
       // ✅ Đồng bộ với webhook Casso: broadcast luôn "status" -> Successful (100%)
       try {
-        const mapProg = ordersCtrl._mapFrontendStatusToProgress || (() => ({ progress: 100, currentStage: "Completed" }));
-        const prog = mapProg("completed");
+        // đọc status thật trong DB rồi broadcast đúng
+        let dbSt = "processing";
+        try {
+          const [ord] = await sequelize.query(
+            `SELECT status FROM ${T('orders')} WHERE id=:orderId LIMIT 1`,
+            { type: QueryTypes.SELECT, replacements: { orderId: p.orderId } }
+          );
+          dbSt = String(ord?.status || "processing").toLowerCase();
+        } catch { }
+
+        const mapProg = ordersCtrl._mapFrontendStatusToProgress || ((s) => ({ progress: 60, currentStage: "Printing" }));
+        const fe = (typeof ordersCtrl._mapDbStatusToFrontend === "function")
+          ? ordersCtrl._mapDbStatusToFrontend(dbSt)
+          : (dbSt === "processing" ? "In-Progress" : dbSt === "ready" ? "Ready" : dbSt === "completed" ? "Completed" : "Pending");
+
+        const prog = mapProg(String(fe).toLowerCase() === "in-progress" ? "in-progress" : String(fe).toLowerCase());
         if (typeof ordersCtrl._broadcastStatus === "function") {
           ordersCtrl._broadcastStatus(orderCode, {
             type: "status",
-            status: "Completed",
-            dbStatus: "completed",
+            status: fe,
+            dbStatus: dbSt,
             progress: prog.progress,
             currentStage: prog.currentStage,
             stages: ordersCtrl._ORDER_STAGES || [],
@@ -219,6 +238,15 @@ exports.vnpayIpn = async (req, res) => {
         }
       } catch (e) {
         console.error("[payments.controller] createPaymentNotification error:", e);
+      }
+
+      // 🔔 STAFF/OWNER notification: payment success
+      try {
+        if (typeof ordersCtrl._notifyStaffPaymentSuccess === "function") {
+          await ordersCtrl._notifyStaffPaymentSuccess(orderCode, p.amount, "VNPAY");
+        }
+      } catch (e) {
+        console.error("[payments.controller] notifyStaffPaymentSuccess error:", e);
       }
     } catch (dbErr) {
       console.error(
