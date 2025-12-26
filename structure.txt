@@ -1,107 +1,120 @@
 
 C:\Users\acer\Downloads\cap1\cap1
-├── config
-│   └── database.js
-├── controllers
-│   ├── orders.controller.js
-│   ├── payments.controller.js
-│   ├── profile.controller.js
-│   └── settings.controller.js
-├── env.example
+├── BE
+│   ├── config
+│   │   ├── database.js
+│   │   └── jwt.js
+│   ├── controllers
+│   │   ├── orders.controller.js
+│   │   ├── payments.controller.js
+│   │   ├── profile.controller.js
+│   │   └── settings.controller.js
+│   ├── cookies.txt
+│   ├── env.example
+│   ├── HUONG_DAN_CHAY.md
+│   ├── middleware
+│   │   ├── auth.js
+│   │   ├── requireRoles.js
+│   │   ├── upload.js
+│   │   └── validators.js
+│   ├── models
+│   │   ├── ColorMode.js
+│   │   ├── File.js
+│   │   ├── index.js
+│   │   ├── Notification.js
+│   │   ├── Order.js
+│   │   ├── OrderItem.js
+│   │   ├── OTP.js
+│   │   ├── PaperSize.js
+│   │   ├── PriceRule.js
+│   │   ├── Side.js
+│   │   ├── User.js
+│   │   └── UserSetting.js
+│   ├── mysql-schema.sql
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── routes
+│   │   ├── auth-sequelize.js
+│   │   ├── catalog.js
+│   │   ├── customers.js
+│   │   ├── dashboard.js
+│   │   ├── file-analyzer.js
+│   │   ├── files.js
+│   │   ├── notifications.js
+│   │   ├── orders.js
+│   │   ├── payments.js
+│   │   ├── photo-order.js
+│   │   ├── profile.js
+│   │   └── settings.routes.js
+│   ├── scripts
+│   │   ├── create-otps-table.js
+│   │   ├── run_overdue.js
+│   │   ├── seed-mysql.js
+│   │   └── seed-printnow-data.js
+│   ├── server.js
+│   ├── services
+│   │   ├── emailService.js
+│   │   ├── filePageCounter.js
+│   │   ├── printPricingService.js
+│   │   ├── realtimeHub.js
+│   │   ├── streamAuth.js
+│   │   └── test-email.js
+│   ├── start-server.bat
+│   └── uploads
+│       ├── avatars
+│       └── temp-analysis
 ├── FE
-│   ├── css
-│   │   ├── Change_Password.css
-│   │   ├── Forgot_Password.css
-│   │   ├── Login.css
-│   │   ├── Owner_Dashboard.css
-│   │   ├── Register.css
-│   │   ├── Set_New_Password.css
-│   │   └── Verify_OTP.css
-│   ├── html
-│   │   ├── About_us.html
-│   │   ├── Add_Staff.html
-│   │   ├── Change_Password.html
-│   │   ├── Customer_Details.html
-│   │   ├── Employee_Dashboard.html
-│   │   ├── Employee_Setting.html
-│   │   ├── Forgot_Password.html
-│   │   ├── Home_customer.html
-│   │   ├── Login.html
-│   │   ├── ManageCustomer_Employee.html
-│   │   ├── Notification.html
-│   │   ├── Order_Details.html
-│   │   ├── Order_History.html
-│   │   ├── Order_Payment.html
-│   │   ├── Order_Status.html
-│   │   ├── Owner_Dashboard.html
-│   │   ├── Personal_Profile.html
-│   │   ├── PriceManagement_Owner.html
-│   │   ├── PrintDocument.html
-│   │   ├── PrintPhoto.html
-│   │   ├── Print_Order_Confirmation.html
-│   │   ├── Register.html
-│   │   ├── Service_Print.html
-│   │   ├── Setting.html
-│   │   ├── Set_New_Password.html
-│   │   ├── Staff.html
-│   │   └── Verify_OTP.html
-│   └── js
-│       ├── apiService.js
-│       ├── authHeader.js
-│       ├── customers-employee.js
-│       ├── employee-settings.page.js
-│       ├── i18n.js
-│       ├── order_payment.js
-│       ├── profile.page.js
-│       ├── realtime.js
-│       └── settings.page.js
-├── HUONG_DAN_CHAY.md
-├── middleware
-│   ├── auth.js
-│   ├── upload.js
-│   └── validators.js
-├── models
-│   ├── ColorMode.js
-│   ├── File.js
-│   ├── index.js
-│   ├── Notification.js
-│   ├── Order.js
-│   ├── OrderItem.js
-│   ├── OTP.js
-│   ├── PaperSize.js
-│   ├── PriceRule.js
-│   ├── Side.js
-│   ├── User.js
-│   └── UserSetting.js
-├── mysql-schema.sql
-├── package-lock.json
-├── package.json
+│   └── src
+│       ├── css
+│       │   ├── Change_Password.css
+│       │   ├── Forgot_Password.css
+│       │   ├── Login.css
+│       │   ├── Owner_Dashboard.css
+│       │   ├── Register.css
+│       │   ├── Set_New_Password.css
+│       │   └── Verify_OTP.css
+│       ├── html
+│       │   ├── About_us.html
+│       │   ├── Add_Staff.html
+│       │   ├── Change_Password.html
+│       │   ├── Customer_Details.html
+│       │   ├── Employee_Dashboard.html
+│       │   ├── Employee_Setting.html
+│       │   ├── Forgot_Password.html
+│       │   ├── Home_customer.html
+│       │   ├── Login.html
+│       │   ├── ManageCustomer_Employee.html
+│       │   ├── Notification.html
+│       │   ├── Notification_Employee.html
+│       │   ├── Order_Details.html
+│       │   ├── Order_History.html
+│       │   ├── Order_Payment.html
+│       │   ├── Order_Status.html
+│       │   ├── Owner_Dashboard.html
+│       │   ├── Personal_Profile.html
+│       │   ├── PriceManagement_Owner.html
+│       │   ├── PrintDocument.html
+│       │   ├── PrintPhoto.html
+│       │   ├── Print_Order_Confirmation.html
+│       │   ├── Register.html
+│       │   ├── Service_Print.html
+│       │   ├── Setting.html
+│       │   ├── Set_New_Password.html
+│       │   ├── Staff.html
+│       │   └── Verify_OTP.html
+│       └── js
+│           ├── accountMenu.js
+│           ├── apiService.js
+│           ├── authHeader.js
+│           ├── customers-employee.js
+│           ├── employee-settings.page.js
+│           ├── i18n.js
+│           ├── order_payment.js
+│           ├── profile.page.js
+│           ├── realtime.js
+│           ├── roleAccess.js
+│           └── settings.page.js
 ├── README.md
-├── routes
-│   ├── auth-sequelize.js
-│   ├── catalog.js
-│   ├── customers.js
-│   ├── dashboard.js
-│   ├── file-analyzer.js
-│   ├── files.js
-│   ├── notifications.js
-│   ├── orders.js
-│   ├── payments.js
-│   ├── photo-order.js
-│   ├── profile.js
-│   └── settings.routes.js
-├── scripts
-│   ├── create-otps-table.js
-│   ├── seed-mysql.js
-│   └── seed-printnow-data.js
-├── server.js
-├── services
-│   ├── emailService.js
-│   ├── filePageCounter.js
-│   ├── printPricingService.js
-│   ├── realtimeHub.js
-│   └── streamAuth.js
-├── start-server.bat
 └── uploads
     ├── avatars
     │   ├── u2026_1763286501787.jpg

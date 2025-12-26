@@ -203,10 +203,17 @@
             container.querySelector("a.login-btn")?.getAttribute("href") || "/login";
 
         try {
+            // ✅ nếu có token thì gửi kèm để tránh lệch trạng thái (cookie vs localStorage)
+            let token = "";
+            try { token = localStorage.getItem("token") || sessionStorage.getItem("token") || ""; } catch { }
+            const headers = {};
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+
             // tránh dính cache khi vừa login/log out
             const res = await fetch("/api/auth/me", {
                 credentials: "include",
                 cache: "no-store",
+                headers,
             });
             if (!res.ok) return;
 
@@ -472,6 +479,23 @@
                             credentials: "include",
                         });
                     } catch (_) { }
+
+                    // ✅ Clear JWT token client-side (tránh roleAccess/Login auto-redirect)
+                    try {
+                        // ✅ clear tất cả key token có thể tồn tại trong project
+                        localStorage.removeItem("token");
+                        sessionStorage.removeItem("token");
+                        localStorage.removeItem("authToken"); // (employee-settings.page.js từng dùng)
+                        sessionStorage.removeItem("authToken");
+                        sessionStorage.setItem("justLoggedOutAt", String(Date.now()));
+                    } catch { }
+
+                    // ✅ Stop realtime stream (EventSource) nếu đang chạy
+                    try {
+                        if (window.Realtime && typeof window.Realtime.disconnect === "function") {
+                            window.Realtime.disconnect();
+                        }
+                    } catch { }
 
                     // Dọn cache avatar & reset UI tức thời
                     try {

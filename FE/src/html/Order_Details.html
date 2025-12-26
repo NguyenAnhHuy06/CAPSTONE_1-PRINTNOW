@@ -203,6 +203,11 @@
         color: #2f5de0;
       }
 
+      .ready {
+        background-color: #e8fbff;
+        color: #0b7285;
+      }
+
       .cancelled {
         background-color: #fde7e7;
         color: #e02f2f;
@@ -457,7 +462,8 @@
             : key;
         const qs = new URLSearchParams(location.search);
         const id = qs.get("id");
-        if (!id) return;
+        const orderCode = qs.get("orderCode");
+        if (!id && !orderCode) return;
 
         const fmtMoney = (n) =>
           (Number(n) || 0).toLocaleString("vi-VN") + " VND";
@@ -465,6 +471,7 @@
           const map = {
             completed: "completed",
             processing: "processing",
+            ready: "ready",
             cancelled: "cancelled",
             pending: "pending",
           };
@@ -472,6 +479,7 @@
           const labelMap = {
             completed: tt("order.status_completed"),
             processing: tt("order.status_processing"),
+            ready: tt("order.status_ready"),
             cancelled: tt("order.status_cancelled"),
             pending: tt("order.status_pending"),
           };
@@ -479,7 +487,11 @@
           return `<span class="status ${cls}">${label}</span>`;
         };
 
-        fetch("/api/orders/" + encodeURIComponent(id), {
+        const endpoint = orderCode
+          ? "/api/orders/by-code/" + encodeURIComponent(orderCode)
+          : "/api/orders/" + encodeURIComponent(id);
+
+        fetch(endpoint, {
           credentials: "include",
         })
           .then((r) => r.json())
@@ -617,7 +629,12 @@
 
                   // Cập nhật nhanh UI: đổi status -> Cancelled & ẩn nút (y hệt cách làm ở OH)
                   const st = document.querySelector(".info-box .status");
-                  st?.classList.remove("completed", "processing", "pending");
+                  st?.classList.remove(
+                    "completed",
+                    "processing",
+                    "ready",
+                    "pending"
+                  );
                   st?.classList.add("cancelled");
                   st.textContent = tt("order.status_cancelled");
                   btnCancel.style.display = "none";
@@ -652,5 +669,32 @@
       });
     </script>
     <script src="/js/authHeader.js"></script>
+    <script>
+      // ✅ Hard-guard: staff/owner/admin không được vào customer Order Details
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          // cố gắng gọi /api/auth/me để lấy role
+          const token =
+            localStorage.getItem("token") ||
+            sessionStorage.getItem("token") ||
+            "";
+          const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+          const r = await fetch("/api/auth/me", {
+            credentials: "include",
+            headers,
+          });
+          if (!r.ok) return; // nếu chưa login, trang sẽ fail fetch order và user tự login
+          const me = await r.json();
+          const role = String(me?.user?.role || me?.role || "").toLowerCase();
+
+          // nếu là staff/owner/admin => đá về dashboard staff
+          if (["staff", "owner", "admin"].includes(role)) {
+            alert("This page is for customers only.");
+            window.location.href = "Employee_Dashboard.html";
+          }
+        } catch (_) {}
+      });
+    </script>
   </body>
 </html>

@@ -17,6 +17,8 @@
     <script src="../js/i18n.js"></script>
     <!-- Realtime (SSE) -->
     <script src="../js/realtime.js"></script>
+    <!-- Role guard -->
+    <script src="../js/roleAccess.js"></script>
 
     <style>
       :root {
@@ -985,6 +987,27 @@
       .btn-create:hover {
         background: #3a7fd4;
       }
+
+      .sidebar-bottom {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .nav-item.logout {
+        color: #e74c3c !important;
+        font-size: 24px;
+        padding: 10px;
+        border-radius: 8px;
+        transition: all 0.3s;
+      }
+
+      .nav-item.logout:hover {
+        background-color: #fdf2f2;
+        color: #c0392b !important;
+        transform: scale(1.15);
+      }
     </style>
   </head>
 
@@ -1004,6 +1027,11 @@
           <a href="#" class="nav-item"><i class="fas fa-cog"></i></a>
           <a href="#" class="nav-item"><i class="fas fa-headphones"></i></a>
         </nav>
+        <div class="sidebar-bottom">
+          <a href="#" class="nav-item logout" title="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </div>
       </aside>
 
       <main class="main-content">
@@ -1596,6 +1624,7 @@
     </div>
 
     <script src="../js/apiService.js"></script>
+    <script src="../js/accountMenu.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const modal = document.getElementById("createOrderModal");
@@ -1934,7 +1963,50 @@
       });
     </script>
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", async () => {
+        // ===== ROLE GUARD (STAFF ONLY) =====
+        try {
+          const token = (() => {
+            try {
+              return localStorage.getItem("token");
+            } catch {
+              return "";
+            }
+          })();
+          const headers = {};
+          if (token) headers.Authorization = `Bearer ${token}`;
+
+          const res = await fetch("/api/auth/me", {
+            method: "GET",
+            credentials: "include",
+            headers,
+          });
+          const me = await res.json().catch(() => ({}));
+          if (!res.ok || me?.success === false)
+            throw new Error("Unauthenticated");
+
+          const role = String(me?.user?.role || me?.role || "").toLowerCase();
+          const isStaff = role === "staff" || role === "employee";
+          const isOwner = role === "owner" || role === "admin";
+          const isCustomer = role === "customer";
+
+          if (!isStaff) {
+            if (isOwner) {
+              window.location.href = "/Owner_Dashboard.html";
+              return;
+            }
+            if (isCustomer) {
+              window.location.href = "/home";
+              return;
+            }
+            window.location.href = "/login";
+            return;
+          }
+        } catch (e) {
+          window.location.href = "/login";
+          return;
+        }
+
         // --- KHAI BÁO BIẾN CHUNG ---
         const generalFilterBtn = document.getElementById("generalFilterBtn");
         const generalFilterDropdown = document.getElementById(
@@ -2374,7 +2446,8 @@
             document.documentElement.lang ||
             "en"
           ).toLowerCase();
-          return lang === "vi" ? "vi-VN" : "en-US";
+
+          return lang.startsWith("vi") ? "vi-VN" : "en-US";
         }
 
         // --- i18n: render ngày theo locale ---
@@ -2452,9 +2525,6 @@
         });
 
         async function updateOrderStatus(orderCode, status, dropdownElement) {
-          console.log(
-            `Đang cập nhật Đơn hàng CODE: ${orderCode} thành trạng thái: ${status}...`
-          );
           dropdownElement.disabled = true;
           try {
             const res = await api(
@@ -2465,18 +2535,26 @@
                 body: JSON.stringify({ status }),
               }
             );
-            const data = await res.json();
+
+            const data = await res.json().catch(() => ({}));
             if (!res.ok || !data?.success) {
               throw new Error(data?.message || "Cập nhật trạng thái thất bại");
             }
+
             updateDisplayStatus(dropdownElement, status);
+
+            // ✅ đảm bảo style + disable đúng sau khi update thành công
+            updateDropdownStyle(dropdownElement, status);
           } catch (error) {
             console.error("Cập nhật thất bại:", error);
             alert(
               error.message || "Cập nhật trạng thái thất bại. Vui lòng thử lại."
             );
           } finally {
-            dropdownElement.disabled = false;
+            // ✅ chỉ bật lại nếu không phải Cancelled
+            if (String(status).toLowerCase() !== "cancelled") {
+              dropdownElement.disabled = false;
+            }
           }
         }
 

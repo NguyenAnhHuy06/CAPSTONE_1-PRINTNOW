@@ -16,6 +16,8 @@
     function start({ onEvent, onError } = {}) {
         stop();
         const token = getToken();
+        // Không có token -> đừng mở EventSource (tránh 401 loop sau logout)
+        if (!token) return;
         const url = `${API_BASE_URL}/orders/stream${token ? `?token=${encodeURIComponent(token)}` : ""}`;
         es = new EventSource(url, { withCredentials: true });
         lastPing = Date.now();

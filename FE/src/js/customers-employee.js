@@ -1,5 +1,13 @@
 // /js/customers-employee.js
 
+// i18n safe helper
+function t(key) {
+  try {
+    if (window.i18n && typeof i18n.t === "function") return i18n.t(key);
+  } catch (_) { }
+  return key;
+}
+
 // ==== Helper: validate text search cho Customer ====
 function isEmailLike(str) {
   if (!str) return false;
@@ -17,6 +25,35 @@ function isValidEmail(str) {
 
 document.addEventListener("DOMContentLoaded", () => {
   // --- KHAI BÁO BIẾN CHUNG ---
+  // Logout sidebar
+  const sidebarLogout = document.getElementById("sidebarLogout");
+  if (sidebarLogout) {
+    sidebarLogout.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      } catch (_) { }
+      try {
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
+        localStorage.removeItem("authToken");
+        sessionStorage.removeItem("authToken");
+        sessionStorage.setItem("justLoggedOutAt", String(Date.now()));
+      } catch (_) { }
+      try {
+        if (window.Realtime && typeof window.Realtime.disconnect === "function") {
+          window.Realtime.disconnect();
+        }
+      } catch (_) { }
+      // về Login
+      try {
+        window.location.href = "Login.html";
+      } catch (_) {
+        window.location.href = "./Login.html";
+      }
+    });
+  }
+
   const generalFilterBtn = document.getElementById("generalFilterBtn");
   const generalFilterDropdown = document.getElementById(
     "generalFilterDropdown"
@@ -195,11 +232,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateDateButtons() {
     if (fromDateBtn) {
-      fromDateBtn.textContent = i18n.t("customers.date_from_btn");
+      fromDateBtn.textContent = t("customers.date_from_btn");
       fromDateBtn.classList.toggle("selected", isSelectingFrom);
     }
     if (toDateBtn) {
-      toDateBtn.textContent = i18n.t("customers.date_to_btn");
+      toDateBtn.textContent = t("customers.date_to_btn");
       toDateBtn.classList.toggle("selected", !isSelectingFrom);
     }
   }
@@ -675,7 +712,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const wrap = document.querySelector(".abandoned-cart .card-value");
     if (!wrap) return;
     wrap.textContent = Number(countValue || 0).toLocaleString();
-    wrap.textContent = Number(countValue || 0).toLocaleString();
     animateCardValue(wrap);
   }
 
@@ -804,8 +840,8 @@ document.addEventListener("DOMContentLoaded", () => {
           ${formatCurrency(c.totalSpent)}
         </td>
         <td>${formatDate(c.joinedDate)}</td>
-        <td class="status ${statusClass}">
-          ${i18n.t(statusKey)}
+       <td>
+          <span class="status ${statusClass}">${t(statusKey)}</span>
         </td>
       </tr>
     `;

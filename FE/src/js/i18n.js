@@ -30,6 +30,7 @@
       "login.signup": "Sign Up",
       "login.success": "Logged in successfully!",
       "login.failed": "Login failed",
+      "login.redirecting": "You're already logged in. Redirecting...",
 
       /* ===== Forgot Password ===== */
       "forgot.title": "Forgot Password",
@@ -60,7 +61,7 @@
       "note.language_applied": "Language changes will be applied immediately.",
       "btn.save_settings": "Save Settings",
 
-            // ===== Employee Settings page =====
+      // ===== Employee Settings page =====
       "employee_settings.account_heading": "Account Settings",
       "employee_settings.btn_update": "Update",
       "employee_settings.label_first_name": "First Name",
@@ -812,6 +813,60 @@
       "customer_details.confirm_delete":
         "Are you sure you want to delete this customer?",
       "customer_details.delete_success": "Customer deleted successfully.",
+
+      // ===== ADD into DICT.en =====
+      // --- Auth / Owner Dashboard guards ---
+      "auth.confirm_logout": "Are you sure you want to log out?",
+      "auth.login_required": "Please log in to view the dashboard.",
+      "auth.session_expired": "Session expired. Please log in again.",
+
+      // --- Owner Dashboard (optional but recommended) ---
+      "dashboard.title": "Dashboard",
+
+      "dashboard.nav.dashboard": "Dashboard",
+      "dashboard.nav.orders": "Orders",
+      "dashboard.nav.customers": "Customers",
+      "dashboard.nav.inventory": "Inventory",
+      "dashboard.nav.settings": "Settings",
+      "dashboard.nav.contact_support": "Contact Support",
+      "dashboard.nav.logout": "Logout",
+
+      "dashboard.kpi.sales": "Sales",
+      "dashboard.kpi.volume": "Volume",
+      "dashboard.kpi.customers": "Customers",
+      "dashboard.kpi.active": "Active",
+
+      "dashboard.marketing.title": "Marketing",
+      "dashboard.marketing.acquisition": "Acquisition",
+      "dashboard.marketing.purchase": "Purchase",
+      "dashboard.marketing.retention": "Retention",
+      "dashboard.marketing.center_customers": "Customers",
+
+      "dashboard.products.all_products": "All Products",
+      "dashboard.products.active": "Active",
+
+      "dashboard.cart.abandoned_cart": "Abandoned Cart",
+      "dashboard.cart.customers": "Customers",
+
+      "dashboard.summary.title": "Summary",
+      "dashboard.summary.sales": "Sales",
+
+      "dashboard.recent_orders.title": "Recent Orders",
+      "dashboard.recent_orders.product": "Product",
+      "dashboard.recent_orders.unit_price": "Unit Price",
+      "dashboard.recent_orders.qty": "Qty",
+      "dashboard.recent_orders.discount": "Discount",
+      "dashboard.recent_orders.total": "Total",
+
+      "dashboard.time.today": "Today",
+      "dashboard.time.this_week": "This Week",
+      "dashboard.time.this_month": "This Month",
+      "dashboard.time.last_7_days": "Last 7 Days",
+      "dashboard.time.last_30_days": "Last 30 Days",
+
+      // used in your JS for empty table
+      "dashboard.no_recent_orders": "No recent orders yet."
+
     },
     vi: {
       // ===== Trang đăng ký =====
@@ -840,6 +895,7 @@
       "login.no_account": "Chưa có tài khoản?",
       "login.signup": "Đăng ký",
       "login.success": "Đăng nhập thành công!",
+      "login.failed": "Đăng nhập thất bại",
       "login.failed": "Đăng nhập thất bại",
 
       /* ===== Quên mật khẩu ===== */
@@ -870,7 +926,7 @@
       "note.language_applied": "Thay đổi ngôn ngữ sẽ áp dụng ngay.",
       "btn.save_settings": "Lưu cài đặt",
 
-            // ===== Employee Settings page =====
+      // ===== Employee Settings page =====
       "employee_settings.account_heading": "Cài đặt tài khoản",
       "employee_settings.btn_update": "Cập nhật",
       "employee_settings.label_first_name": "Tên",
@@ -1624,6 +1680,60 @@
       "orders.form_order_note_placeholder": "Thêm ghi chú (không bắt buộc)...",
       "orders.btn_create_order_submit": "Tạo đơn hàng",
       "orders.tooltip_cancelled_order": "Đơn đã bị hủy",
+
+      // ===== ADD into DICT.vi =====
+      // --- Auth / Owner Dashboard guards ---
+      "auth.confirm_logout": "Bạn chắc chắn muốn đăng xuất?",
+      "auth.login_required": "Vui lòng đăng nhập để xem bảng điều khiển.",
+      "auth.session_expired": "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.",
+
+      // --- Owner Dashboard (optional but recommended) ---
+      "dashboard.title": "Bảng điều khiển",
+
+      "dashboard.nav.dashboard": "Bảng điều khiển",
+      "dashboard.nav.orders": "Đơn hàng",
+      "dashboard.nav.customers": "Khách hàng",
+      "dashboard.nav.inventory": "Kho hàng",
+      "dashboard.nav.settings": "Cài đặt",
+      "dashboard.nav.contact_support": "Hỗ trợ",
+      "dashboard.nav.logout": "Đăng xuất",
+
+      "dashboard.kpi.sales": "Doanh thu",
+      "dashboard.kpi.volume": "Số đơn",
+      "dashboard.kpi.customers": "Khách hàng",
+      "dashboard.kpi.active": "Đang hoạt động",
+
+      "dashboard.marketing.title": "Marketing",
+      "dashboard.marketing.acquisition": "Tiếp cận",
+      "dashboard.marketing.purchase": "Mua hàng",
+      "dashboard.marketing.retention": "Giữ chân",
+      "dashboard.marketing.center_customers": "Khách hàng",
+
+      "dashboard.products.all_products": "Tất cả sản phẩm",
+      "dashboard.products.active": "Đang kinh doanh",
+
+      "dashboard.cart.abandoned_cart": "Bỏ giỏ hàng",
+      "dashboard.cart.customers": "Khách hàng",
+
+      "dashboard.summary.title": "Tổng quan",
+      "dashboard.summary.sales": "Doanh thu",
+
+      "dashboard.recent_orders.title": "Đơn hàng gần đây",
+      "dashboard.recent_orders.product": "Sản phẩm",
+      "dashboard.recent_orders.unit_price": "Đơn giá",
+      "dashboard.recent_orders.qty": "SL",
+      "dashboard.recent_orders.discount": "Giảm giá",
+      "dashboard.recent_orders.total": "Tổng tiền",
+
+      "dashboard.time.today": "Hôm nay",
+      "dashboard.time.this_week": "Tuần này",
+      "dashboard.time.this_month": "Tháng này",
+      "dashboard.time.last_7_days": "7 ngày gần đây",
+      "dashboard.time.last_30_days": "30 ngày gần đây",
+
+      // used in your JS for empty table
+      "dashboard.no_recent_orders": "Chưa có đơn hàng gần đây."
+
     },
   };
 
@@ -1640,10 +1750,16 @@
       new CustomEvent("lang-changed", { detail: { lang: v } })
     );
   }
-  function t(key) {
+  function t(key, fallback) {
     const lang = getLang();
-    return (DICT[lang] && DICT[lang][key]) || (DICT.en && DICT.en[key]) || key;
+    return (
+      (DICT[lang] && DICT[lang][key]) ||
+      (DICT.en && DICT.en[key]) ||
+      fallback ||
+      key
+    );
   }
+
   // format with variables: i18n.f("alert.file_too_large", {name:"a.pdf", max:10})
   function f(key, vars = {}) {
     const str = t(key);

@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="../css/Login.css" />
 
     <!-- i18n -->
-    <script src="/FE/js/i18n.js"></script>
+    <script src="../js/i18n.js"></script>
 
     <style>
       .sr-only {
@@ -126,12 +126,177 @@
       </div>
     </main>
 
+    <!-- apiService (để dùng authMe nếu có) -->
+    <script src="../js/apiService.js"></script>
+
     <script>
       const passwordInput = document.getElementById("password");
       const eyeIcon = document.getElementById("eye-pass");
       const loginForm = document.getElementById("loginForm");
       const msg = document.getElementById("form-message");
-      const T = (k, fallback) => window.i18n?.t(k) || fallback;
+      const T = (k, fallback) => (window.i18n?.t ? window.i18n.t(k) : fallback);
+      const getLang = () =>
+        String(
+          window.i18n?.getLang?.() || document.documentElement.lang || "en"
+        ).toLowerCase();
+
+      function normalizeRole(role) {
+        return String(role || "")
+          .trim()
+          .toLowerCase();
+      }
+      function isCustomer(role) {
+        role = normalizeRole(role);
+        return role === "customer";
+      }
+      function isStaff(role) {
+        role = normalizeRole(role);
+        return role === "staff" || role === "employee";
+      }
+      function isOwner(role) {
+        role = normalizeRole(role);
+        return role === "owner" || role === "admin";
+      }
+      function getRoleFromLoginResponse(data) {
+        // hỗ trợ nhiều format response khác nhau
+        return (
+          data?.user?.role ||
+          data?.user?.userRole ||
+          data?.role ||
+          data?.user?.type ||
+          data?.user?.accountType ||
+          ""
+        );
+      }
+
+      async function fetchMyRole(token) {
+        try {
+          const headers = {};
+          if (token) headers.Authorization = `Bearer ${token}`;
+          const res = await fetch("/api/auth/me", {
+            method: "GET",
+            credentials: "include",
+            headers,
+          });
+          const me = await res.json().catch(() => ({}));
+          if (!res.ok || me?.success === false) return "";
+          return me?.user?.role || me?.role || me?.user?.userRole || "";
+        } catch {
+          return "";
+        }
+      }
+
+      async function smartRedirect(candidates, fallback) {
+        for (const url of candidates) {
+          try {
+            // dùng GET để tương thích server không hỗ trợ HEAD
+            const r = await fetch(url, {
+              method: "GET",
+              credentials: "include",
+            });
+            if (r.ok) {
+              window.location.href = url;
+              return;
+            }
+          } catch {}
+        }
+        window.location.href = fallback;
+      }
+
+      async function redirectAfterLogin(data) {
+        const token =
+          data?.token ||
+          (() => {
+            try {
+              return localStorage.getItem("token");
+            } catch {
+              return "";
+            }
+          })();
+
+        let role = getRoleFromLoginResponse(data);
+        if (!role) {
+          role = await fetchMyRole(token);
+        }
+        role = normalizeRole(role);
+
+        // Bạn có thể chỉnh lại candidates theo đúng route static của project
+        if (isStaff(role)) {
+          return smartRedirect(
+            ["/Employee_Dashboard.html", "/FE/html/Employee_Dashboard.html"],
+            "/Employee_Dashboard.html"
+          );
+        }
+        if (isOwner(role)) {
+          return smartRedirect(
+            ["/Owner_Dashboard.html", "/FE/html/Owner_Dashboard.html"],
+            "/Owner_Dashboard.html"
+          );
+        }
+        // default: customer
+        return smartRedirect(
+          ["/home", "/Home_customer.html", "/FE/html/Home_customer.html"],
+          "/home"
+        );
+      }
+
+      // ===== Auto redirect if already logged in =====
+      async function authMeSafe() {
+        // 1) Prefer apiService.js if it exposes authMe()
+        try {
+          if (
+            window.apiService &&
+            typeof window.apiService.authMe === "function"
+          ) {
+            const r = await window.apiService.authMe();
+            // support multiple shapes: {success, user}, {user}, {data:{user}}, ...
+            const u = r?.user || r?.data?.user || r?.data || r;
+            if (u && r?.success !== false) return u;
+          }
+        } catch {}
+
+        // 2) Fallback: call /api/auth/me directly (cookie httpOnly OR bearer token)
+        try {
+          let token = "";
+          try {
+            token = localStorage.getItem("token") || "";
+          } catch {}
+          const headers = {};
+          if (token) headers.Authorization = `Bearer ${token}`;
+
+          const res = await fetch("/api/auth/me", {
+            method: "GET",
+            credentials: "include",
+            headers,
+          });
+          const me = await res.json().catch(() => ({}));
+          if (!res.ok || me?.success === false) return null;
+          return me?.user || me;
+        } catch {
+          return null;
+        }
+      }
+
+      async function autoRedirectIfLoggedIn() {
+        const me = await authMeSafe();
+        if (!me) return;
+
+        const role =
+          me?.role ||
+          me?.userRole ||
+          me?.type ||
+          me?.accountType ||
+          me?.user?.role ||
+          "";
+        if (!role) return;
+
+        setMsg(
+          T("login.redirecting", "You're already logged in. Redirecting..."),
+          true
+        );
+        // reuse the same redirect logic
+        redirectAfterLogin({ user: { role } });
+      }
 
       function setMsg(text = "", ok = false) {
         if (!text) {
@@ -143,6 +308,15 @@
         msg.textContent = text;
         msg.style.color = ok ? "#2e7d32" : "#c62828";
       }
+
+      // run once on page load
+      (function () {
+        try {
+          const t = Number(sessionStorage.getItem("justLoggedOutAt") || "0");
+          if (t && Date.now() - t < 1500) return; // skip auto-redirect ngay sau logout
+        } catch {}
+        autoRedirectIfLoggedIn();
+      })();
 
       // Toggle password visibility (click/keyboard)
       eyeIcon.addEventListener("click", () => {
@@ -190,10 +364,16 @@
           });
           const data = await response.json();
           if (response.ok && data.success) {
+            // Lưu token để apiService.js / realtime.js dùng được (song song cookie httpOnly)
+            if (data.token) {
+              try {
+                localStorage.setItem("token", data.token);
+              } catch {}
+            }
             setMsg(T("login.success", "Logged in successfully!"), true);
             setTimeout(() => {
-              window.location.href = "/home";
-            }, 800);
+              redirectAfterLogin(data);
+            }, 400);
           } else {
             setMsg(data.message || T("login.failed", "Login failed"));
           }

@@ -1009,7 +1009,7 @@
           ></a>
         </nav>
         <div class="sidebar-bottom">
-          <a href="#" class="nav-item logout" title="Logout">
+          <a href="#" class="nav-item logout" id="sidebarLogout" title="Logout">
             <i class="fas fa-sign-out-alt"></i>
           </a>
         </div>
@@ -1024,11 +1024,12 @@
           <div class="header-right">
             <!-- 2 icon nằm trên -->
             <div class="top-icons">
-              <a href="#" class="notification">
+              <a
+                href="Notification_Employee.html"
+                class="notification"
+                title="Notifications"
+              >
                 <i class="fa-solid fa-bell" style="color: #3a7bd5"></i>
-              </a>
-              <a href="#" class="account">
-                <i class="fa-solid fa-user-circle"></i>
               </a>
             </div>
 
@@ -1482,9 +1483,25 @@
       </div>
     </div>
     <script src="../js/apiService.js"></script>
+    <script src="../js/roleAccess.js"></script>
     <script src="../js/i18n.js"></script>
     <script src="../js/realtime.js"></script>
-    <!-- JS riêng cho trang Customers (Employee) -->
+    <script src="../js/accountMenu.js"></script>
     <script src="../js/customers-employee.js"></script>
+
+    <script>
+      // Guard page: chỉ staff/owner được vào
+      document.addEventListener("DOMContentLoaded", () => {
+        try {
+          if (window.RoleAccess && typeof RoleAccess.guardPage === "function") {
+            RoleAccess.guardPage({
+              allowRoles: ["staff", "owner"],
+              loginPath: RoleAccess.resolvePath("Login.html"),
+              silent: true,
+            });
+          }
+        } catch (_) {}
+      });
+    </script>
   </body>
 </html>

@@ -56,8 +56,6 @@ function getUserFromToken() {
     const payload = JSON.parse(atob(token.split(".")[1]));
     return {
       id: payload.id,
-      email: payload.email,
-      fullName: payload.fullName,
     };
   } catch (error) {
     console.error("Lỗi decode token:", error);

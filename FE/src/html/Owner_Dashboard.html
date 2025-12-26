@@ -14,6 +14,10 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../css/Owner_Dashboard.css" />
+    <!-- i18n -->
+    <script src="../js/i18n.js"></script>
+    <!-- Role guard -->
+    <script src="../js/roleAccess.js"></script>
   </head>
 
   <body>
@@ -281,9 +285,109 @@
       </main>
     </div>
 
+    <script>
+      // Owner only
+      document.addEventListener("DOMContentLoaded", () => {
+        RoleAccess.guardPage({
+          allowRoles: ["owner"],
+          allowGuests: false,
+          loginPath: RoleAccess.resolvePath("Login.html"),
+          silent: true,
+        }).catch(() => {});
+      });
+    </script>
     <script src="../js/apiService.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", async () => {
+        // ===== Logout handler (Owner_Dashboard) =====
+        function clearClientAuth() {
+          try {
+            // Common keys
+            localStorage.removeItem("token");
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            localStorage.removeItem("user");
+            localStorage.removeItem("role");
+            localStorage.removeItem("auth");
+
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("accessToken");
+            sessionStorage.removeItem("refreshToken");
+            sessionStorage.removeItem("user");
+            sessionStorage.removeItem("role");
+            sessionStorage.removeItem("auth");
+          } catch (_) {}
+        }
+
+        async function doLogout() {
+          // 1) Clear client-side immediately
+          clearClientAuth();
+
+          // 2) Ask server to clear cookie/session (best-effort)
+          try {
+            // Preferred: use api() wrapper if available
+            if (typeof api === "function") {
+              let res = await api("/auth/logout", { method: "POST" });
+              if (!res.ok && res.status !== 404) {
+                // If backend uses another prefix, try fallback
+                res = await api("/api/auth/logout", { method: "POST" });
+              }
+            } else {
+              // Fallback without api()
+              await fetch("/auth/logout", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+              }).catch(() => {});
+              await fetch("/api/auth/logout", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+              }).catch(() => {});
+            }
+          } catch (_) {
+            // ignore
+          }
+
+          // 3) Redirect to login
+          const loginUrl =
+            window.RoleAccess?.resolvePath?.("Login.html") || "Login.html";
+          window.location.href = loginUrl;
+        }
+
+        // Bind logout click
+        const logoutBtn = document.querySelector("a.logout");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const T = (k, fallback) =>
+              window.i18n?.t ? window.i18n.t(k) : fallback;
+            const ok = confirm(
+              T("auth.confirm_logout", "Are you sure you want to log out?")
+            );
+            if (!ok) return;
+            await doLogout();
+          });
+        }
+
+        // i18n helper
+        const T = (k, fallback) =>
+          window.i18n?.t ? window.i18n.t(k) : fallback;
+
+        // Apply language (localStorage first, then server if logged-in)
+        try {
+          if (window.i18n) {
+            i18n.translateDom();
+            fetch("/api/settings/me", { credentials: "include" })
+              .then((r) => r.json())
+              .then((d) => {
+                if (d?.success && d?.setting?.language)
+                  i18n.setLang(d.setting.language);
+              })
+              .catch(() => {});
+          }
+        } catch (_) {}
+
         // ✅ Luôn dùng authMe() + api() từ apiService.js
         //    → Không phụ thuộc việc token đang nằm ở localStorage/sessionStorage hay cookie,
         //    → Chỉ cần backend xác nhận được phiên đăng nhập là đủ.
@@ -294,9 +398,30 @@
           if (!me || me.success === false) {
             throw new Error("Unauthenticated");
           }
+
+          // ===== ROLE GUARD (OWNER ONLY) =====
+          const role = String(me?.user?.role || me?.role || "").toLowerCase();
+          const isOwner = role === "owner" || role === "admin";
+          const isStaff = role === "staff" || role === "employee";
+          const isCustomer = role === "customer";
+
+          if (!isOwner) {
+            if (isStaff) {
+              window.location.href = "/Employee_Dashboard.html";
+              return;
+            }
+            if (isCustomer) {
+              window.location.href = "/home";
+              return;
+            }
+            window.location.href = "/login";
+            return;
+          }
         } catch (err) {
           console.error("❌ Không xác thực được user, redirect Login:", err);
-          alert("Vui lòng đăng nhập để xem dashboard!");
+          alert(
+            T("auth.login_required", "Please log in to view the dashboard.")
+          );
           window.location.href = "Login.html";
           return;
         }
@@ -331,9 +456,14 @@
               if (response.status === 401) {
                 // Token không hợp lệ hoặc hết hạn
                 console.error("❌ Token không hợp lệ - redirect đến Login");
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                alert(
+                  T(
+                    "auth.session_expired",
+                    "Session expired. Please log in again."
+                  )
+                );
                 localStorage.removeItem("token");
-                window.location.href = "Login.html";
+                window.location.href = "/login";
                 return;
               }
               const errorText = await response.text();
@@ -426,7 +556,12 @@
             if (!response.ok) {
               if (response.status === 401) {
                 console.error("❌ Token không hợp lệ - redirect đến Login");
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                alert(
+                  T(
+                    "auth.session_expired",
+                    "Session expired. Please log in again."
+                  )
+                );
                 localStorage.removeItem("token");
                 window.location.href = "Login.html";
                 return;
@@ -518,7 +653,12 @@
             if (!response.ok) {
               if (response.status === 401) {
                 console.error("❌ Token không hợp lệ - redirect đến Login");
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                alert(
+                  T(
+                    "auth.session_expired",
+                    "Session expired. Please log in again."
+                  )
+                );
                 localStorage.removeItem("token");
                 window.location.href = "Login.html";
                 return;
@@ -617,7 +757,12 @@
             if (!response.ok) {
               if (response.status === 401) {
                 console.error("❌ Token không hợp lệ - redirect đến Login");
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                alert(
+                  T(
+                    "auth.session_expired",
+                    "Session expired. Please log in again."
+                  )
+                );
                 localStorage.removeItem("token");
                 window.location.href = "Login.html";
                 return;
@@ -698,7 +843,12 @@
             if (!response.ok) {
               if (response.status === 401) {
                 console.error("❌ Token không hợp lệ - redirect đến Login");
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                alert(
+                  T(
+                    "auth.session_expired",
+                    "Session expired. Please log in again."
+                  )
+                );
                 localStorage.removeItem("token");
                 window.location.href = "Login.html";
                 return;
@@ -795,7 +945,12 @@
             if (!response.ok) {
               if (response.status === 401) {
                 console.error("❌ Token không hợp lệ - redirect đến Login");
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                alert(
+                  T(
+                    "auth.session_expired",
+                    "Session expired. Please log in again."
+                  )
+                );
                 localStorage.removeItem("token");
                 window.location.href = "Login.html";
                 return;
@@ -894,7 +1049,12 @@
             if (!response.ok) {
               if (response.status === 401) {
                 console.error("❌ Token không hợp lệ - redirect đến Login");
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                alert(
+                  T(
+                    "auth.session_expired",
+                    "Session expired. Please log in again."
+                  )
+                );
                 localStorage.removeItem("token");
                 window.location.href = "Login.html";
                 return;
@@ -1156,7 +1316,12 @@
             if (!response.ok) {
               if (response.status === 401) {
                 console.error("❌ Token không hợp lệ - redirect đến Login");
-                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+                alert(
+                  T(
+                    "auth.session_expired",
+                    "Session expired. Please log in again."
+                  )
+                );
                 localStorage.removeItem("token");
                 window.location.href = "Login.html";
                 return;
@@ -1194,7 +1359,10 @@
               tbody.innerHTML = `
                             <tr>
                                 <td colspan="5" style="padding: 40px; text-align: center; color: var(--sub-text-color);">
-                                    Chưa có đơn hàng nào
+                                    ${T(
+                                      "dashboard.no_recent_orders",
+                                      "No recent orders yet."
+                                    )}
                                 </td>
                             </tr>
                         `;

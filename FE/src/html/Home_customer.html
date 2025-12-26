@@ -670,27 +670,23 @@
       <script>
         // Hàm đặt trạng thái active cho liên kết dựa trên trang hiện tại
         function setActiveNavLink() {
-          const currentPath = window.location.pathname;
-          const navLinks = document.querySelectorAll(".nav-links li a");
+          const p = window.location.pathname;
+          const links = document.querySelectorAll(".nav-links li a");
 
-          navLinks.forEach((link) => {
-            link.classList.remove("active");
-            link.removeAttribute("aria-current");
+          links.forEach((a) => {
+            a.classList.remove("active");
+            a.removeAttribute("aria-current");
 
-            const href = link.getAttribute("href");
-            // Kiểm tra trang hiện tại
-            if (href === "/home" && currentPath === "/home") {
-              link.classList.add("active");
-              link.setAttribute("aria-current", "page");
-            } else if (
-              href === "/service/print" &&
-              currentPath === "/service/print"
-            ) {
-              link.classList.add("active");
-              link.setAttribute("aria-current", "page");
-            } else if (href === "/about-us" && currentPath === "/about-us") {
-              link.classList.add("active");
-              link.setAttribute("aria-current", "page");
+            const href = a.getAttribute("href");
+
+            const isActive =
+              (href === "/home" && (p === "/home" || p === "/")) ||
+              (href === "/service/print" && p.startsWith("/service/print")) ||
+              (href === "/about-us" && p.startsWith("/about-us"));
+
+            if (isActive) {
+              a.classList.add("active");
+              a.setAttribute("aria-current", "page");
             }
           });
         }
@@ -699,6 +695,22 @@
         document.addEventListener("DOMContentLoaded", setActiveNavLink);
       </script>
     </main>
+    <script src="/js/roleAccess.js"></script>
+    <script>
+      // Allow guest + customer, but if logged-in role is staff/owner => redirect to their dashboards
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const res = await RoleAccess.guardPage({
+            allowRoles: ["customer"],
+            allowGuests: true,
+            // if customer is unauth, still ok; if authed but not customer => kicked by guard
+            loginPath: "/login",
+            silent: true,
+          });
+          // res.ok true => continue rendering
+        } catch (_) {}
+      });
+    </script>
     <script src="/js/authHeader.js"></script>
     <script src="/js/i18n.js"></script>
     <script>
@@ -708,7 +720,15 @@
           i18n.translateDom();
 
           // Nếu đã đăng nhập thì đọc language từ server
-          fetch("/api/settings/me", { credentials: "include" })
+          let token = "";
+          try {
+            token =
+              localStorage.getItem("token") ||
+              sessionStorage.getItem("token") ||
+              "";
+          } catch {}
+          const headers = token ? { Authorization: `Bearer ${token}` } : {};
+          fetch("/api/settings/me", { credentials: "include", headers })
             .then((res) => res.json())
             .then((data) => {
               if (data?.success && data.setting?.language) {
