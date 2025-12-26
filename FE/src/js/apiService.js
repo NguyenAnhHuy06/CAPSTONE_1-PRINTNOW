@@ -198,14 +198,27 @@ async function analyzeMultipleFiles(files) {
       `${API_BASE_URL}/file-analyzer/analyze-multiple-files`,
       {
         method: "POST",
+        credentials: "include", // Đảm bảo gửi cookie nếu cần
         body: formData,
       }
     );
 
+    // Kiểm tra content-type trước khi parse JSON
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await response.text();
+      console.error("Server trả về không phải JSON:", text.substring(0, 200));
+      throw new Error(`Server trả về lỗi (${response.status}): ${response.statusText}`);
+    }
+
     const data = await response.json();
 
+    if (!response.ok) {
+      throw new Error(data.message || data.error || `Server error: ${response.status}`);
+    }
+
     if (data.success) {
-      return data.data;
+      return data.data || data.results || [];
     }
     throw new Error(data.message || "Không thể phân tích nhiều file");
   } catch (error) {

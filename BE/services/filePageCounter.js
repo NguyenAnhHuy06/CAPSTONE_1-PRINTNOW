@@ -15,9 +15,13 @@ const countPDFPages = async (filePath) => {
             out_dir: path.dirname(filePath),
             out_prefix: 'temp_pdf_page',
             page: null, // Đếm tất cả trang
-            // CHỈ ĐỊNH ĐƯỜNG DẪN POPPLER TRỰC TIẾP
-            poppler_path: 'C:\\Release-25.07.0-0\\poppler-25.07.0\\Library\\bin'
         };
+
+        // Thử dùng poppler path nếu có, nếu không thì để mặc định
+        const popplerPath = process.env.POPPLER_PATH || 'C:\\Release-25.07.0-0\\poppler-25.07.0\\Library\\bin';
+        if (fs.existsSync(popplerPath)) {
+            options.poppler_path = popplerPath;
+        }
 
         // Sử dụng pdf-poppler để đếm trang
         const result = await pdf.convert(filePath, options);
@@ -38,8 +42,9 @@ const countPDFPages = async (filePath) => {
 
         return pageFiles.length;
     } catch (error) {
-        console.error('Lỗi khi đếm trang PDF:', error);
-        throw new Error('Không thể đếm số trang PDF');
+        console.error('Lỗi khi đếm trang PDF:', error.message);
+        // Không throw error, để hàm gọi xử lý fallback
+        throw error;
     }
 };
 
@@ -156,16 +161,38 @@ const countFilePages = async (filePath, fileType) => {
 
         switch (fileType.toLowerCase()) {
             case 'pdf':
-                pageCount = await countPDFPages(filePath);
+                try {
+                    pageCount = await countPDFPages(filePath);
+                } catch (pdfError) {
+                    console.warn(`Không thể đếm PDF chính xác, sử dụng ước tính:`, pdfError.message);
+                    // Fallback: ước tính dựa trên kích thước file
+                    const stats = fs.statSync(filePath);
+                    const fileSizeKB = stats.size / 1024;
+                    pageCount = Math.max(1, Math.round(fileSizeKB / 50)); // ~50KB/trang cho PDF
+                }
                 break;
             case 'docx':
-                pageCount = await countWordPages(filePath);
+                try {
+                    pageCount = await countWordPages(filePath);
+                } catch (wordError) {
+                    console.warn(`Không thể đếm DOCX chính xác, sử dụng ước tính:`, wordError.message);
+                    const stats = fs.statSync(filePath);
+                    const fileSizeKB = stats.size / 1024;
+                    pageCount = Math.max(1, Math.round(fileSizeKB / 30)); // ~30KB/trang cho DOCX
+                }
                 break;
             case 'doc':
                 pageCount = await countDocPages(filePath);
                 break;
             case 'pptx':
-                pageCount = await countPowerPointPages(filePath);
+                try {
+                    pageCount = await countPowerPointPages(filePath);
+                } catch (pptError) {
+                    console.warn(`Không thể đếm PPTX chính xác, sử dụng ước tính:`, pptError.message);
+                    const stats = fs.statSync(filePath);
+                    const fileSizeKB = stats.size / 1024;
+                    pageCount = Math.max(1, Math.round(fileSizeKB / 100)); // ~100KB/slide cho PPTX
+                }
                 break;
             case 'ppt':
                 pageCount = await countPptPages(filePath);
@@ -183,9 +210,11 @@ const countFilePages = async (filePath, fileType) => {
             pageCount = 1;
         }
 
-        if (pageCount > 500) {
-            console.warn(`Số trang quá lớn (${pageCount}), giới hạn ở 500 trang`);
-            pageCount = 500;
+        // Giới hạn tối đa số trang (có thể điều chỉnh theo nhu cầu)
+        const MAX_PAGES = 2000;
+        if (pageCount > MAX_PAGES) {
+            console.warn(`Số trang quá lớn (${pageCount}), giới hạn ở ${MAX_PAGES} trang`);
+            pageCount = MAX_PAGES;
         }
 
         console.log(`File ${path.basename(filePath)} (${fileType}): ${pageCount} trang`);
@@ -200,7 +229,8 @@ const countFilePages = async (filePath, fileType) => {
             const fileSizeKB = stats.size / 1024;
             const estimatedPages = Math.max(1, Math.round(fileSizeKB / 50));
             console.warn(`Sử dụng ước tính: ${estimatedPages} trang`);
-            return Math.min(estimatedPages, 200);
+            const MAX_PAGES = 2000;
+            return Math.min(estimatedPages, MAX_PAGES);
         } catch (fallbackError) {
             console.error('Lỗi fallback:', fallbackError);
             return 1; // Trả về 1 trang mặc định

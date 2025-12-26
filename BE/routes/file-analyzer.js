@@ -43,7 +43,7 @@ const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB
+        fileSize: 100 * 1024 * 1024 // 100MB - tăng để hỗ trợ file lớn (trên 500 trang)
     }
 });
 
@@ -116,6 +116,15 @@ router.post('/analyze-multiple-files', upload.array('files', 10), async (req, re
 
         for (const file of req.files) {
             try {
+                // Kiểm tra file tồn tại trước khi phân tích
+                if (!fs.existsSync(file.path)) {
+                    errors.push({
+                        fileName: file.originalname,
+                        error: 'File không tồn tại sau khi upload'
+                    });
+                    continue;
+                }
+
                 const fileInfo = await getFileInfo(file.path);
 
                 results.push({
@@ -123,7 +132,7 @@ router.post('/analyze-multiple-files', upload.array('files', 10), async (req, re
                     fileName: file.filename,
                     fileSize: file.size,
                     fileType: fileInfo.fileType,
-                    pageCount: fileInfo.pageCount,
+                    pageCount: fileInfo.pageCount || 1, // Đảm bảo có pageCount
                     lastModified: fileInfo.lastModified
                 });
 
@@ -134,32 +143,13 @@ router.post('/analyze-multiple-files', upload.array('files', 10), async (req, re
                     console.warn(`Không thể xóa file tạm ${file.filename}:`, error.message);
                 }
             } catch (error) {
+                console.error(`Lỗi khi phân tích file ${file.originalname}:`, error);
                 errors.push({
                     fileName: file.originalname,
-                    error: error.message
+                    error: error.message || 'Lỗi không xác định khi phân tích file'
                 });
-            }
-        }
 
-        res.json({
-            success: true,
-            data: {
-                totalFiles: req.files.length,
-                successful: results.length,
-                failed: errors.length,
-                results: results,
-                errors: errors,
-                summary: {
-                    totalPages: results.reduce((sum, file) => sum + file.pageCount, 0),
-                    totalSize: results.reduce((sum, file) => sum + file.fileSize, 0),
-                    fileTypes: [...new Set(results.map(file => file.fileType))]
-                }
-            }
-        });
-    } catch (error) {
-        // Xóa tất cả file tạm nếu có lỗi
-        if (req.files) {
-            req.files.forEach(file => {
+                // Xóa file tạm ngay cả khi có lỗi
                 try {
                     if (fs.existsSync(file.path)) {
                         fs.unlinkSync(file.path);
@@ -167,13 +157,46 @@ router.post('/analyze-multiple-files', upload.array('files', 10), async (req, re
                 } catch (deleteError) {
                     console.warn(`Không thể xóa file tạm ${file.filename}:`, deleteError.message);
                 }
+            }
+        }
+
+        // Luôn trả về response JSON, ngay cả khi có lỗi
+        return res.json({
+            success: true,
+            data: {
+                totalFiles: req.files.length,
+                successful: results.length,
+                failed: errors.length,
+                results: results,
+                errors: errors.length > 0 ? errors : [],
+                summary: {
+                    totalPages: results.reduce((sum, file) => sum + (file.pageCount || 0), 0),
+                    totalSize: results.reduce((sum, file) => sum + (file.fileSize || 0), 0),
+                    fileTypes: [...new Set(results.map(file => file.fileType).filter(Boolean))]
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Lỗi nghiêm trọng khi phân tích nhiều file:', error);
+
+        // Xóa tất cả file tạm nếu có lỗi
+        if (req.files && Array.isArray(req.files)) {
+            req.files.forEach(file => {
+                try {
+                    if (file.path && fs.existsSync(file.path)) {
+                        fs.unlinkSync(file.path);
+                    }
+                } catch (deleteError) {
+                    console.warn(`Không thể xóa file tạm ${file.filename || 'unknown'}:`, deleteError.message);
+                }
             });
         }
 
-        res.status(500).json({
+        // Đảm bảo luôn trả về JSON
+        return res.status(500).json({
             success: false,
             message: 'Lỗi khi phân tích nhiều file',
-            error: error.message
+            error: error.message || 'Lỗi không xác định'
         });
     }
 });
