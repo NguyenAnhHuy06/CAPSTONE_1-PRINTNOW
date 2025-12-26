@@ -4,6 +4,7 @@ const express = require("express");
 const { body, validationResult } = require("express-validator");
 const { sequelize } = require("../config/database");
 const { Order, OrderItem, PriceRule } = require("../models");
+const File = require("../models/File");
 const { Op } = require("sequelize");
 const auth = require("../middleware/auth");
 const router = express.Router();
@@ -267,7 +268,7 @@ router.post("/photo", auth, async (req, res) => {
       );
       const paperSizeId = paperSizeRow?.[0]?.id || null;
 
-      await OrderItem.create(
+      const orderItem = await OrderItem.create(
         {
           orderId: order.id,
           printType: "PHOTO",
@@ -296,6 +297,33 @@ router.post("/photo", auth, async (req, res) => {
         },
         { transaction: t }
       );
+
+      // ✅ Lưu file vào bảng files nếu có uploadedFileId
+      if (f.uploadedFileId) {
+        const fileId = Number(f.uploadedFileId);
+        // Kiểm tra file tồn tại và thuộc về user này
+        const fileRecord = await File.findOne({
+          where: {
+            id: fileId,
+            ownerId: customerId,
+            isDeleted: false,
+          },
+          transaction: t,
+        });
+
+        if (fileRecord) {
+          // Cập nhật file để gắn với order và orderItem
+          await fileRecord.update(
+            {
+              orderId: order.id,
+              orderItemId: orderItem.id,
+            },
+            { transaction: t }
+          );
+        } else {
+          console.warn(`File ID ${fileId} không tồn tại hoặc không thuộc về user ${customerId}`);
+        }
+      }
     }
 
     // Update tổng (DB trigger cũng sẽ tự recalc, nhưng ta set cho chắc)
@@ -680,11 +708,45 @@ router.post(
           { transaction: t }
         );
 
-        const itemsWithOrderId = itemsToCreate.map((it) => ({
-          ...it,
-          orderId: order.id,
-        }));
-        await OrderItem.bulkCreate(itemsWithOrderId, { transaction: t });
+        // Tạo từng OrderItem để có thể lưu file
+        const createdItems = [];
+        for (const it of itemsToCreate) {
+          const orderItem = await OrderItem.create(
+            {
+              ...it,
+              orderId: order.id,
+            },
+            { transaction: t }
+          );
+          createdItems.push(orderItem);
+
+          // ✅ Lưu file vào bảng files nếu có uploadedFileId
+          if (it.uploadedFileId) {
+            const fileId = Number(it.uploadedFileId);
+            // Kiểm tra file tồn tại và thuộc về user này
+            const fileRecord = await File.findOne({
+              where: {
+                id: fileId,
+                ownerId: customerId,
+                isDeleted: false,
+              },
+              transaction: t,
+            });
+
+            if (fileRecord) {
+              // Cập nhật file để gắn với order và orderItem
+              await fileRecord.update(
+                {
+                  orderId: order.id,
+                  orderItemId: orderItem.id,
+                },
+                { transaction: t }
+              );
+            } else {
+              console.warn(`File ID ${fileId} không tồn tại hoặc không thuộc về user ${customerId}`);
+            }
+          }
+        }
 
         const fullOrder = await Order.findByPk(order.id, {
           include: [{ model: OrderItem, as: "items" }],

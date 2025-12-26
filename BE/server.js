@@ -177,6 +177,7 @@ app.use("/api/auth", require("./routes/auth-sequelize"));
 app.use("/api/profile", require("./routes/profile"));
 app.use("/api/settings", require("./routes/settings.routes"));
 app.use("/api/files", require("./routes/files"));
+app.use("/api/print-files", require("./routes/print-files"));
 app.use("/api/file-analyzer", require("./routes/file-analyzer"));
 app.use("/api/orders", require("./routes/orders"));
 app.use("/api/catalog", require("./routes/catalog"));

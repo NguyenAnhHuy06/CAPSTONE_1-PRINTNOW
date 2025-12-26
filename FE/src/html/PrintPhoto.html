@@ -454,7 +454,7 @@
         border: 0 !important;
       }
     </style>
-    <script src="/FE/js/i18n.js"></script>
+    <script src="/js/i18n.js"></script>
   </head>
 
   <body>
@@ -695,7 +695,7 @@
           return name.length > n ? name.slice(0, n - 3) + "..." : name;
         }
 
-        fileInput.addEventListener("change", (e) => {
+        fileInput.addEventListener("change", async (e) => {
           const files = Array.from(e.target.files);
           if (!files.length) return;
 
@@ -747,9 +747,36 @@
             "15x20": "15 x 20 cm",
           };
 
-          files.forEach((f) => {
+          // Upload files lên server trước
+          for (const f of files) {
             const key = `${f.name}-${f.size}-${f.lastModified}`;
-            if (existed.has(key)) return;
+            if (existed.has(key)) continue;
+            
+            // ✅ Upload file lên server để lưu vào database
+            let fileId = null;
+            try {
+              const formData = new FormData();
+              formData.append("file", f);
+              
+              const uploadRes = await fetch("/api/print-files/upload", {
+                method: "POST",
+                credentials: "include",
+                body: formData,
+              });
+
+              if (uploadRes.ok) {
+                const uploadData = await uploadRes.json();
+                if (uploadData?.success && uploadData?.file?.id) {
+                  fileId = uploadData.file.id;
+                  console.log(`[Upload] File "${f.name}" uploaded with ID: ${fileId}`);
+                }
+              } else {
+                console.error(`[Upload] Failed to upload file "${f.name}":`, uploadRes.status);
+              }
+            } catch (uploadErr) {
+              console.error(`[Upload] Error uploading file "${f.name}":`, uploadErr);
+            }
+
             const id =
               Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
             const url = URL.createObjectURL(f);
@@ -767,9 +794,10 @@
               paper: photoDefaults?.paper ?? "Glossy",
               borderless: !!photoDefaults?.borderless,
               price: 0,
+              fileId: fileId, // ✅ Lưu fileId từ backend
             });
             existed.add(key);
-          });
+          }
 
           fileNames.textContent = items.map((i) => i.name).join(", ");
           filePreviewSmall.innerHTML = items
@@ -1098,6 +1126,7 @@
               paper: it.paper, // 'Glossy' | 'Matte' | 'Premium'
               borderless: !!it.borderless, // boolean
               copies: Number(it.copies || 1),
+              uploadedFileId: it.fileId || null, // ✅ Gửi fileId để backend cập nhật file với order
             }));
 
             // 3) Gọi API tạo đơn ảnh (cookie đăng nhập kèm theo)
