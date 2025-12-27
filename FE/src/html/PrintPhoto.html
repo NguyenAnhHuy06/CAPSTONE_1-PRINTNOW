@@ -111,11 +111,12 @@
       .input-field label {
         font-size: 0.9rem;
         margin-bottom: 6px;
+        color: #000;
       }
 
-      /* text label giữ màu mặc định */
-      .input-field label span {
-        color: #222;
+      /* text label giữ màu đen */
+      .input-field label > span:first-child {
+        color: #000;
       }
       /* chỉ riêng dấu * có class .required mới màu đỏ */
       .input-field label .required {
@@ -127,6 +128,15 @@
         border: 1px solid #d1d5db;
         border-radius: 6px;
         font-size: 0.95rem;
+      }
+
+      .input-field input:invalid {
+        border-color: #ef4444;
+      }
+
+      .input-field input:focus:invalid {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
       }
 
       .section {
@@ -486,10 +496,14 @@
                   </label>
                   <input
                     type="text"
+                    id="customerName"
                     placeholder="Enter full name"
                     data-i18n-placeholder="print_doc.field_full_name_placeholder"
+                    maxlength="50"
+                    pattern="^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\s]+$"
                     required
                   />
+                  <small id="customerNameError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 4px;"></small>
                 </div>
                 <div class="input-field">
                   <label>
@@ -498,10 +512,13 @@
                   </label>
                   <input
                     type="email"
+                    id="customerEmail"
                     placeholder="Enter email"
                     data-i18n-placeholder="print_doc.field_email_placeholder"
+                    maxlength="50"
                     required
                   />
+                  <small id="customerEmailError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 4px;"></small>
                 </div>
               </div>
             </div>
@@ -625,12 +642,10 @@
         const orderCount = document.getElementById("orderCount");
         const orderTotal = document.getElementById("orderTotal");
         const payBtn = document.getElementById("payBtn");
-        const customerNameInput = document.querySelector(
-          ".input-group .input-field:nth-child(1) input"
-        );
-        const customerEmailInput = document.querySelector(
-          ".input-group .input-field:nth-child(2) input"
-        );
+        const customerNameInput = document.getElementById("customerName");
+        const customerEmailInput = document.getElementById("customerEmail");
+        const customerNameError = document.getElementById("customerNameError");
+        const customerEmailError = document.getElementById("customerEmailError");
         const notesTextarea = document.getElementById("notes");
         const t =
           window.i18n && typeof window.i18n.t === "function"
@@ -641,6 +656,119 @@
         if (typeof document !== "undefined") {
           document.title = t("print_photo.page_title");
         }
+
+        // === VALIDATION FUNCTIONS ===
+        function validateFullName(name) {
+          // Chỉ cho phép chữ cái (bao gồm tiếng Việt) và khoảng trắng
+          const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\s]+$/;
+          return namePattern.test(name);
+        }
+
+        function validateEmail(email) {
+          // Kiểm tra định dạng email
+          const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailPattern.test(email);
+        }
+
+        function validateCustomerFields() {
+          const name = customerNameInput.value.trim();
+          const email = customerEmailInput.value.trim();
+          let hasError = false;
+
+          // Reset error messages
+          customerNameError.style.display = "none";
+          customerNameError.textContent = "";
+          customerEmailError.style.display = "none";
+          customerEmailError.textContent = "";
+
+          // Kiểm tra nếu một trường được nhập nhưng trường kia chưa
+          if (name && !email) {
+            customerEmailError.textContent = "Vui lòng nhập email";
+            customerEmailError.style.display = "block";
+            hasError = true;
+          } else if (email && !name) {
+            customerNameError.textContent = "Vui lòng nhập họ tên";
+            customerNameError.style.display = "block";
+            hasError = true;
+          }
+
+          // Validate full name format (nếu có giá trị)
+          if (name) {
+            if (!validateFullName(name)) {
+              customerNameError.textContent = "Họ tên chỉ được chứa chữ cái và khoảng trắng";
+              customerNameError.style.display = "block";
+              hasError = true;
+            } else if (name.length > 50) {
+              customerNameError.textContent = "Họ tên tối đa 50 ký tự";
+              customerNameError.style.display = "block";
+              hasError = true;
+            }
+          }
+
+          // Validate email format (nếu có giá trị)
+          if (email) {
+            if (!validateEmail(email)) {
+              customerEmailError.textContent = "Email không đúng định dạng";
+              customerEmailError.style.display = "block";
+              hasError = true;
+            } else if (email.length > 50) {
+              customerEmailError.textContent = "Email tối đa 50 ký tự";
+              customerEmailError.style.display = "block";
+              hasError = true;
+            }
+          }
+
+          return !hasError;
+        }
+
+        // Event listeners for validation
+        customerNameInput.addEventListener("input", function() {
+          const name = this.value.trim();
+          customerNameError.style.display = "none";
+          customerNameError.textContent = "";
+
+          if (name) {
+            if (!validateFullName(name)) {
+              customerNameError.textContent = "Họ tên chỉ được chứa chữ cái và khoảng trắng";
+              customerNameError.style.display = "block";
+            }
+          } else {
+            // Nếu name rỗng nhưng email có giá trị
+            const email = customerEmailInput.value.trim();
+            if (email) {
+              customerNameError.textContent = "Vui lòng nhập họ tên";
+              customerNameError.style.display = "block";
+            }
+          }
+        });
+
+        customerNameInput.addEventListener("blur", function() {
+          validateCustomerFields();
+        });
+
+        customerEmailInput.addEventListener("input", function() {
+          const email = this.value.trim();
+          customerEmailError.style.display = "none";
+          customerEmailError.textContent = "";
+
+          if (email) {
+            if (!validateEmail(email)) {
+              customerEmailError.textContent = "Email không đúng định dạng";
+              customerEmailError.style.display = "block";
+            }
+          } else {
+            // Nếu email rỗng nhưng name có giá trị
+            const name = customerNameInput.value.trim();
+            if (name) {
+              customerEmailError.textContent = "Vui lòng nhập email";
+              customerEmailError.style.display = "block";
+            }
+          }
+        });
+
+        customerEmailInput.addEventListener("blur", function() {
+          validateCustomerFields();
+        });
 
         let items = [];
         // Đọc preset nếu có (Order_History → Reorder)
@@ -1100,22 +1228,19 @@
         payBtn.addEventListener(
           "click",
           async () => {
-            // 1) Kiểm tra input tối thiểu + định dạng email
-            if (
-              !customerNameInput.value.trim() ||
-              !customerEmailInput.value.trim()
-            ) {
-              const msg =
-                t("alert.missing_customer_info") ||
-                "Please enter your Full Name and Email.";
-              alert(msg);
+            // 1) Kiểm tra input với validation đầy đủ
+            if (!validateCustomerFields()) {
               return;
             }
-            const emailValid = customerEmailInput.checkValidity();
-            if (!emailValid) {
-              alert(
-                t("alert.invalid_email") || "Invalid email. Please check again."
-              );
+            
+            const customerName = customerNameInput.value.trim();
+            const customerEmail = customerEmailInput.value.trim();
+            
+            if (!customerName || !customerEmail) {
+              const msg =
+                t("alert.missing_customer_info") ||
+                "Vui lòng nhập đầy đủ họ tên và email.";
+              alert(msg);
               return;
             }
 

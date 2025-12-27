@@ -1,4 +1,4 @@
-// cap1/models/PaperSize.js
+// models/PriceRule.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
@@ -54,7 +54,9 @@ const PriceRule = sequelize.define('PriceRule', {
     }
 }, {
     tableName: 'price_rules',
-    timestamps: false // Tắt timestamps vì bảng đã có created_at, updated_at
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
 });
 
 module.exports = PriceRule;

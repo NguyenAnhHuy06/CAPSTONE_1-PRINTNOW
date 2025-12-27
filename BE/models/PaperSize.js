@@ -1,4 +1,4 @@
-// cap1/models/PaperSize.js
+// models/PaperSize.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
@@ -37,7 +37,9 @@ const PaperSize = sequelize.define('PaperSize', {
     }
 }, {
     tableName: 'paper_sizes',
-    timestamps: false // Tắt timestamps vì bảng đã có created_at, updated_at
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
 });
 
 module.exports = PaperSize;

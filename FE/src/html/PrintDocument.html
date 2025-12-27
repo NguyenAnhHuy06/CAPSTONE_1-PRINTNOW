@@ -170,9 +170,14 @@
     .input-field label {
       font-size: 0.9rem;
       margin-bottom: 6px;
+      color: #000;
     }
 
-    .input-field span {
+    .input-field label > span:first-child {
+      color: #000;
+    }
+
+    .input-field label > span:last-child {
       color: #ef4444;
     }
 
@@ -181,6 +186,15 @@
       border: 1px solid #d1d5db;
       border-radius: 6px;
       font-size: 0.95rem;
+    }
+
+    .input-field input:invalid {
+      border-color: #ef4444;
+    }
+
+    .input-field input:focus:invalid {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
     }
 
     .file-upload {
@@ -200,6 +214,28 @@
 
     .file-upload input {
       display: none;
+    }
+
+    .uploaded-file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #f3f4f6;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      font-size: 0.9rem;
+    }
+
+    .uploaded-file-item i {
+      color: #10b981;
+      font-size: 1.1rem;
+    }
+
+    .uploaded-file-item span {
+      flex: 1;
+      color: #374151;
+      word-break: break-word;
     }
 
     textarea {
@@ -585,7 +621,11 @@
                 <span>*</span>
               </label>
               <input type="text" id="customerName" placeholder="Enter full name"
-                data-i18n-placeholder="print_doc.field_full_name_placeholder" required />
+                data-i18n-placeholder="print_doc.field_full_name_placeholder" 
+                maxlength="50" 
+                pattern="^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\s]+$"
+                required />
+              <small id="customerNameError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 4px;"></small>
             </div>
             <div class="input-field">
               <label>
@@ -593,7 +633,10 @@
                 <span>*</span>
               </label>
               <input type="email" id="customerEmail" placeholder="Enter email"
-                data-i18n-placeholder="print_doc.field_email_placeholder" required />
+                data-i18n-placeholder="print_doc.field_email_placeholder" 
+                maxlength="50"
+                required />
+              <small id="customerEmailError" style="color: #ef4444; font-size: 0.85rem; display: none; margin-top: 4px;"></small>
             </div>
           </div>
         </div>
@@ -606,9 +649,15 @@
               📄
               <strong data-i18n="print_doc.upload_main">
                 Select file to print </strong><br /><small data-i18n="print_doc.upload_helper">Supports PDF, DOC, DOCX,
-                PPT, PPTX (max 10MB per file)</small>
+                PPT, PPTX (max 100MB per file)</small>
             </p>
           </label>
+          <div id="uploadedFilesList" style="margin-top: 15px; display: none;">
+            <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: #374151;">
+              <span data-i18n="print_doc.uploaded_files_title">Uploaded files:</span>
+            </div>
+            <div id="uploadedFilesContainer" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          </div>
         </div>
 
         <div class="section">
@@ -688,12 +737,129 @@
       const fileCountElement = document.getElementById("fileCount");
       const totalPriceElement = document.getElementById("totalPrice");
       const btnPay = document.getElementById("btnPay");
+      const uploadedFilesList = document.getElementById("uploadedFilesList");
+      const uploadedFilesContainer = document.getElementById("uploadedFilesContainer");
 
       // CÁC BIẾN NÀY ĐÃ ĐƯỢC LẤY CHÍNH XÁC NHỜ CÓ ID TRONG HTML
       const customerNameInput = document.getElementById("customerName");
       const customerEmailInput = document.getElementById("customerEmail");
       const specialRequestTextarea =
         document.getElementById("specialRequest");
+      const customerNameError = document.getElementById("customerNameError");
+      const customerEmailError = document.getElementById("customerEmailError");
+
+      // === VALIDATION FUNCTIONS ===
+      function validateFullName(name) {
+        // Chỉ cho phép chữ cái (bao gồm tiếng Việt) và khoảng trắng
+        const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵýỷỹ\s]+$/;
+        return namePattern.test(name);
+      }
+
+      function validateEmail(email) {
+        // Kiểm tra định dạng email
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailPattern.test(email);
+      }
+
+      function validateCustomerFields() {
+        const name = customerNameInput.value.trim();
+        const email = customerEmailInput.value.trim();
+        let hasError = false;
+
+        // Reset error messages
+        customerNameError.style.display = "none";
+        customerNameError.textContent = "";
+        customerEmailError.style.display = "none";
+        customerEmailError.textContent = "";
+
+        // Kiểm tra nếu một trường được nhập nhưng trường kia chưa
+        if (name && !email) {
+          customerEmailError.textContent = "Vui lòng nhập email";
+          customerEmailError.style.display = "block";
+          hasError = true;
+        } else if (email && !name) {
+          customerNameError.textContent = "Vui lòng nhập họ tên";
+          customerNameError.style.display = "block";
+          hasError = true;
+        }
+
+        // Validate full name format (nếu có giá trị)
+        if (name) {
+          if (!validateFullName(name)) {
+            customerNameError.textContent = "Họ tên chỉ được chứa chữ cái và khoảng trắng";
+            customerNameError.style.display = "block";
+            hasError = true;
+          } else if (name.length > 50) {
+            customerNameError.textContent = "Họ tên tối đa 50 ký tự";
+            customerNameError.style.display = "block";
+            hasError = true;
+          }
+        }
+
+        // Validate email format (nếu có giá trị)
+        if (email) {
+          if (!validateEmail(email)) {
+            customerEmailError.textContent = "Email không đúng định dạng";
+            customerEmailError.style.display = "block";
+            hasError = true;
+          } else if (email.length > 50) {
+            customerEmailError.textContent = "Email tối đa 50 ký tự";
+            customerEmailError.style.display = "block";
+            hasError = true;
+          }
+        }
+
+        return !hasError;
+      }
+
+      // Event listeners for validation
+      customerNameInput.addEventListener("input", function() {
+        const name = this.value.trim();
+        customerNameError.style.display = "none";
+        customerNameError.textContent = "";
+
+        if (name) {
+          if (!validateFullName(name)) {
+            customerNameError.textContent = "Họ tên chỉ được chứa chữ cái và khoảng trắng";
+            customerNameError.style.display = "block";
+          }
+        } else {
+          // Nếu name rỗng nhưng email có giá trị
+          const email = customerEmailInput.value.trim();
+          if (email) {
+            customerNameError.textContent = "Vui lòng nhập họ tên";
+            customerNameError.style.display = "block";
+          }
+        }
+      });
+
+      customerNameInput.addEventListener("blur", function() {
+        validateCustomerFields();
+      });
+
+      customerEmailInput.addEventListener("input", function() {
+        const email = this.value.trim();
+        customerEmailError.style.display = "none";
+        customerEmailError.textContent = "";
+
+        if (email) {
+          if (!validateEmail(email)) {
+            customerEmailError.textContent = "Email không đúng định dạng";
+            customerEmailError.style.display = "block";
+          }
+        } else {
+          // Nếu email rỗng nhưng name có giá trị
+          const name = customerNameInput.value.trim();
+          if (name) {
+            customerEmailError.textContent = "Vui lòng nhập email";
+            customerEmailError.style.display = "block";
+          }
+        }
+      });
+
+      customerEmailInput.addEventListener("blur", function() {
+        validateCustomerFields();
+      });
 
       let uploadedFiles = [];
       // Đọc preset nếu có (tạo bởi Order_History → Reorder)
@@ -801,6 +967,31 @@
           configSection.style.display = "none";
         }
         renderFileConfig();
+        renderUploadedFilesList();
+      }
+
+      // Hàm hiển thị danh sách file đã upload
+      function renderUploadedFilesList() {
+        if (!uploadedFilesContainer || !uploadedFilesList) return;
+
+        uploadedFilesContainer.innerHTML = "";
+
+        if (uploadedFiles.length === 0) {
+          uploadedFilesList.style.display = "none";
+          return;
+        }
+
+        uploadedFilesList.style.display = "block";
+
+        uploadedFiles.forEach((file) => {
+          const fileItem = document.createElement("div");
+          fileItem.className = "uploaded-file-item";
+          fileItem.innerHTML = `
+            <i class="bi bi-file-earmark-check-fill"></i>
+            <span>${file.name}</span>
+          `;
+          uploadedFilesContainer.appendChild(fileItem);
+        });
       }
 
       // Hàm đếm số trang của file PDF sử dụng PDF.js
@@ -815,67 +1006,20 @@
         }
       }
 
-      // === XỬ LÝ UPLOAD FILE (đếm trang thật) ===
+      // === XỬ LÝ UPLOAD FILE (tối ưu: upload và hiển thị ngay) ===
       fileInput.addEventListener("change", async function () {
         const files = Array.from(this.files);
         if (files.length === 0) return;
 
-        // Gọi API backend để phân tích nhiều file một lượt
-        let pageByName = new Map();
-        try {
-          const res = await analyzeMultipleFiles(files); // từ apiService.js
-          if (res?.results && Array.isArray(res.results)) {
-            for (const it of res.results) {
-              const pages = Number(it.pageCount) || 1;
-
-              // Ghi theo nhiều khoá có thể backend trả:
-              if (it.originalName)
-                pageByName.set(norm(it.originalName), pages);
-              if (it.fileName) pageByName.set(norm(it.fileName), pages);
-              if (it.storedName) pageByName.set(norm(it.storedName), pages);
-            }
-          }
-        } catch (err) {
-          console.error("Analyze error:", err);
-          // nếu lỗi, để fallback 1 trang
-        }
-
+        // Hiển thị section config ngay
         configSection.style.display = "block";
 
-        // 2) Với PDF, nếu backend không có trang → đếm cục bộ bằng PDF.js
-        for (const file of files) {
-          console.log(
-            "[lookup]",
-            norm(file.name),
-            "→",
-            pageByName.get(norm(file.name)),
-            pageByName
-          );
-          let pages = pageByName.get(norm(file.name));
-
-          // Nếu chưa match, thử so với base-name không đuôi + so rộng
-          if (!pages) {
-            const targetFull = norm(file.name);
-            const targetBase = targetFull.replace(/\.[a-z0-9]+$/i, "");
-
-            for (const [k, v] of pageByName) {
-              const kFull = norm(k);
-              const kBase = kFull.replace(/\.[a-z0-9]+$/i, "");
-              if (kFull === targetFull || kBase === targetBase) {
-                pages = v;
-                break;
-              }
-            }
-          }
-
-          // Cuối cùng mới fallback PDF.js (khi là PDF)
-          if (!pages && /\.pdf$/i.test(file.name)) {
-            pages = await getPdfPageCount(file);
-          }
-          pages = pages || 1;
-
-          // ✅ Upload file lên server để lưu vào database
+        // ✅ Tối ưu: Xử lý từng file song song và cập nhật UI ngay
+        const uploadPromises = files.map(async (file) => {
+          // 1) Upload file lên server TRƯỚC (để lưu vào DB ngay)
           let fileId = null;
+          let pages = 1; // Mặc định 1 trang, sẽ cập nhật sau
+
           try {
             const formData = new FormData();
             formData.append("file", file);
@@ -890,7 +1034,8 @@
               const uploadData = await uploadRes.json();
               if (uploadData?.success && uploadData?.file?.id) {
                 fileId = uploadData.file.id;
-                console.log(`[Upload] File "${file.name}" uploaded with ID: ${fileId}`);
+                pages = uploadData.file.pages || 1; // Lấy số trang từ response
+                console.log(`[Upload] File "${file.name}" uploaded with ID: ${fileId}, pages: ${pages}`);
               }
             } else {
               console.error(`[Upload] Failed to upload file "${file.name}":`, uploadRes.status);
@@ -899,9 +1044,19 @@
             console.error(`[Upload] Error uploading file "${file.name}":`, uploadErr);
           }
 
+          // 2) Nếu chưa có số trang từ upload, thử đếm cục bộ (chỉ cho PDF)
+          if (pages === 1 && /\.pdf$/i.test(file.name)) {
+            try {
+              pages = await getPdfPageCount(file);
+            } catch (err) {
+              console.warn(`[PDF] Không thể đếm trang cho "${file.name}":`, err);
+            }
+          }
+
+          // 3) Thêm file vào danh sách và cập nhật UI NGAY
           const defaultPrice = pages * 500;
           const id = Date.now() + Math.random().toString(16).slice(2);
-          uploadedFiles.push({
+          const fileData = {
             id,
             name: file.name,
             pages,
@@ -914,12 +1069,31 @@
             coverPage: !!docDefaults?.coverPage,
             colorPages: docDefaults?.colorPages ?? "",
             price: defaultPrice,
-            fileId: fileId, // ✅ Lưu fileId từ backend
+            fileId: fileId,
+          };
+
+          uploadedFiles.push(fileData);
+
+          // ✅ Cập nhật UI ngay sau mỗi file (không đợi tất cả)
+          // Dùng requestAnimationFrame để đảm bảo UI được cập nhật ngay
+          requestAnimationFrame(() => {
+            renderFileConfig();
+            renderUploadedFilesList();
           });
+
+          return fileData;
+        });
+
+        // Đợi tất cả upload xong (nhưng UI đã được cập nhật từng file)
+        try {
+          await Promise.all(uploadPromises);
+          console.log(`[Upload] Đã upload ${files.length} file thành công`);
+          renderUploadedFilesList();
+        } catch (err) {
+          console.error("[Upload] Một số file upload thất bại:", err);
         }
 
         this.value = "";
-        renderFileConfig();
       });
 
       // === LOGIC TÍNH TOÁN VÀ ĐỒNG BỘ DỮ LIỆU ===
@@ -1534,14 +1708,20 @@
         // Đồng bộ & tính tổng
         const grandTotal = syncFileConfigurations();
 
-        // Check thông tin KH
+        // Check thông tin KH với validation đầy đủ
         const customerName = customerNameInput.value.trim();
         const customerEmail = customerEmailInput.value.trim();
         const specialRequest = specialRequestTextarea.value.trim();
+        
+        // Validate các trường
+        if (!validateCustomerFields()) {
+          return;
+        }
+        
         if (!customerName || !customerEmail) {
           const msg = window.i18n
             ? i18n.t("print_doc.alert_missing_customer")
-            : "Please enter your Full Name and Email.";
+            : "Vui lòng nhập đầy đủ họ tên và email.";
           alert(msg);
           return;
         }

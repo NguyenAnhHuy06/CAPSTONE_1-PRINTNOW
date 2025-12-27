@@ -9,6 +9,7 @@ const User = require("../models/User");
 const OTP = require("../models/OTP");
 const auth = require("../middleware/auth");
 const { generateOTP, sendOTPEmail } = require("../services/emailService");
+const { sequelize } = require("../config/database");
 
 const router = express.Router();
 
@@ -62,14 +63,24 @@ function cookieClearOptions(req) {
 router.post(
   "/register",
   [
-    body("fullName").notEmpty().withMessage("Vui lòng nhập tên"),
-    body("email").isEmail().withMessage("Vui lòng nhập email hợp lệ"),
+    body("fullName")
+      .notEmpty()
+      .withMessage("Vui lòng nhập tên")
+      .isLength({ max: 50 })
+      .withMessage("Tên đăng nhập không được vượt quá 50 ký tự"),
+    body("email")
+      .isEmail()
+      .withMessage("Vui lòng nhập email hợp lệ")
+      .isLength({ max: 50 })
+      .withMessage("Email không được vượt quá 50 ký tự"),
     body("password")
-      .isLength({ min: 6 })
-      .withMessage("Mật khẩu phải có ít nhất 6 ký tự"),
+      .isLength({ min: 8 })
+      .withMessage("Mật khẩu phải có ít nhất 8 ký tự")
+      .matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/)
+      .withMessage("Mật khẩu phải có ít nhất 1 chữ in hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt"),
     body("phone")
-      .matches(/^[0-9]{10,11}$/)
-      .withMessage("Số điện thoại phải có 10-11 chữ số"),
+      .matches(/^[0-9]{10}$/)
+      .withMessage("Số điện thoại phải có đúng 10 chữ số"),
   ],
   async (req, res) => {
     try {
@@ -80,58 +91,74 @@ router.post(
 
       const { fullName, email, password, phone } = req.body;
 
+      // Kiểm tra trùng email và phone trước khi bắt đầu transaction
       if (await User.findOne({ where: { email } })) {
         return bad(res, "Email này đã được sử dụng");
       }
-      if (await User.findOne({ where: { phone } })) {
-        return bad(res, "Số điện thoại này đã được sử dụng");
+      // Chỉ kiểm tra trùng phone nếu phone có giá trị
+      if (phone && phone.trim() !== '') {
+        if (await User.findOne({ where: { phone: phone.trim() } })) {
+          return bad(res, "Số điện thoại này đã được sử dụng");
+        }
       }
 
-      const user = await User.create({
-        fullName,
-        email,
-        // CHỈ truyền plaintext để hook trong model hash (tránh double-hash)
-        passwordHash: password,
-        phone,
-        emailVerified: false,
-        isActive: false,
+      // Sử dụng transaction để đảm bảo atomicity
+      // Nếu gửi email thất bại, tất cả sẽ được rollback
+      const result = await sequelize.transaction(async (t) => {
+        // Tạo user trong transaction
+        const user = await User.create({
+          fullName,
+          email,
+          // CHỈ truyền plaintext để hook trong model hash (tránh double-hash)
+          passwordHash: password,
+          phone: phone && phone.trim() !== '' ? phone.trim() : null,
+          emailVerified: false,
+          isActive: false,
+        }, { transaction: t });
+
+        const otpCode = generateOTP();
+        const ttlMs = 5 * 60 * 1000;
+
+        // Tạo OTP trong transaction
+        await OTP.create({
+          userId: user.id,
+          email,
+          otp: String(otpCode),
+          type: "registration",
+          isUsed: false,
+          attempts: 0,
+          expiresAt: new Date(Date.now() + ttlMs),
+          lastSentAt: new Date(),
+          resendCount: 0,
+        }, { transaction: t });
+
+        // Gửi email - nếu thất bại sẽ throw error và rollback transaction
+        const emailResult = await sendOTPEmail(email, otpCode, "registration");
+        if (!emailResult.success) {
+          // Throw error để rollback transaction
+          throw new Error("Không thể gửi email xác thực. Vui lòng thử lại sau.");
+        }
+
+        // Trả về user nếu tất cả thành công
+        return { user, email };
       });
 
-      const otpCode = generateOTP();
-      const ttlMs = 5 * 60 * 1000;
-
-      await OTP.create({
-        userId: user.id,
-        email,
-        otp: String(otpCode),
-        type: "registration",
-        isUsed: false,
-        attempts: 0,
-        expiresAt: new Date(Date.now() + ttlMs),
-        lastSentAt: new Date(),
-        resendCount: 0,
-      });
-
-      const emailResult = await sendOTPEmail(email, otpCode, "registration");
-      if (!emailResult.success) {
-        return bad(
-          res,
-          "Không thể gửi email xác thực. Vui lòng thử lại sau.",
-          {},
-          500
-        );
-      }
-
+      // Nếu đến đây, transaction đã commit thành công
       return res.status(201).json({
         success: true,
         message:
           "Đăng ký thành công. Vui lòng kiểm tra email để lấy mã OTP xác thực.",
-        email,
-        userId: user.id,
+        email: result.email,
+        userId: result.user.id,
       });
     } catch (error) {
       console.error("register error:", error);
-      return bad(res, "Lỗi server", { error: error.message }, 500);
+      // Nếu error message là từ email service, trả về message đó
+      // Nếu không, trả về message mặc định
+      const errorMessage = error.message && error.message.includes("email xác thực")
+        ? error.message
+        : "Lỗi server. Vui lòng thử lại sau.";
+      return bad(res, errorMessage, { error: error.message }, 500);
     }
   }
 );

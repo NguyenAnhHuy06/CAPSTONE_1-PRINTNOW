@@ -26,8 +26,8 @@ exports.updateProfileRules = [
     .withMessage("fullName invalid"),
   body("phone")
     .optional()
-    .matches(/^[0-9]{10,11}$/)
-    .withMessage("phone must be 10-11 digits"),
+    .matches(/^[0-9]{10}$/)
+    .withMessage("phone must be exactly 10 digits"),
   body("email").optional().isEmail().withMessage("email invalid"),
   body('address').optional().isLength({ max: 255 }).withMessage('Địa chỉ không được vượt quá 255 ký tự'),
 ];

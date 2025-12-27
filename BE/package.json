@@ -16,6 +16,8 @@
         "fix-datetime": "node scripts/fix-datetime-issue.js",
         "fix-datetime-direct": "node scripts/fix-datetime-direct.js",
         "fix-otp-table": "node scripts/fix-otp-table.js",
+        "sync-files": "node scripts/sync-files-db.js",
+        "test-upload": "node scripts/test-upload.js",
         "test-db": "node test-database-connection.js",
         "test": "echo \"No tests specified\" && exit 0"
     },

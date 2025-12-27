@@ -7,10 +7,10 @@ const OrderItem = sequelize.define('OrderItem', {
   orderId: { type: DataTypes.BIGINT.UNSIGNED, allowNull: false, comment: 'ID đơn hàng' },
   printType: { type: DataTypes.ENUM('DOCUMENT', 'PHOTO', 'BANNER'), allowNull: false, defaultValue: 'DOCUMENT' },
   pricingMode: { type: DataTypes.ENUM('PER_PAGE', 'PER_SHEET', 'FIXED'), allowNull: false, defaultValue: 'PER_PAGE' },
-  // Khớp với schema: SMALLINT UNSIGNED
-  paperSizeId: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: false },
-  colorModeId: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: false },
-  sideId: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: false },
+  // Đồng bộ với PaperSize, ColorMode, Side models (BIGINT)
+  paperSizeId: { type: DataTypes.BIGINT, allowNull: false, comment: 'ID kích thước giấy' },
+  colorModeId: { type: DataTypes.BIGINT, allowNull: false, comment: 'ID chế độ màu' },
+  sideId: { type: DataTypes.BIGINT, allowNull: false, comment: 'ID chế độ in' },
   pages: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
   setCount: { type: DataTypes.INTEGER, allowNull: true },

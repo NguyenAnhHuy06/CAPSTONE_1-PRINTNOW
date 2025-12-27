@@ -1000,13 +1000,15 @@
             <i class="fas fa-box"></i>
           </a>
           <!-- Trang Customers (đang active) -->
-          <a href="ManageCustomer_Employee.html" class="nav-item customer">
+          <a href="ManageCustomer_Employee.html" class="nav-item customer active">
             <i class="fas fa-user-friends"></i>
           </a>
-          <a href="#" class="nav-item setting"><i class="fas fa-cog"></i></a>
-          <a href="#" class="nav-item chat"
-            ><i class="fas fa-headphones"></i
-          ></a>
+          <!-- Đi sang trang Settings -->
+          <a href="Employee_Setting.html" class="nav-item setting"><i class="fas fa-cog"></i></a>
+          <!-- Icon headphone (không chuyển hướng) -->
+          <a href="#" class="nav-item chat" onclick="return false;" style="cursor: default;">
+            <i class="fas fa-headphones"></i>
+          </a>
         </nav>
         <div class="sidebar-bottom">
           <a href="#" class="nav-item logout" id="sidebarLogout" title="Logout">

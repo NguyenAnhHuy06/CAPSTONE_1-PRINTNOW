@@ -34,32 +34,38 @@
         <nav class="sidebar-nav">
           <ul>
             <li class="nav-item active">
-              <a href="#">
+              <a href="Owner_Dashboard.html">
                 <i class="bx bxs-dashboard icon"></i>
                 <span class="nav-text">Dashboard</span>
               </a>
             </li>
             <li class="nav-item has-badge">
-              <a href="#">
+              <a href="OrderManage_Owner.html">
                 <i class="bx bx-notepad icon"></i>
                 <span class="nav-text">Orders</span>
                 <span class="badge">3</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#">
+              <a href="ManageCustomer_Employee.html">
                 <i class="bx bx-group icon"></i>
                 <span class="nav-text">Customers</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#">
+              <a href="PriceManagement_Owner.html">
                 <i class="bx bx-package icon"></i>
                 <span class="nav-text">Inventory</span>
               </a>
             </li>
             <li class="nav-item">
-              <a href="#">
+              <a href="Employee_Dashboard.html">
+                <i class="bx bx-user icon"></i>
+                <span class="nav-text">Employee</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="Setting.html">
                 <i class="bx bx-cog icon"></i>
                 <span class="nav-text">Settings</span>
               </a>
@@ -483,8 +489,13 @@
               return;
             }
 
-            const data = result.data;
+            const data = result.data || {};
             console.log("📊 Data nhận được:", data);
+
+            // Xử lý trường hợp không có dữ liệu: sử dụng giá trị mặc định 0
+            const revenue = data.revenue || 0;
+            const volume = data.volume || 0;
+            const growthRate = data.growthRate || 0;
 
             const salesCard = document.querySelector(".sales-kpi");
             console.log("🎯 Sales card element:", salesCard);
@@ -497,12 +508,12 @@
               console.log("🎯 Sales value element:", salesValue);
               if (salesValue) {
                 const growthClass =
-                  parseFloat(data.growthRate) >= 0 ? "success" : "";
-                const growthSign = parseFloat(data.growthRate) >= 0 ? "+" : "";
+                  parseFloat(growthRate) >= 0 ? "success" : "";
+                const growthSign = parseFloat(growthRate) >= 0 ? "+" : "";
                 const newContent = `${formatCurrency(
-                  data.revenue
+                  revenue
                 )} <span class="kpi-change ${growthClass}">${growthSign}${
-                  data.growthRate
+                  growthRate
                 }%</span>`;
                 console.log("📝 Cập nhật Sales:", newContent);
                 salesValue.innerHTML = newContent;
@@ -516,8 +527,8 @@
               );
               console.log("🎯 Volume value element:", volumeValue);
               if (volumeValue) {
-                console.log("📝 Cập nhật Volume:", data.volume);
-                volumeValue.textContent = data.volume.toString();
+                console.log("📝 Cập nhật Volume:", volume);
+                volumeValue.textContent = volume.toString();
               } else {
                 console.warn("⚠️ Không tìm thấy volume value element");
               }
@@ -583,8 +594,12 @@
               return;
             }
 
-            const data = result.data;
+            const data = result.data || {};
             console.log("👥 Customers data nhận được:", data);
+
+            // Xử lý trường hợp không có dữ liệu: sử dụng giá trị mặc định 0
+            const customersWithOrders = data.customersWithOrders || 0;
+            const customersGrowthRate = data.customersGrowthRate || 0;
 
             const customerCard = document.querySelector(".customer-kpi");
             console.log("🎯 Customer card element:", customerCard);
@@ -597,10 +612,10 @@
               console.log("🎯 Customers value element:", customersValue);
               if (customersValue) {
                 const growthClass =
-                  parseFloat(data.customersGrowthRate) >= 0 ? "success" : "";
+                  parseFloat(customersGrowthRate) >= 0 ? "success" : "";
                 const growthSign =
-                  parseFloat(data.customersGrowthRate) >= 0 ? "+" : "";
-                const newContent = `${data.customersWithOrders} <span class="kpi-change ${growthClass}">${growthSign}${data.customersGrowthRate}%</span>`;
+                  parseFloat(customersGrowthRate) >= 0 ? "+" : "";
+                const newContent = `${customersWithOrders} <span class="kpi-change ${growthClass}">${growthSign}${customersGrowthRate}%</span>`;
                 console.log("📝 Cập nhật Customers:", newContent);
                 customersValue.innerHTML = newContent;
               } else {
@@ -680,8 +695,14 @@
               return;
             }
 
-            const data = result.data;
+            const data = result.data || {};
             console.log("📦 Orders data nhận được:", data);
+
+            // Xử lý trường hợp không có dữ liệu: sử dụng giá trị mặc định 0
+            const totalOrders = data.totalOrders || 0;
+            const pendingOrders = data.pendingOrders || 0;
+            const completedOrders = data.completedOrders || 0;
+            const completedGrowthRate = data.completedGrowthRate || 0;
 
             const ordersCard = document.querySelector(".orders-kpi");
             console.log("🎯 Orders card element:", ordersCard);
@@ -693,8 +714,8 @@
               );
               console.log("🎯 All Orders value element:", allOrdersValue);
               if (allOrdersValue) {
-                console.log("📝 Cập nhật All Orders:", data.totalOrders);
-                allOrdersValue.textContent = data.totalOrders.toString();
+                console.log("📝 Cập nhật All Orders:", totalOrders);
+                allOrdersValue.textContent = totalOrders.toString();
               } else {
                 console.warn("⚠️ Không tìm thấy all orders value element");
               }
@@ -705,8 +726,8 @@
               );
               console.log("🎯 Pending value element:", pendingValue);
               if (pendingValue) {
-                console.log("📝 Cập nhật Pending:", data.pendingOrders);
-                pendingValue.textContent = data.pendingOrders.toString();
+                console.log("📝 Cập nhật Pending:", pendingOrders);
+                pendingValue.textContent = pendingOrders.toString();
               } else {
                 console.warn("⚠️ Không tìm thấy pending value element");
               }
@@ -718,10 +739,10 @@
               console.log("🎯 Completed value element:", completedValue);
               if (completedValue) {
                 const growthClass =
-                  parseFloat(data.completedGrowthRate) >= 0 ? "success" : "";
+                  parseFloat(completedGrowthRate) >= 0 ? "success" : "";
                 const growthSign =
-                  parseFloat(data.completedGrowthRate) >= 0 ? "+" : "";
-                const newContent = `${data.completedOrders} <span class="kpi-change ${growthClass}">${growthSign}${data.completedGrowthRate}%</span>`;
+                  parseFloat(completedGrowthRate) >= 0 ? "+" : "";
+                const newContent = `${completedOrders} <span class="kpi-change ${growthClass}">${growthSign}${completedGrowthRate}%</span>`;
                 console.log("📝 Cập nhật Completed:", newContent);
                 completedValue.innerHTML = newContent;
               } else {

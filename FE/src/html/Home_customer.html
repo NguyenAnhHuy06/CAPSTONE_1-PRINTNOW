@@ -241,11 +241,20 @@
         text-align: left;
         transition: all 0.3s ease;
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.02);
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
       }
 
       .service-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+      }
+
+      .service-card a {
+        text-decoration: none;
+        color: inherit;
       }
 
       .icon-box {
@@ -304,6 +313,7 @@
         color: #0080ff;
         font-weight: 500;
         text-decoration: none;
+        display: block;
       }
 
       .service-card span {
@@ -495,9 +505,13 @@
             >
               Order now
             </a>
-            <button class="btn secondary" data-i18n="home.hero_learn_more">
+            <a
+              href="/about-us"
+              class="btn secondary"
+              data-i18n="home.hero_learn_more"
+            >
               Learn more
-            </button>
+            </a>
           </div>
         </div>
       </section>
@@ -510,7 +524,7 @@
         </p>
 
         <div class="service-grid">
-          <div class="service-card">
+          <a href="/print/document" class="service-card">
             <div class="icon-box">
               <i class="bx bx-file" aria-hidden="true"></i>
             </div>
@@ -525,12 +539,12 @@
               <span data-i18n="home.service_doc_tag2">2-sided printing</span>
               <span data-i18n="home.service_doc_tag3">Various paper sizes</span>
             </div>
-            <a href="#" class="price" data-i18n="home.service_doc_price">
+            <span class="price" data-i18n="home.service_doc_price">
               From 2.000đ/page
-            </a>
-          </div>
+            </span>
+          </a>
 
-          <div class="service-card">
+          <a href="/print/photo" class="service-card">
             <div class="icon-box">
               <i class="bx bx-image" aria-hidden="true"></i>
             </div>
@@ -544,12 +558,12 @@
               <span data-i18n="home.service_photo_tag2">Premium paper</span>
               <span data-i18n="home.service_photo_tag3">Vibrant colors</span>
             </div>
-            <a href="#" class="price" data-i18n="home.service_photo_price">
+            <span class="price" data-i18n="home.service_photo_price">
               From 5.000đ/photo
-            </a>
-          </div>
+            </span>
+          </a>
 
-          <div class="service-card">
+          <a href="/service/print" class="service-card">
             <div class="icon-box">
               <i class="bx bx-id-card" aria-hidden="true"></i>
             </div>
@@ -562,12 +576,12 @@
               <span data-i18n="home.service_card_tag2">Beautiful finish</span>
               <span data-i18n="home.service_card_tag3">Flexible quantity</span>
             </div>
-            <a href="#" class="price" data-i18n="home.service_card_price">
+            <span class="price" data-i18n="home.service_card_price">
               From 100.000đ/box
-            </a>
-          </div>
+            </span>
+          </a>
 
-          <div class="service-card">
+          <a href="/service/print" class="service-card">
             <div class="icon-box">
               <i class="bx bx-coffee" aria-hidden="true"></i>
             </div>
@@ -582,13 +596,13 @@
               <span data-i18n="home.service_cup_tag2">Beautiful finish</span>
               <span data-i18n="home.service_cup_tag3">Reasonable price</span>
             </div>
-            <a href="#" class="price" data-i18n="home.service_cup_price">
+            <span class="price" data-i18n="home.service_cup_price">
               From 2.000đ/cup
-            </a>
-          </div>
+            </span>
+          </a>
         </div>
 
-        <button class="btn view-all" data-i18n="home.view_all_services">
+        <button class="btn view-all" data-i18n="home.view_all_services" onclick="window.location.href='/service/print'">
           View all services
         </button>
       </section>

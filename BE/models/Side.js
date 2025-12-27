@@ -1,4 +1,4 @@
-// cap1/models/Side.js
+// models/Side.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
@@ -27,7 +27,9 @@ const Side = sequelize.define('Side', {
     }
 }, {
     tableName: 'sides',
-    timestamps: false // Tắt timestamps vì bảng đã có created_at, updated_at
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
 });
 
 module.exports = Side;

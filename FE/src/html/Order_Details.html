@@ -399,6 +399,8 @@
               <th data-i18n="order.table_quantity">Quantity</th>
               <th data-i18n="order.table_unit_price">Unit Price</th>
               <th data-i18n="order.table_total">Total</th>
+              <th data-i18n="order.table_note">Note</th>
+              <th data-i18n="order.table_file_upload">File Upload</th>
             </tr>
           </thead>
           <tbody>
@@ -561,11 +563,46 @@
 
             (data.items || []).forEach((it) => {
               const tr = document.createElement("tr");
+              
+              // Note lấy từ OrderItem (it.note), nếu không có thì lấy từ Order (data.note) hoặc "-"
+              const itemNote = it.note || data.note || "-";
+              
+              // Hiển thị file links (có thể có nhiều files)
+              let fileLinksHtml = "-";
+              if (it.files && Array.isArray(it.files) && it.files.length > 0) {
+                fileLinksHtml = it.files.map((file) => {
+                  if (file.id) {
+                    // Sử dụng API route để download file với authentication
+                    const fileUrl = `/api/print-files/download/${file.id}`;
+                    const fileName = file.originalName || "Download";
+                    // Escape filename để tránh lỗi JavaScript
+                    const escapedFileName = fileName.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n");
+                    // Sử dụng JavaScript để force download thay vì mở trong browser
+                    return `<a href="${fileUrl}" onclick="event.preventDefault(); downloadFile('${fileUrl}', '${escapedFileName}'); return false;" style="display: block; margin-bottom: 4px; color: #007bff; text-decoration: none; cursor: pointer;">${fileName}</a>`;
+                  }
+                  // Fallback: nếu không có id, thử dùng storageUrl (cũ)
+                  if (file.storageUrl) {
+                    let fileUrl = file.storageUrl;
+                    if (!fileUrl.startsWith("http://") && !fileUrl.startsWith("https://") && !fileUrl.startsWith("/")) {
+                      fileUrl = "/" + fileUrl;
+                    }
+                    return `<a href="${fileUrl}" target="_blank" rel="noopener noreferrer" style="display: block; margin-bottom: 4px; color: #007bff; text-decoration: none;">${file.originalName || "Download"}</a>`;
+                  }
+                  return "";
+                }).filter(Boolean).join("");
+                // Nếu sau khi filter không còn link nào, hiển thị "-"
+                if (!fileLinksHtml) {
+                  fileLinksHtml = "-";
+                }
+              }
+              
               tr.innerHTML = `
           <td>${prettyName(it)}</td>
           <td style="text-align:center">${it.quantity}</td>
           <td>${fmtMoney(it.unitPrice)}</td>
           <td>${fmtMoney(it.totalPrice)}</td>
+          <td>${itemNote}</td>
+          <td>${fileLinksHtml}</td>
         `;
               tbody.appendChild(tr);
             });
@@ -653,6 +690,50 @@
       })();
     </script>
     <script>
+      // Function để download file với authentication
+      async function downloadFile(url, filename) {
+        try {
+          // Lấy token từ localStorage hoặc cookie
+          const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+          const headers = {};
+          if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+          }
+
+          // Fetch file với credentials
+          const response = await fetch(url, {
+            method: "GET",
+            credentials: "include",
+            headers,
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            alert(error.message || "Không thể tải file");
+            return;
+          }
+
+          // Lấy blob từ response
+          const blob = await response.blob();
+          
+          // Tạo URL tạm và trigger download
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Cleanup
+          window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+          console.error("Download error:", error);
+          alert("Lỗi khi tải file: " + error.message);
+        }
+      }
+    </script>
+    <script>
       // Áp dụng i18n & sync language từ server (giống các trang khác)
       document.addEventListener("DOMContentLoaded", () => {
         if (window.i18n) {
@@ -670,10 +751,11 @@
     </script>
     <script src="/js/authHeader.js"></script>
     <script>
-      // ✅ Hard-guard: staff/owner/admin không được vào customer Order Details
+      // ✅ Role guard: Cho phép cả customer và staff/employee/owner/admin xem Order Details
+      // Trang này có thể được truy cập từ cả customer và employee dashboard
       document.addEventListener("DOMContentLoaded", async () => {
         try {
-          // cố gắng gọi /api/auth/me để lấy role
+          // Kiểm tra authentication - nếu chưa login thì để trang tự xử lý
           const token =
             localStorage.getItem("token") ||
             sessionStorage.getItem("token") ||
@@ -688,11 +770,8 @@
           const me = await r.json();
           const role = String(me?.user?.role || me?.role || "").toLowerCase();
 
-          // nếu là staff/owner/admin => đá về dashboard staff
-          if (["staff", "owner", "admin"].includes(role)) {
-            alert("This page is for customers only.");
-            window.location.href = "Employee_Dashboard.html";
-          }
+          // Cho phép tất cả các role truy cập: customer, staff, employee, owner, admin
+          // Không cần redirect nữa vì employee cũng cần xem order details
         } catch (_) {}
       });
     </script>

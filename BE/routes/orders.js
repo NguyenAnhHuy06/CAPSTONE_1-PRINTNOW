@@ -491,8 +491,10 @@ router.post("/:id/mark-cash-paid", auth, async (req, res) => {
       { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId } }
     );
 
+    // GIỮ NGUYÊN status "pending" (KHÔNG tự động chuyển sang processing)
+    // Status chỉ thay đổi khi nhân viên cập nhật từ dashboard
     await sequelize.query(
-      `UPDATE orders SET status='processing', updatedAt = NOW() WHERE id=:orderId`,
+      `UPDATE orders SET updatedAt = NOW() WHERE id=:orderId`,
       { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId } }
     );
 
@@ -533,16 +535,11 @@ router.post("/:id/mark-cash-paid", auth, async (req, res) => {
     }
 
     // Sau khi commit: Broadcast SSE cho UI khách đang mở trang Order Status
+    // Chỉ broadcast event "paid" - Frontend sẽ hiển thị 10% và chỉ tick xanh ở Order received
     if (orderCode) {
-      const prog = mapFrontendStatusToProgress("in-progress"); // ~60%, stage "Printing"
-      broadcastOrderStatus(orderCode, {
-        status: "In-Progress",
-        dbStatus: "processing",
-        progress: prog.progress,
-        currentStage: prog.currentStage,
-        stages: ORDER_STAGES,
-        updatedAt: new Date().toISOString(),
-      });
+      const paidAmount = updated?.amount ?? payment[0].amount ?? 0;
+      broadcastPaid(orderCode, { paidAmount });
+      // KHÔNG broadcast status update - Status chỉ được cập nhật khi nhân viên thao tác từ dashboard
     }
     const json = { success: true, payment: updated };
     res.json(json);

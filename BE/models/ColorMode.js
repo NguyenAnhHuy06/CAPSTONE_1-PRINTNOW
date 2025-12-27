@@ -1,4 +1,4 @@
-// cap1/models/ColorMode.js
+// models/ColorMode.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
@@ -27,7 +27,9 @@ const ColorMode = sequelize.define('ColorMode', {
     }
 }, {
     tableName: 'color_modes',
-    timestamps: false // Tắt timestamps vì bảng đã có created_at, updated_at
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
 });
 
 module.exports = ColorMode;

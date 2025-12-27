@@ -2,6 +2,7 @@
 const { Op, fn, col, where: sqlWhere } = require("sequelize");
 const db = require("../models");
 const Notification = require("../models/Notification");
+const File = require("../models/File");
 const { QueryTypes } = require("sequelize");
 const { sequelize } = require("../config/database");
 const RealtimeHub = require("../services/realtimeHub");
@@ -850,6 +851,7 @@ exports.getMyOrderByCode = async (req, res) => {
             "unitPrice",
             "lineTotal",
             "extraOptions",
+            "note",
           ],
         },
       ],
@@ -861,6 +863,35 @@ exports.getMyOrderByCode = async (req, res) => {
         .json({ success: false, message: "Order not found" });
 
     const raw = order.toJSON();
+
+    // Query files theo orderItemId cho từng item
+    const itemIds = (raw.items || []).map((it) => it.id);
+    const allFiles = itemIds.length > 0
+      ? await File.findAll({
+          where: {
+            orderItemId: { [Op.in]: itemIds },
+            isDeleted: false,
+          },
+          attributes: ["id", "orderItemId", "storageUrl", "originalName", "storageKey"],
+        })
+      : [];
+
+    // Group files by orderItemId
+    const filesByItemId = {};
+    allFiles.forEach((file) => {
+      const itemId = file.orderItemId;
+      if (!filesByItemId[itemId]) {
+        filesByItemId[itemId] = [];
+      }
+      filesByItemId[itemId].push({
+        id: file.id,
+        storageUrl: file.storageUrl,
+        originalName: file.originalName,
+        storageKey: file.storageKey,
+      });
+    });
+
+    // Note lấy từ OrderItem (it.note), Files lấy từ File model theo orderItemId
     const items = (raw.items || []).map((it) => ({
       id: it.id,
       printType: it.printType,
@@ -868,6 +899,9 @@ exports.getMyOrderByCode = async (req, res) => {
       unitPrice: Number(it.unitPrice),
       lineTotal: Number(it.lineTotal),
       extraOptions: it.extraOptions || {},
+      note: it.note || null, // Note của từng item
+      // Files: files của từng item (theo orderItemId)
+      files: filesByItemId[it.id] || [],
       productName: buildProductName(it),
       totalPrice: Number(it.lineTotal),
     }));
@@ -1120,52 +1154,23 @@ exports.webhookCassoLike = async (req, res) => {
       );
 
       // Khi nhận thanh toán/đặt cọc thành công:
-      // - nếu đơn còn NEW/pending -> chuyển sang processing
-      // - nếu đơn đang processing/ready/completed rồi -> giữ nguyên (tránh rollback trạng thái)
+      // - GIỮ NGUYÊN status "pending" (KHÔNG tự động chuyển sang processing)
+      // - Chỉ cập nhật updatedAt để đánh dấu đã nhận thanh toán
+      // - Status chỉ thay đổi khi nhân viên cập nhật từ dashboard
       await sequelize.query(
         `UPDATE ${T("orders")}
-           SET status = CASE
-                         WHEN LOWER(status) IN ('new','pending') THEN 'processing'
-                         ELSE status
-                       END,
-               completedAt = CASE
-                              WHEN LOWER(status) IN ('new','pending') THEN NULL
-                              ELSE completedAt
-                           END,
-               updatedAt = NOW()
+           SET updatedAt = NOW()
          WHERE id = :orderId`,
         { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId } }
       );
     });
 
     // Sau khi lưu DB thành công mới phát SSE (để UI sync đúng)
-    // 1) Báo realtime tiền đã vào (type: "paid")
+    // 1) Báo realtime tiền đã vào (type: "paid") - Frontend sẽ hiển thị 10% và chỉ tick xanh ở Order received
     broadcastPaid(canonicalCode, { paidAmount: amt });
 
-    // 2) Đồng thời broadcast trạng thái đơn đã hoàn tất (type: "status")
-    // broadcast status theo trạng thái thực trong DB sau update
-    let dbSt = "processing";
-    try {
-      const [ord] = await sequelize.query(
-        `SELECT status FROM ${T("orders")} WHERE id = :id LIMIT 1`,
-        { type: QueryTypes.SELECT, replacements: { id: orderId } }
-      );
-      dbSt = String(ord?.status || "processing").toLowerCase();
-    } catch { }
-    const feSt = mapDbStatusToFrontend(dbSt);
-    const prog = mapFrontendStatusToProgress(
-      String(feSt).toLowerCase() === "in-progress"
-        ? "in-progress"
-        : String(feSt).toLowerCase()
-    );
-    broadcastOrderStatus(canonicalCode, {
-      status: feSt,
-      dbStatus: dbSt,
-      progress: prog.progress,
-      currentStage: prog.currentStage,
-      stages: ORDER_STAGES,
-      updatedAt: new Date().toISOString(),
-    });
+    // 2) KHÔNG broadcast status update sau thanh toán
+    // Status chỉ được cập nhật khi nhân viên thao tác từ dashboard
     // 📣 Dashboard: phát sự kiện cập nhật 1 đơn
     try {
       const [row] = await sequelize.query(
@@ -1244,17 +1249,11 @@ exports.markPaidManual = async (req, res) => {
       }
     );
 
+    // GIỮ NGUYÊN status "pending" (KHÔNG tự động chuyển sang processing)
+    // Status chỉ thay đổi khi nhân viên cập nhật từ dashboard
     await sequelize.query(
       `UPDATE ${T("orders")}
-         SET status = CASE
-                       WHEN LOWER(status) IN ('new','pending') THEN 'processing'
-                       ELSE status
-                     END,
-             completedAt = CASE
-                            WHEN LOWER(status) IN ('new','pending') THEN NULL
-                            ELSE completedAt
-                          END,
-             updatedAt = NOW()
+         SET updatedAt = NOW()
        WHERE id = :orderId`,
       { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId } }
     );
@@ -1275,18 +1274,10 @@ exports.markPaidManual = async (req, res) => {
   }
 
   // Báo về FE (SSE) để các trang khác đang mở tự cập nhật
-  // 1) Thanh toán thành công
+  // 1) Thanh toán thành công - Frontend sẽ hiển thị 10% và chỉ tick xanh ở Order received
   broadcastPaid(oc, { paidAmount: amt });
-  // 2) Trạng thái đơn đã hoàn tất
-  const prog = mapFrontendStatusToProgress("in-progress");
-  broadcastOrderStatus(oc, {
-    status: "In-Progress",
-    dbStatus: "processing",
-    progress: prog.progress,
-    currentStage: prog.currentStage,
-    stages: ORDER_STAGES,
-    updatedAt: new Date().toISOString(),
-  });
+  // 2) KHÔNG broadcast status update sau thanh toán
+  // Status chỉ được cập nhật khi nhân viên thao tác từ dashboard
   res.json({ ok: true });
   // Dashboard update
   try {
@@ -1814,6 +1805,7 @@ exports.getMyOrderById = async (req, res) => {
             "unitPrice",
             "lineTotal",
             "extraOptions",
+            "note",
           ],
         },
       ],
@@ -1828,7 +1820,35 @@ exports.getMyOrderById = async (req, res) => {
     // 👇 FIX: cần chuyển sang JSON để có biến raw
     const raw = order.toJSON();
 
+    // Query files theo orderItemId cho từng item
+    const itemIds = (raw.items || []).map((it) => it.id);
+    const allFiles = itemIds.length > 0
+      ? await File.findAll({
+          where: {
+            orderItemId: { [Op.in]: itemIds },
+            isDeleted: false,
+          },
+          attributes: ["id", "orderItemId", "storageUrl", "originalName", "storageKey"],
+        })
+      : [];
+
+    // Group files by orderItemId
+    const filesByItemId = {};
+    allFiles.forEach((file) => {
+      const itemId = file.orderItemId;
+      if (!filesByItemId[itemId]) {
+        filesByItemId[itemId] = [];
+      }
+      filesByItemId[itemId].push({
+        id: file.id,
+        storageUrl: file.storageUrl,
+        originalName: file.originalName,
+        storageKey: file.storageKey,
+      });
+    });
+
     // GIỮ NGUYÊN dữ liệu cần cho Reorder (printType, extraOptions, ...)
+    // Note lấy từ OrderItem (it.note), Files lấy từ File model theo orderItemId
     const items = (raw.items || []).map((it) => ({
       id: it.id,
       printType: it.printType,
@@ -1836,7 +1856,10 @@ exports.getMyOrderById = async (req, res) => {
       unitPrice: Number(it.unitPrice),
       lineTotal: Number(it.lineTotal),
       extraOptions: it.extraOptions || {},
-      // Tên hiển thị “đẹp” cho FE
+      note: it.note || null, // Note của từng item
+      // Files: files của từng item (theo orderItemId)
+      files: filesByItemId[it.id] || [],
+      // Tên hiển thị "đẹp" cho FE
       productName: buildProductName(it),
       totalPrice: Number(it.lineTotal),
     }));
@@ -1908,31 +1931,22 @@ exports.confirmStorePayment = async (req, res) => {
         }
       );
 
-      // Chỉ chuyển NEW/PENDING -> PROCESSING, tránh regress READY/COMPLETED
+      // GIỮ NGUYÊN status "pending" (KHÔNG tự động chuyển sang processing)
+      // Status chỉ thay đổi khi nhân viên cập nhật từ dashboard
       await sequelize.query(
         `UPDATE ${T("orders")}
-            SET status = CASE
-                          WHEN LOWER(status) IN ('new','pending') THEN 'processing'
-                          ELSE status
-                        END,
-                updatedAt = NOW()
+            SET updatedAt = NOW()
           WHERE id = :orderId`,
         { type: QueryTypes.UPDATE, transaction: t, replacements: { orderId: id } }
       );
     });
 
-    // Sau khi transaction xong: broadcast trạng thái mới cho UI khách
-    // "Pay at store" -> đơn đã được xác nhận và đang trong trạng thái "Processing"
+    // Sau khi transaction xong: broadcast thanh toán thành công
+    // "Pay at store" -> chỉ broadcast "paid", không broadcast status update
     const orderCode = genOrderCode(order); // cùng format với getMyOrderByCode
-    const prog = mapFrontendStatusToProgress("in-progress");
-    broadcastOrderStatus(orderCode, {
-      status: "In-Progress",
-      dbStatus: "processing", // trạng thái trong DB
-      progress: prog.progress,
-      currentStage: prog.currentStage,
-      stages: ORDER_STAGES,
-      updatedAt: new Date().toISOString(),
-    });
+    // Broadcast event "paid" - Frontend sẽ hiển thị 10% và chỉ tick xanh ở Order received
+    broadcastPaid(orderCode, { paidAmount: amount });
+    // KHÔNG broadcast status update - Status chỉ được cập nhật khi nhân viên thao tác từ dashboard
 
     // Đọc lại payment để trả về cho FE (cần có id)
     const payment = await sequelize.query(

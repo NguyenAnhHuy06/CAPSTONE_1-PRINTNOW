@@ -730,11 +730,12 @@
 
       function mapStatusToStage(status) {
         const s = String(status || "").toLowerCase();
-        if (s === "pending" || s === "new") {
+        // Sau khi thanh toán xong, hiển thị 10% và chỉ tick xanh ở "Order received"
+        if (s === "pending" || s === "new" || s === "paid") {
           return { progress: 10, currentStage: "Order received" };
         }
         // 👇 Tách 'ready' ra để hiển thị đúng bước & phần trăm
-        if (s === "processing" || s === "paid") {
+        if (s === "processing") {
           return { progress: 55, currentStage: "Printing" };
         }
         if (s === "ready") {
@@ -819,26 +820,77 @@
         }
 
         // 4) Tô class cho từng bước + aria-current
+        // Nếu progress = 10% (sau thanh toán), thì chỉ step 0 (Order received) là completed
+        const isPendingState = Math.round(prog) === 10;
+        // Nếu progress = 100% hoặc đang ở step cuối cùng, thì step cuối cũng phải là completed
+        const isCompleted = Math.round(prog) === 100 || currentIndex === steps.length - 1;
+        
+        // Debug log
+        if (isPendingState) {
+          console.log("[OrderStatus] Pending state detected: progress =", prog, "currentIndex =", currentIndex);
+        }
+        if (isCompleted) {
+          console.log("[OrderStatus] Completed state detected: progress =", prog, "currentIndex =", currentIndex);
+        }
+        
         steps.forEach((step, index) => {
-          if (index < currentIndex) step.classList.add("completed");
-          else if (index === currentIndex) {
-            step.classList.add("active");
+          const iconEl = step.querySelector(".icon");
+          
+          if (isPendingState) {
+            // Trạng thái pending (sau thanh toán): chỉ "Order received" (index 0) là completed
+            if (index === 0) {
+              step.classList.add("completed");
+              step.classList.remove("active", "inactive");
+              // Đảm bảo icon hiển thị dấu tick khi completed
+              if (iconEl) iconEl.textContent = "✔";
+            } else {
+              step.classList.add("inactive");
+              step.classList.remove("completed", "active");
+            }
+          } else if (isCompleted && index === currentIndex) {
+            // Khi đã completed (100% hoặc step cuối), step cuối cũng phải là completed
+            step.classList.add("completed");
+            step.classList.remove("active", "inactive");
             step.setAttribute("aria-current", "step");
-          } else step.classList.add("inactive");
+            // Đảm bảo icon hiển thị dấu tick khi completed
+            if (iconEl) iconEl.textContent = "✔";
+          } else {
+            // Logic bình thường cho các trạng thái khác
+            if (index < currentIndex) {
+              step.classList.add("completed");
+              step.classList.remove("active", "inactive");
+              // Đảm bảo icon hiển thị dấu tick khi completed
+              if (iconEl) iconEl.textContent = "✔";
+            } else if (index === currentIndex) {
+              step.classList.add("active");
+              step.classList.remove("completed", "inactive");
+              step.setAttribute("aria-current", "step");
+            } else {
+              step.classList.add("inactive");
+              step.classList.remove("completed", "active");
+            }
+          }
         });
 
         // 4.1) Thêm ARIA label cho từng step
         steps.forEach((step, index) => {
           const name = stepTitles[index];
-          step.setAttribute(
-            "aria-label",
-            `${name} ${index < currentIndex
+          let statusLabel = "(pending)";
+          if (isPendingState) {
+            // Trạng thái pending: chỉ step 0 là completed
+            statusLabel = index === 0 ? "(completed)" : "(pending)";
+          } else if (isCompleted && index === currentIndex) {
+            // Khi đã completed, step cuối cũng là completed
+            statusLabel = "(completed)";
+          } else {
+            // Logic bình thường
+            statusLabel = index < currentIndex
               ? "(completed)"
               : index === currentIndex
                 ? "(in progress)"
-                : "(pending)"
-            }`
-          ); // ⬅️ thêm
+                : "(pending)";
+          }
+          step.setAttribute("aria-label", `${name} ${statusLabel}`);
         });
 
         // 5) ARIA cho progressbar (đặt trên container)
@@ -893,9 +945,19 @@
             return;
           }
 
-          // Hiện tại server dùng type: "paid" cho thanh toán, "status" cho tiến độ
-          if (payload.type === "status") {
-            console.log("Nhận realtime status:", payload);
+          // Xử lý event "paid" - sau khi thanh toán xong, chỉ hiển thị 10% và tick xanh ở Order received
+          if (payload.type === "paid") {
+            console.log("Nhận realtime paid event:", payload);
+            // Sau khi thanh toán, luôn hiển thị 10% và chỉ tick xanh ở Order received
+            updateOrderStatus({
+              progress: 10,
+              currentStage: "Order received",
+              stages: ORDER_STAGES,
+            });
+          }
+          // Xử lý event "status" - chỉ khi nhân viên cập nhật từ dashboard
+          else if (payload.type === "status") {
+            console.log("Nhận realtime status update từ nhân viên:", payload);
             updateOrderStatus({
               progress: payload.progress,
               currentStage: payload.currentStage,
@@ -1100,6 +1162,12 @@
           })());
 
         const stageInfo = mapStatusToStage(baseStatus);
+        
+        // Log để debug
+        console.log("[OrderStatus] Load order data:", {
+          status: baseStatus,
+          stageInfo: stageInfo
+        });
 
         updateOrderStatus({
           progress: stageInfo.progress,

@@ -20,7 +20,7 @@
     // --- inject CSS chỉ 1 lần ---
     if (!document.getElementById("authHeaderStyles")) {
         const css = `
-.auth-area{display:flex;align-items:center;}
+.auth-area{display:flex;align-items:center;gap:12px;}
 .avatar-menu{position:relative;}
 .avatar-btn{background:transparent;border:0;cursor:pointer;padding:0;}
 .avatar{
@@ -30,6 +30,41 @@
 }
 .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;}
 .avatar .initials{display:inline-flex;align-items:center;justify-content:center;width:100%;height:100%;}
+
+/* Notification Bell */
+.notification-bell{
+  position:relative;
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  padding:6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#374151;
+  font-size:24px;
+  transition:color 0.2s;
+}
+.notification-bell:hover{color:#043873;}
+.notification-badge{
+  position:absolute;
+  top:2px;
+  right:2px;
+  background:#ef4444;
+  color:#fff;
+  border-radius:10px;
+  min-width:18px;
+  height:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:600;
+  padding:0 5px;
+  border:2px solid #fff;
+  box-shadow:0 2px 4px rgba(0,0,0,0.1);
+}
+.notification-badge.hidden{display:none;}
 
 /* Dropdown */
 .auth-menu{
@@ -249,6 +284,15 @@
             const menuId = "authMenu-" + Math.random().toString(36).slice(2);
 
             container.innerHTML = `
+  <button
+      type="button"
+      class="notification-bell"
+      aria-label="Notifications"
+      id="notificationBell"
+      title="Notifications">
+      <i class="bx bx-bell" aria-hidden="true"></i>
+      <span class="notification-badge hidden" id="notificationBadge">0</span>
+    </button>
   <div class="avatar-menu">
         <button
       type="button"
@@ -348,6 +392,81 @@
                         })
                     );
                 } catch { }
+            }
+
+            // ===== NOTIFICATION BELL =====
+            const notificationBell = container.querySelector("#notificationBell");
+            const notificationBadge = container.querySelector("#notificationBadge");
+            
+            // Hàm cập nhật số thông báo chưa đọc
+            async function updateNotificationCount() {
+                if (!notificationBadge) return;
+                try {
+                    let token = "";
+                    try { token = localStorage.getItem("token") || sessionStorage.getItem("token") || ""; } catch { }
+                    const headers = {};
+                    if (token) headers["Authorization"] = `Bearer ${token}`;
+                    
+                    // Gọi API để lấy số thông báo chưa đọc (limit=1 để tối ưu)
+                    const res = await fetch("/api/notifications?limit=1", {
+                        credentials: "include",
+                        cache: "no-store",
+                        headers,
+                    });
+                    if (!res.ok) {
+                        notificationBadge.classList.add("hidden");
+                        return;
+                    }
+                    const data = await res.json();
+                    const count = Number(data.unreadCount || 0);
+                    if (count > 0) {
+                        notificationBadge.textContent = count > 99 ? "99+" : String(count);
+                        notificationBadge.classList.remove("hidden");
+                    } else {
+                        notificationBadge.classList.add("hidden");
+                    }
+                } catch (err) {
+                    console.warn("Failed to fetch notification count:", err);
+                    notificationBadge.classList.add("hidden");
+                }
+            }
+            
+            // Event listener cho notification bell
+            if (notificationBell) {
+                notificationBell.addEventListener("click", () => {
+                    window.location.href = "/notifications";
+                });
+                // Load số thông báo ban đầu
+                updateNotificationCount();
+            }
+            
+            // Lắng nghe realtime notifications nếu có
+            if (window.Realtime && typeof window.Realtime.connect === "function") {
+                window.Realtime.connect({
+                    onEvent: (payload) => {
+                        if (payload.type === "notifications.new") {
+                            // Cập nhật số thông báo từ payload hoặc fetch lại
+                            const userId = payload.data?.userId;
+                            const currentUserId = user?.id;
+                            // Chỉ cập nhật nếu thông báo dành cho user hiện tại
+                            if (userId && currentUserId && Number(userId) === Number(currentUserId)) {
+                                const unreadCount = payload.data?.unreadCount;
+                                if (typeof unreadCount === "number" && notificationBadge) {
+                                    if (unreadCount > 0) {
+                                        notificationBadge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+                                        notificationBadge.classList.remove("hidden");
+                                    } else {
+                                        notificationBadge.classList.add("hidden");
+                                    }
+                                } else {
+                                    // Fallback: fetch lại nếu không có unreadCount trong payload
+                                    updateNotificationCount();
+                                }
+                            }
+                        }
+                    },
+                    onError: () => {}
+                });
             }
 
             const btn = container.querySelector(".avatar-btn");

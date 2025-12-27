@@ -123,17 +123,48 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
+        // Validate fullName: tối đa 50 ký tự
+        if (fullName.length > 50) {
+            return res.status(400).json({
+                success: false,
+                message: 'Tên đăng nhập không được vượt quá 50 ký tự'
+            });
+        }
+
+        // Validate email: tối đa 50 ký tự
+        if (email.length > 50) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email không được vượt quá 50 ký tự'
+            });
+        }
+
+        // Validate password: tối thiểu 8 ký tự, có chữ in hoa, ký tự đặc biệt, chữ thường và số
+        if (password.length < 8) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mật khẩu phải có ít nhất 8 ký tự'
+            });
+        }
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mật khẩu phải có ít nhất 1 chữ in hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt'
+            });
+        }
+
         // Chuẩn hóa & validate số điện thoại ngay tại BE
         let normalizedPhone = null;
         if (phone) {
             // Lấy chỉ chữ số: bỏ dấu +, khoảng trắng, dấu gạch, ...
             const digits = String(phone).replace(/\D/g, '');
             if (digits) {
-                // Model đang yêu cầu 10-11 chữ số
-                if (digits.length < 10 || digits.length > 11) {
+                // Yêu cầu đúng 10 chữ số
+                if (digits.length !== 10) {
                     return res.status(400).json({
                         success: false,
-                        message: 'Số điện thoại phải có 10-11 chữ số'
+                        message: 'Số điện thoại phải có đúng 10 chữ số'
                     });
                 }
                 normalizedPhone = digits;

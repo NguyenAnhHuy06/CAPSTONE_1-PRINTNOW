@@ -76,6 +76,7 @@
               data-i18n-placeholder="register.placeholder_fullname"
               placeholder="Your Full Name"
               required
+              maxlength="50"
               autocomplete="name"
             />
             <i class="bx bx-user icon-left" aria-hidden="true"></i>
@@ -88,6 +89,7 @@
               data-i18n-placeholder="register.placeholder_email"
               placeholder="Your Email Address"
               required
+              maxlength="50"
               autocomplete="email"
               inputmode="email"
             />
@@ -101,6 +103,8 @@
               data-i18n-placeholder="register.placeholder_phone"
               placeholder="Your Phone Number"
               required
+              maxlength="10"
+              pattern="[0-9]{10}"
               autocomplete="tel"
               inputmode="tel"
             />
@@ -192,7 +196,7 @@
 
         const fullName = document.getElementById("fullName").value.trim();
         const email = document.getElementById("email").value.trim();
-        const phone = document.getElementById("phone").value.trim();
+        const phone = document.getElementById("phone").value.trim().replace(/\D/g, ''); // Chỉ lấy số
         const password = passwordInput.value;
 
         // basic validations
@@ -206,6 +210,17 @@
           btn.disabled = false;
           return;
         }
+        
+        // Validate fullName: tối đa 50 ký tự
+        if (fullName.length > 50) {
+          setMsg(
+            T("alert.fullname_maxlen", "Tên đăng nhập không được vượt quá 50 ký tự")
+          );
+          btn.disabled = false;
+          return;
+        }
+        
+        // Validate email: format và tối đa 50 ký tự
         const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         if (!emailOk) {
           setMsg(
@@ -214,9 +229,35 @@
           btn.disabled = false;
           return;
         }
+        if (email.length > 50) {
+          setMsg(
+            T("alert.email_maxlen", "Email không được vượt quá 50 ký tự")
+          );
+          btn.disabled = false;
+          return;
+        }
+        
+        // Validate phone: đúng 10 số
+        if (!phone || phone.length !== 10 || !/^[0-9]{10}$/.test(phone)) {
+          setMsg(
+            T("alert.phone_invalid", "Số điện thoại phải có đúng 10 chữ số")
+          );
+          btn.disabled = false;
+          return;
+        }
+        
+        // Validate password: tối thiểu 8 ký tự, có chữ in hoa, ký tự đặc biệt, chữ thường và số
         if (password.length < 8) {
           setMsg(
-            T("alert.pw_minlen", "Password must be at least 6 characters.")
+            T("alert.pw_minlen", "Mật khẩu phải có ít nhất 8 ký tự")
+          );
+          btn.disabled = false;
+          return;
+        }
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/;
+        if (!passwordRegex.test(password)) {
+          setMsg(
+            T("alert.pw_complexity", "Mật khẩu phải có ít nhất 1 chữ in hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt")
           );
           btn.disabled = false;
           return;
@@ -227,7 +268,7 @@
           const response = await fetch("/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fullName, email, phone, password }),
+            body: JSON.stringify({ fullName, email, phone: phone, password }),
           });
           const data = await response.json();
 

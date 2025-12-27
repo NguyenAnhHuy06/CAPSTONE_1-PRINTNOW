@@ -8,13 +8,20 @@ const PRINT_FILES_DIR = path.join(__dirname, "..", "uploads", "print-files");
 fs.mkdirSync(PRINT_FILES_DIR, { recursive: true });
 
 const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, PRINT_FILES_DIR),
+    destination: (_req, _file, cb) => {
+        console.log("[MULTER] Destination:", PRINT_FILES_DIR);
+        console.log("[MULTER] Directory exists:", fs.existsSync(PRINT_FILES_DIR));
+        cb(null, PRINT_FILES_DIR);
+    },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname || "").toLowerCase();
         const userId = req.user?.id || "anonymous";
         const timestamp = Date.now();
         const random = Math.round(Math.random() * 1E9);
         const name = `print_${userId}_${timestamp}_${random}${ext}`;
+        const fullPath = path.join(PRINT_FILES_DIR, name);
+        console.log("[MULTER] Generated filename:", name);
+        console.log("[MULTER] Full path will be:", fullPath);
         cb(null, name);
     },
 });

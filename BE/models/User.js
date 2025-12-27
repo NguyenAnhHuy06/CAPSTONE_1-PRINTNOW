@@ -20,8 +20,8 @@ const User = sequelize.define(
           msg: "Vui lòng nhập tên",
         },
         len: {
-          args: [1, 255],
-          msg: "Tên không được vượt quá 255 ký tự",
+          args: [1, 50],
+          msg: "Tên đăng nhập không được vượt quá 50 ký tự",
         },
       },
     },
@@ -33,6 +33,10 @@ const User = sequelize.define(
         isEmail: {
           msg: "Vui lòng nhập email hợp lệ",
         },
+        len: {
+          args: [1, 50],
+          msg: "Email không được vượt quá 50 ký tự",
+        },
       },
     },
     phone: {
@@ -40,9 +44,12 @@ const User = sequelize.define(
       allowNull: true,
       // unique: true, // Tắt để tránh tạo index
       validate: {
-        is: {
-          args: /^[0-9]{10,11}$/,
-          msg: "Số điện thoại phải có 10-11 chữ số",
+        // Chỉ validate nếu phone có giá trị (không null/undefined/empty)
+        // Sequelize tự động skip null/undefined khi allowNull: true
+        isPhone(value) {
+          if (value && value.trim() !== '' && !/^[0-9]{10}$/.test(value)) {
+            throw new Error("Số điện thoại phải có đúng 10 chữ số");
+          }
         },
       },
     },
@@ -50,12 +57,10 @@ const User = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
       field: "password_hash",
-      validate: {
-        len: {
-          args: [6, 255],
-          msg: "Mật khẩu phải có ít nhất 6 ký tự",
-        },
-      },
+      // Lưu ý: Validation phức tạp (chữ hoa, ký tự đặc biệt, độ dài) được thực hiện ở route trước khi hash
+      // Không validate ở đây vì khi tạo user, passwordHash được set từ plaintext password
+      // và validation sẽ chạy trước hook beforeCreate (hash password)
+      // Validation sẽ được thực hiện ở route level
     },
     emailVerified: {
       type: DataTypes.TINYINT(1),

@@ -392,11 +392,20 @@
       <aside class="sidebar">
         <div class="logo"><i class="bx bx-printer"></i></div>
         <nav class="sidebar-nav">
-          <a href="#" class="nav-item active"><i class="fas fa-box"></i></a>
-          <a href="#" class="nav-item"><i class="fas fa-user-friends"></i></a>
-          <a href="#" class="nav-item setting"><i class="fas fa-cog"></i></a>
-          <a href="#" class="nav-item"><i class="fas fa-headphones"></i></a>
+          <!-- Đi sang Orders Dashboard -->
+          <a href="Employee_Dashboard.html" class="nav-item"><i class="fas fa-box"></i></a>
+          <!-- Đi sang trang Customers -->
+          <a href="ManageCustomer_Employee.html" class="nav-item"><i class="fas fa-user-friends"></i></a>
+          <!-- Trang Settings (đang active) -->
+          <a href="Employee_Setting.html" class="nav-item setting active"><i class="fas fa-cog"></i></a>
+          <!-- Icon headphone (không chuyển hướng) -->
+          <a href="#" class="nav-item" onclick="return false;" style="cursor: default;"><i class="fas fa-headphones"></i></a>
         </nav>
+        <div class="sidebar-bottom">
+          <a href="#" class="nav-item logout" id="sidebarLogout" title="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </div>
       </aside>
 
       <div class="main-content">
@@ -568,6 +577,35 @@
     <script src="/FE/js/employee-settings.page.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
+        // ========= Logout handler =========
+        const sidebarLogout = document.getElementById("sidebarLogout");
+        if (sidebarLogout) {
+          sidebarLogout.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+              await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+            } catch (_) { }
+            try {
+              localStorage.removeItem("token");
+              sessionStorage.removeItem("token");
+              localStorage.removeItem("authToken");
+              sessionStorage.removeItem("authToken");
+              sessionStorage.setItem("justLoggedOutAt", String(Date.now()));
+            } catch (_) { }
+            try {
+              if (window.Realtime && typeof window.Realtime.disconnect === "function") {
+                window.Realtime.disconnect();
+              }
+            } catch (_) { }
+            // về Login
+            try {
+              window.location.href = "Login.html";
+            } catch (_) {
+              window.location.href = "./Login.html";
+            }
+          });
+        }
+
         // i18n cho title trang
         if (window.i18n && typeof window.i18n.t === "function") {
           document.title = window.i18n.t("title.setting");
