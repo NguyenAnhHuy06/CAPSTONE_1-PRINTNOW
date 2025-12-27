@@ -114,7 +114,7 @@ async function countCustomerStatsBetween(from, to) {
 // POST /api/customers - Tạo khách hàng mới (staff/admin)
 router.post('/', auth, async (req, res) => {
     try {
-        const { fullName, email, phone, password } = req.body || {};
+        const { fullName, email, phone, password, role } = req.body || {};
 
         if (!fullName || !email || !password) {
             return res.status(400).json({
@@ -180,12 +180,19 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
+        // Validate role nếu có
+        const validRoles = ['customer', 'staff', 'admin', 'owner'];
+        const userRole = role && validRoles.includes(role.toLowerCase()) 
+            ? role.toLowerCase() 
+            : 'customer';
+
         // Tạo user mới - dùng trường passwordHash để kích hoạt hook hash
         const newUser = await User.create({
             fullName,
             email,
             phone: normalizedPhone,
             passwordHash: password,
+            role: userRole,
             isActive: 1,
             emailVerified: 1
         });
