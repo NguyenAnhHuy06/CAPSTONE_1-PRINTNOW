@@ -22,8 +22,51 @@
     return "/home";
   }
 
+  function getCurrentRole() {
+    try {
+      // 1. Ưu tiên lấy từ sessionStorage (đã set khi login hoặc load trang)
+      let role = sessionStorage.getItem("currentRole");
+      if (role) return role;
+      
+      // 2. Tự động detect từ URL/pathname
+      const path = window.location.pathname.toLowerCase();
+      if (path.includes("owner") || path.includes("owner_dashboard") || path.includes("pricemanagement_owner")) {
+        return "owner";
+      }
+      if (path.includes("employee") || path.includes("employee_dashboard") || path.includes("staff")) {
+        return "staff";
+      }
+      if (path.includes("customer") || path.includes("home_customer") || path.includes("printdocument")) {
+        return "customer";
+      }
+      
+      // 3. Fallback: thử tìm token theo role
+      const roles = ["owner", "staff", "customer"];
+      for (const r of roles) {
+        if (sessionStorage.getItem(`token_${r}`)) {
+          return r;
+        }
+      }
+      
+      return null;
+    } catch (e) {
+      console.warn("Lỗi getCurrentRole:", e);
+      return null;
+    }
+  }
+
   function getToken() {
     try {
+      // ✅ Ưu tiên lấy token theo role hiện tại của tab
+      const currentRole = getCurrentRole();
+      if (currentRole) {
+        const roleToken = sessionStorage.getItem(`token_${currentRole}`);
+        if (roleToken) {
+          return roleToken;
+        }
+      }
+      
+      // Fallback: lấy token chung (tương thích với code cũ)
       return (
         localStorage.getItem("token") ||
         sessionStorage.getItem("token") ||
@@ -35,8 +78,20 @@
   }
 
   function clearToken() {
-    try { localStorage.removeItem("token"); } catch { }
-    try { sessionStorage.removeItem("token"); } catch { }
+    try { 
+      // Xóa token theo role hiện tại
+      const currentRole = getCurrentRole();
+      if (currentRole) {
+        sessionStorage.removeItem(`token_${currentRole}`);
+        sessionStorage.removeItem(`user_${currentRole}`);
+      }
+      // Xóa token chung
+      localStorage.removeItem("token"); 
+    } catch { }
+    try { 
+      sessionStorage.removeItem("token"); 
+      sessionStorage.removeItem("currentRole");
+    } catch { }
   }
 
   function justLoggedOutRecently(ms = 1500) {

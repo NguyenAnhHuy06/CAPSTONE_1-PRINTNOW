@@ -1909,6 +1909,59 @@
 
             // Load initial customers
             loadCustomers(1, itemsPerPage);
+
+            // ===== Logout handler =====
+            function clearClientAuth() {
+                try {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("refreshToken");
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("role");
+                    localStorage.removeItem("auth");
+                    sessionStorage.removeItem("token");
+                    sessionStorage.removeItem("accessToken");
+                    sessionStorage.removeItem("refreshToken");
+                    sessionStorage.removeItem("user");
+                    sessionStorage.removeItem("role");
+                    sessionStorage.removeItem("auth");
+                } catch (_) {}
+            }
+
+            async function doLogout() {
+                clearClientAuth();
+                try {
+                    if (typeof api === "function") {
+                        let res = await api("/auth/logout", { method: "POST" });
+                        if (!res.ok && res.status !== 404) {
+                            res = await api("/api/auth/logout", { method: "POST" });
+                        }
+                    } else {
+                        await fetch("/auth/logout", {
+                            method: "POST",
+                            credentials: "include",
+                            headers: { "Content-Type": "application/json" },
+                        }).catch(() => {});
+                        await fetch("/api/auth/logout", {
+                            method: "POST",
+                            credentials: "include",
+                            headers: { "Content-Type": "application/json" },
+                        }).catch(() => {});
+                    }
+                } catch (_) {}
+                const loginUrl = window.RoleAccess?.resolvePath?.("Login.html") || "Login.html";
+                window.location.href = loginUrl;
+            }
+
+            const logoutBtn = document.querySelector("a.logout");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", async (e) => {
+                    e.preventDefault();
+                    const ok = confirm("Bạn có chắc chắn muốn đăng xuất?");
+                    if (!ok) return;
+                    await doLogout();
+                });
+            }
         });
     </script>
 </body>

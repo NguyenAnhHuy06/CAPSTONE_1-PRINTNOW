@@ -42,21 +42,32 @@ app.use(cookieParser()); // để đọc cookie từ request
 /* =======================
    Static (uploads & FE)
 ======================= */
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "..", "uploads"), {
-    etag: true,
-    lastModified: true,
-    setHeaders: (res, filePath) => {
-      if (filePath.includes(path.sep + "avatars" + path.sep)) {
-        res.setHeader("Cache-Control", "no-cache, must-revalidate");
-      } else {
-        // cho phép các file uploads KHÁC cache tốt hơn
-        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-      }
-    },
-  })
-);
+// Static files cho uploads (avatars, files, etc.)
+const uploadsStatic = express.static(path.join(__dirname, "..", "uploads"), {
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.includes(path.sep + "avatars" + path.sep)) {
+      res.setHeader("Cache-Control", "no-cache, must-revalidate");
+    } else {
+      // cho phép các file uploads KHÁC cache tốt hơn
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    }
+  },
+});
+
+app.use("/uploads", (req, res, next) => {
+  // Xử lý 404 cho avatar: trả về 204 (No Content) thay vì 404 để tránh spam console
+  if (req.path.includes("/avatars/") && req.method === "GET") {
+    const filePath = path.join(__dirname, "..", "uploads", req.path);
+    const exists = require("fs").existsSync(filePath);
+    if (!exists) {
+      // Trả về 204 No Content thay vì 404 để frontend có thể xử lý onerror
+      return res.status(204).end();
+    }
+  }
+  uploadsStatic(req, res, next);
+});
 app.use("/FE", express.static(feRoot));
 app.use("/css", express.static(path.join(feRoot, "css")));
 app.use("/js", express.static(path.join(feRoot, "js")));

@@ -54,6 +54,7 @@
         align-items: center;
         padding: 20px 0;
         border-right: 1px solid var(--border-color);
+        position: relative;
       }
 
       .logo {
@@ -90,6 +91,58 @@
       .nav-item.setting {
         color: var(--primary-color);
         background-color: #ebf2fa;
+      }
+
+      .sidebar-bottom {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .nav-item.logout {
+        text-align: center;
+        color: #e74c3c !important;
+        font-size: 24px;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 10px;
+        border-radius: 8px;
+        -webkit-font-smoothing: antialiased;
+        display: inline-block;
+        font-style: normal;
+        font-variant: normal;
+        line-height: 1;
+        text-rendering: auto;
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        transition: all 0.3s;
+      }
+
+      .nav-item.logout:hover {
+        background-color: transparent !important;
+        color: #c0392b !important;
+        transform: scale(1.05);
+        box-shadow: none !important;
+      }
+
+      .nav-item.logout:active {
+        background-color: transparent !important;
+        box-shadow: none !important;
+      }
+
+      .nav-item.logout i {
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        -webkit-font-smoothing: antialiased;
+        display: inline-block;
+        font-style: normal;
+        font-variant: normal;
+        line-height: 1;
+        text-rendering: auto;
       }
 
       /* Nội dung chính */

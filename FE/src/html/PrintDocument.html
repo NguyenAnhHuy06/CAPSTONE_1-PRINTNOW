@@ -1131,11 +1131,75 @@
         return set.size;
       }
 
+      // Cache giá từ localStorage - lưu theo khổ giấy và chế độ màu
+      let pricingConfig = {
+        // Giá theo khổ giấy và chế độ màu: { paperSize: { bw: price, color: price } }
+        prices: {
+          A4: { bw: 500, color: 3000 },
+          A3: { bw: 1000, color: 4000 },
+          A5: { bw: 500, color: 2000 }
+        },
+        priceBinding: 5000,
+        priceCoverPage: 2000
+      };
+
+      // Load giá từ localStorage (ưu tiên) hoặc backend
+      async function loadPricingFromBackend() {
+        try {
+          // 1. Đọc giá từ localStorage trước (nếu có)
+          const priceMapping = JSON.parse(localStorage.getItem('priceMapping') || '{}');
+          
+          // Load giá đen trắng theo khổ giấy
+          if (priceMapping['row-printing-1'] && priceMapping['row-printing-1'].price) {
+            pricingConfig.prices.A4.bw = Number(priceMapping['row-printing-1'].price);
+            console.log('✅ Đã load giá đen trắng A4 từ localStorage:', pricingConfig.prices.A4.bw);
+          }
+          if (priceMapping['row-printing-a3'] && priceMapping['row-printing-a3'].price) {
+            pricingConfig.prices.A3.bw = Number(priceMapping['row-printing-a3'].price);
+            console.log('✅ Đã load giá đen trắng A3 từ localStorage:', pricingConfig.prices.A3.bw);
+          }
+          if (priceMapping['row-printing-a5'] && priceMapping['row-printing-a5'].price) {
+            pricingConfig.prices.A5.bw = Number(priceMapping['row-printing-a5'].price);
+            console.log('✅ Đã load giá đen trắng A5 từ localStorage:', pricingConfig.prices.A5.bw);
+          }
+          
+          // Load giá màu theo khổ giấy
+          if (priceMapping['row-printing-color-a4'] && priceMapping['row-printing-color-a4'].price) {
+            pricingConfig.prices.A4.color = Number(priceMapping['row-printing-color-a4'].price);
+            console.log('✅ Đã load giá màu A4 từ localStorage:', pricingConfig.prices.A4.color);
+          }
+          if (priceMapping['row-printing-color-a3'] && priceMapping['row-printing-color-a3'].price) {
+            pricingConfig.prices.A3.color = Number(priceMapping['row-printing-color-a3'].price);
+            console.log('✅ Đã load giá màu A3 từ localStorage:', pricingConfig.prices.A3.color);
+          }
+          if (priceMapping['row-printing-color-a5'] && priceMapping['row-printing-color-a5'].price) {
+            pricingConfig.prices.A5.color = Number(priceMapping['row-printing-color-a5'].price);
+            console.log('✅ Đã load giá màu A5 từ localStorage:', pricingConfig.prices.A5.color);
+          }
+          
+          // Binding và Cover - giữ giá mặc định (không load từ localStorage nữa)
+          // Giá mặc định: priceBinding: 5000, priceCoverPage: 2000
+
+          // 2. Nếu không có trong localStorage, dùng giá mặc định (không load từ backend)
+          // Vì giờ giá được quản lý qua localStorage, không cần backend nữa
+          if (Object.keys(priceMapping).length === 0) {
+            console.log('Không có giá trong localStorage, sử dụng giá mặc định.');
+          }
+        } catch (error) {
+          console.error('Lỗi load pricing, sử dụng giá mặc định:', error);
+        }
+      }
+
       function calculateFilePrice(file) {
-        let pricePerPageBW = 500;
-        let pricePerPageColor = 3000;
-        const priceBinding = 5000;
-        const priceCoverPage = 2000;
+        // Lấy khổ giấy từ file (A4, A3, A5) - mặc định A4
+        const paperSize = String(file.size || 'A4').toUpperCase();
+        const priceBinding = pricingConfig.priceBinding;
+        const priceCoverPage = pricingConfig.priceCoverPage;
+
+        // Lấy giá theo khổ giấy và chế độ màu
+        const paperPrices = pricingConfig.prices[paperSize] || pricingConfig.prices.A4;
+        const pricePerPageBW = paperPrices.bw || 500;
+        const pricePerPageColor = paperPrices.color || 3000;
 
         const totalPages =
           (Number(file.pages) || 0) * (Number(file.copies) || 1);
@@ -1807,8 +1871,56 @@
         }
       });
 
+      // Lắng nghe thay đổi giá từ tab khác (cùng trình duyệt)
+      let priceUpdateChannel = null;
+      try {
+        priceUpdateChannel = new BroadcastChannel('price-updates');
+        priceUpdateChannel.onmessage = (event) => {
+          if (event.data && event.data.type === 'price-updated') {
+            const { rowId, priceMapping } = event.data;
+            console.log('📢 Nhận thông báo cập nhật giá từ tab khác:', rowId, priceMapping);
+            
+            // Cập nhật pricingConfig
+            if (priceMapping) {
+              const paperSize = priceMapping.paperSize;
+              const colorMode = priceMapping.colorMode;
+              const price = priceMapping.price;
+              
+              if (paperSize && colorMode) {
+                if (colorMode === 'BW') {
+                  if (pricingConfig.prices[paperSize]) {
+                    pricingConfig.prices[paperSize].bw = Number(price);
+                    console.log(`✅ Đã cập nhật giá đen trắng ${paperSize} từ tab khác:`, price);
+                  }
+                } else if (colorMode === 'COLOR') {
+                  if (pricingConfig.prices[paperSize]) {
+                    pricingConfig.prices[paperSize].color = Number(price);
+                    console.log(`✅ Đã cập nhật giá màu ${paperSize} từ tab khác:`, price);
+                  }
+                }
+                
+                // Tự động tính lại giá cho tất cả files
+                updateSummary(true);
+              }
+            }
+          }
+        };
+      } catch (e) {
+        console.warn('BroadcastChannel không được hỗ trợ:', e);
+      }
+
+      // Set role cho tab này khi load trang (customer)
+      try {
+        sessionStorage.setItem("currentRole", "customer");
+      } catch (e) {
+        console.warn("Không thể set role:", e);
+      }
+
       // === KHỞI TẠO BAN ĐẦU ===
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Load giá từ backend trước
+        await loadPricingFromBackend();
+        
         if (uploadedFiles.length === 0) {
           configSection.style.display = "none";
         }

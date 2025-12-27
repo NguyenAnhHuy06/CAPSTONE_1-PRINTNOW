@@ -115,6 +115,9 @@ body {
 
 .nav-item {
   margin-bottom: 6px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
 }
 
 .nav-item a {
@@ -125,19 +128,28 @@ body {
   color: var(--sub-text-color);
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.25s;
+  transition: background-color 0.25s, color 0.25s;
   position: relative;
+  outline: none;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  flex-shrink: 0;
 }
 
 .nav-item a:hover {
   background: #eef1ff;
   color: var(--primary-color);
+  border-color: transparent;
 }
 
 .nav-item a i {
   font-size: 22px;
   width: 36px;
+  min-width: 36px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .sidebar-nav a {
@@ -165,11 +177,16 @@ body {
 .nav-text {
   opacity: 0;
   margin-left: 12px;
-  transition: opacity 0.2s var(--transition-speed);
+  transition: opacity 0.2s var(--transition-speed), width 0.2s var(--transition-speed);
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 0;
+  overflow: hidden;
 }
 
 .sidebar:hover .nav-text {
   opacity: 1;
+  width: auto;
   transition-delay: 0.1s;
 }
 
@@ -177,6 +194,8 @@ body {
   background: rgba(4, 56, 115, 0.15);
   color: var(--primary-color);
   font-weight: 600;
+  border-color: transparent;
+  min-height: 48px;
 }
 
 .nav-item.active .icon {

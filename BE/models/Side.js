@@ -23,13 +23,15 @@ const Side = sequelize.define('Side', {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true,
+        field: 'isActive',
         comment: 'Trạng thái hoạt động'
     }
 }, {
     tableName: 'sides',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    underscored: false
 });
 
 module.exports = Side;

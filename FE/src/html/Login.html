@@ -204,18 +204,27 @@
       }
 
       async function redirectAfterLogin(data) {
-        const token =
-          data?.token ||
-          (() => {
-            try {
-              return localStorage.getItem("token");
-            } catch {
-              return "";
-            }
-          })();
-
+        // ✅ Ưu tiên lấy role từ data hoặc sessionStorage (đã set khi login)
         let role = getRoleFromLoginResponse(data);
         if (!role) {
+          // Thử lấy từ sessionStorage (đã set khi login)
+          role = sessionStorage.getItem("currentRole");
+        }
+        if (!role) {
+          // Fallback: fetch từ API
+          const token = data?.token || 
+            (() => {
+              try {
+                // Thử lấy token theo role từ sessionStorage
+                const currentRole = sessionStorage.getItem("currentRole");
+                if (currentRole) {
+                  return sessionStorage.getItem(`token_${currentRole}`) || "";
+                }
+                return localStorage.getItem("token") || "";
+              } catch {
+                return "";
+              }
+            })();
           role = await fetchMyRole(token);
         }
         role = normalizeRole(role);
@@ -259,7 +268,15 @@
         try {
           let token = "";
           try {
-            token = localStorage.getItem("token") || "";
+            // ✅ Ưu tiên lấy token từ sessionStorage theo role
+            const currentRole = sessionStorage.getItem("currentRole");
+            if (currentRole) {
+              token = sessionStorage.getItem(`token_${currentRole}`) || "";
+            }
+            // Fallback: localStorage (tương thích code cũ)
+            if (!token) {
+              token = localStorage.getItem("token") || "";
+            }
           } catch {}
           const headers = {};
           if (token) headers.Authorization = `Bearer ${token}`;
@@ -364,11 +381,32 @@
           });
           const data = await response.json();
           if (response.ok && data.success) {
-            // Lưu token để apiService.js / realtime.js dùng được (song song cookie httpOnly)
+            // Lưu token theo role để hỗ trợ nhiều vai trò cùng lúc
             if (data.token) {
               try {
-                localStorage.setItem("token", data.token);
-              } catch {}
+                // Xác định role từ response
+                const role = getRoleFromLoginResponse(data) || 
+                            (data.user?.role || "").toLowerCase() || 
+                            "customer";
+                const normalizedRole = normalizeRole(role);
+                
+                // ✅ Lưu token theo role vào sessionStorage (mỗi tab có sessionStorage riêng)
+                sessionStorage.setItem(`token_${normalizedRole}`, data.token);
+                // Lưu role hiện tại của tab này
+                sessionStorage.setItem("currentRole", normalizedRole);
+                // Lưu user info theo role
+                if (data.user) {
+                  sessionStorage.setItem(`user_${normalizedRole}`, JSON.stringify(data.user));
+                }
+                
+                // ⚠️ KHÔNG lưu vào localStorage nữa để tránh conflict giữa các role
+                // localStorage.setItem("token", data.token); // Đã comment để tránh conflict
+                
+                console.log(`✅ Đã đăng nhập với vai trò: ${normalizedRole} (token lưu trong sessionStorage)`);
+                console.log(`📝 Token key: token_${normalizedRole}`);
+              } catch (e) {
+                console.error("Lỗi lưu token:", e);
+              }
             }
             setMsg(T("login.success", "Logged in successfully!"), true);
             setTimeout(() => {

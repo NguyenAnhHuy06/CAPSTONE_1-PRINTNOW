@@ -5,10 +5,13 @@ const { JWT_SECRET } = require("../config/jwt");
 
 const auth = async (req, res, next) => {
   try {
+    // ✅ ƯU TIÊN Bearer token trong header (để hỗ trợ multi-role)
+    // Nếu có Bearer token, bỏ qua cookie để mỗi tab có thể dùng token riêng
     const token =
       req.header("Authorization")?.replace("Bearer ", "") ||
-      req.cookies?.auth ||
-      req.query?.token || null; // <--- thêm: chấp nhận token từ query cho SSE/EventSource
+      req.query?.token || // <--- chấp nhận token từ query cho SSE/EventSource
+      req.cookies?.auth || // <--- fallback: chỉ dùng cookie nếu không có Bearer token
+      null;
 
     if (!token) {
       return res.status(401).json({

@@ -1699,6 +1699,13 @@
                     <script src="../js/apiService.js"></script>
                     <script src="../js/accountMenu.js"></script>
                     <script>
+                        // Set role cho tab này khi load trang
+                        try {
+                            sessionStorage.setItem("currentRole", "staff");
+                        } catch (e) {
+                            console.warn("Không thể set role:", e);
+                        }
+                        
                         document.addEventListener("DOMContentLoaded", () => {
                             // ========= Logout handler =========
                             const sidebarLogout = document.getElementById("sidebarLogout");

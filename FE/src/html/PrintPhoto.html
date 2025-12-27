@@ -657,6 +657,9 @@
           document.title = t("print_photo.page_title");
         }
 
+        // ✅ Set currentRole cho tab này (hỗ trợ multi-role)
+        sessionStorage.setItem("currentRole", "customer");
+
         // === VALIDATION FUNCTIONS ===
         function validateFullName(name) {
           // Chỉ cho phép chữ cái (bao gồm tiếng Việt) và khoảng trắng
@@ -800,18 +803,124 @@
           };
         })();
 
-        // Bảng giá (VND)
-        const basePrice = {
+        // Bảng giá (VND) - sẽ được load từ localStorage hoặc dùng giá mặc định
+        let basePrice = {
           "10x15": 5500,
           "13x18": 8800,
           "15x20": 16500,
         };
-        const paperExtra = {
+
+        // Load giá từ localStorage (ưu tiên) hoặc dùng giá mặc định
+        function loadPhotoPricesFromStorage() {
+          try {
+            const priceMapping = JSON.parse(localStorage.getItem('priceMapping') || '{}');
+            
+            // Load giá cho từng kích thước photo
+            if (priceMapping['row-photo-10x15'] && priceMapping['row-photo-10x15'].price) {
+              basePrice["10x15"] = Number(priceMapping['row-photo-10x15'].price);
+              console.log('✅ Đã load giá 10x15 từ localStorage:', basePrice["10x15"]);
+            }
+            if (priceMapping['row-photo-13x18'] && priceMapping['row-photo-13x18'].price) {
+              basePrice["13x18"] = Number(priceMapping['row-photo-13x18'].price);
+              console.log('✅ Đã load giá 13x18 từ localStorage:', basePrice["13x18"]);
+            }
+            if (priceMapping['row-photo-15x20'] && priceMapping['row-photo-15x20'].price) {
+              basePrice["15x20"] = Number(priceMapping['row-photo-15x20'].price);
+              console.log('✅ Đã load giá 15x20 từ localStorage:', basePrice["15x20"]);
+            }
+            
+            // Load giá cho từng loại giấy photo
+            if (priceMapping['row-photo-glossy'] && priceMapping['row-photo-glossy'].price !== undefined) {
+              paperExtra["Glossy"] = Number(priceMapping['row-photo-glossy'].price);
+              console.log('✅ Đã load giá Glossy từ localStorage:', paperExtra["Glossy"]);
+            }
+            if (priceMapping['row-photo-matte'] && priceMapping['row-photo-matte'].price !== undefined) {
+              paperExtra["Matte"] = Number(priceMapping['row-photo-matte'].price);
+              console.log('✅ Đã load giá Matte từ localStorage:', paperExtra["Matte"]);
+            }
+            if (priceMapping['row-photo-premium'] && priceMapping['row-photo-premium'].price !== undefined) {
+              paperExtra["Premium"] = Number(priceMapping['row-photo-premium'].price);
+              console.log('✅ Đã load giá Premium từ localStorage:', paperExtra["Premium"]);
+            }
+            
+            // Load giá cho borderless option (luôn là phần trăm dạng thập phân)
+            if (priceMapping['row-photo-borderless'] && priceMapping['row-photo-borderless'].price !== undefined) {
+              const borderlessPrice = Number(priceMapping['row-photo-borderless'].price);
+              // Giá đã được lưu dạng thập phân từ PriceManagement_Owner.html
+              // 0.1 = 10%, 1.0 = 100%, 1.5 = 150%, etc.
+              BORDERLESS_MULT = borderlessPrice;
+              console.log('✅ Đã load giá Borderless từ localStorage:', (BORDERLESS_MULT * 100).toFixed(0) + '%');
+            }
+            
+            if (Object.keys(priceMapping).length === 0) {
+              console.log('Không có giá trong localStorage, sử dụng giá mặc định.');
+            }
+          } catch (error) {
+            console.error('Lỗi load photo prices, sử dụng giá mặc định:', error);
+          }
+        }
+
+        // Lắng nghe thay đổi giá từ tab khác (cùng trình duyệt)
+        let photoPriceUpdateChannel = null;
+        try {
+          photoPriceUpdateChannel = new BroadcastChannel('price-updates');
+          photoPriceUpdateChannel.onmessage = (event) => {
+            if (event.data && event.data.type === 'price-updated') {
+              const { rowId, priceMapping } = event.data;
+              
+              // Chỉ xử lý nếu là photo price
+              if (rowId && rowId.startsWith('row-photo-')) {
+                console.log('📢 Nhận thông báo cập nhật giá photo từ tab khác:', rowId, priceMapping);
+                
+                if (priceMapping && priceMapping.price !== undefined) {
+                  const price = Number(priceMapping.price);
+                  let updated = false;
+                  
+                  // Cập nhật giá theo kích thước
+                  if (priceMapping.photoSize && basePrice.hasOwnProperty(priceMapping.photoSize)) {
+                    basePrice[priceMapping.photoSize] = price;
+                    console.log(`✅ Đã cập nhật giá ${priceMapping.photoSize} từ tab khác:`, price);
+                    updated = true;
+                  }
+                  
+                  // Cập nhật giá theo loại giấy
+                  if (priceMapping.paperType && paperExtra.hasOwnProperty(priceMapping.paperType)) {
+                    paperExtra[priceMapping.paperType] = price;
+                    console.log(`✅ Đã cập nhật giá ${priceMapping.paperType} từ tab khác:`, price);
+                    updated = true;
+                  }
+                  
+                  // Cập nhật giá borderless (luôn tính theo phần trăm của giá đơn)
+                  if (priceMapping.borderlessOption) {
+                    // Giá đã được lưu dạng thập phân từ PriceManagement_Owner.html
+                    // 0.1 = 10%, 1.0 = 100%, 1.5 = 150%, etc.
+                    BORDERLESS_MULT = price;
+                    console.log(`✅ Đã cập nhật giá Borderless từ tab khác:`, (BORDERLESS_MULT * 100).toFixed(0) + '%');
+                    updated = true;
+                  }
+                  
+                  // Tự động tính lại giá cho tất cả items nếu có thay đổi
+                  if (updated) {
+                    items.forEach((it, idx) => {
+                      updateItem(idx);
+                    });
+                    renderOrderSummary();
+                  }
+                }
+              }
+            }
+          };
+        } catch (e) {
+          console.warn('BroadcastChannel không được hỗ trợ:', e);
+        }
+        // Paper extra prices - sẽ được load từ localStorage hoặc dùng giá mặc định
+        let paperExtra = {
           Glossy: 0,
           Matte: 2000,
           Premium: 4000,
         };
-        const BORDERLESS_MULT = 0.1; // +10%
+        // Borderless multiplier - sẽ được load từ localStorage hoặc dùng giá mặc định
+        let BORDERLESS_MULT = 0.1; // +10% (mặc định)
 
         // Hàm định dạng tiền tệ
         function fmt(v) {
@@ -946,7 +1055,11 @@
           const base = basePrice[it.size] || basePrice["10x15"];
           const pExtra = paperExtra[it.paper] || 0;
           let p = (base + pExtra) * it.copies;
-          if (it.borderless) p = Math.round(p * (1 + BORDERLESS_MULT));
+          if (it.borderless) {
+            // Luôn tính theo phần trăm của giá đơn (tổng giá)
+            // BORDERLESS_MULT là phần trăm dạng thập phân (0.1 = 10%, 0.15 = 15%)
+            p = Math.round(p * (1 + BORDERLESS_MULT));
+          }
           return p;
         }
 
@@ -1352,6 +1465,9 @@
           { passive: true }
         );
 
+        // Load giá từ localStorage khi trang load
+        loadPhotoPricesFromStorage();
+        
         // Thu hồi ObjectURL khi rời trang (optional)
         window.addEventListener("beforeunload", () => {
           items.forEach((it) => {
@@ -1359,6 +1475,10 @@
               if (it.preview) URL.revokeObjectURL(it.preview);
             } catch {}
           });
+          // Đóng BroadcastChannel khi rời trang
+          if (photoPriceUpdateChannel) {
+            photoPriceUpdateChannel.close();
+          }
         });
 
         // Drag & drop thêm nhiều ảnh (optional)

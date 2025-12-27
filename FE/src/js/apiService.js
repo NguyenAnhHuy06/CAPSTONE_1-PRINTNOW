@@ -11,14 +11,68 @@ const API_BASE_URL = "http://localhost:5000/api";
 // ===================================
 
 /**
- * Lấy JWT token từ localStorage hoặc sessionStorage
+ * Lấy role hiện tại của tab từ sessionStorage
+ * Nếu không có, tự động detect từ URL hoặc trang hiện tại
  */
-function getAuthToken() {
-  return localStorage.getItem("token") || sessionStorage.getItem("token");
+function getCurrentRole() {
+  try {
+    // 1. Ưu tiên lấy từ sessionStorage (đã set khi login)
+    let role = sessionStorage.getItem("currentRole");
+    if (role) return role;
+    
+    // 2. Tự động detect từ URL/pathname
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes("owner") || path.includes("owner_dashboard") || path.includes("pricemanagement_owner")) {
+      return "owner";
+    }
+    if (path.includes("employee") || path.includes("employee_dashboard") || path.includes("staff")) {
+      return "staff";
+    }
+    if (path.includes("customer") || path.includes("home_customer") || path.includes("printdocument")) {
+      return "customer";
+    }
+    
+    // 3. Fallback: thử tìm token theo role
+    const roles = ["owner", "staff", "customer"];
+    for (const r of roles) {
+      if (sessionStorage.getItem(`token_${r}`)) {
+        return r;
+      }
+    }
+    
+    return null;
+  } catch (e) {
+    console.warn("Lỗi getCurrentRole:", e);
+    return null;
+  }
 }
 
 /**
- * Wrapper gọi API – luôn gửi cookie + (nếu có) Bearer token
+ * Lấy JWT token từ localStorage hoặc sessionStorage
+ * Hỗ trợ nhiều vai trò: ưu tiên token theo role hiện tại của tab
+ */
+function getAuthToken() {
+  try {
+    // 1. Ưu tiên: lấy token theo role hiện tại của tab
+    const currentRole = getCurrentRole();
+    if (currentRole) {
+      const roleToken = sessionStorage.getItem(`token_${currentRole}`);
+      if (roleToken) {
+        return roleToken;
+      }
+    }
+    
+    // 2. Fallback: lấy token chung (tương thích với code cũ)
+    return localStorage.getItem("token") || sessionStorage.getItem("token");
+  } catch (e) {
+    console.warn("Lỗi getAuthToken:", e);
+    return localStorage.getItem("token") || sessionStorage.getItem("token");
+  }
+}
+
+/**
+ * Wrapper gọi API – LUÔN gửi Bearer token trong header (ưu tiên hơn cookie)
+ * Để hỗ trợ multi-role: mỗi tab có thể dùng token riêng
  */
 const api = (path, opts = {}) => {
   const token = getAuthToken();
@@ -27,12 +81,13 @@ const api = (path, opts = {}) => {
     ...(opts.headers || {}),
   };
 
+  // ✅ LUÔN gửi Bearer token nếu có (để backend ưu tiên token này thay vì cookie)
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
   return fetch(`${API_BASE_URL}${path}`, {
-    credentials: "include",
+    credentials: "include", // Vẫn gửi cookie để tương thích, nhưng backend sẽ ưu tiên Bearer token
     ...opts,
     headers,
   });

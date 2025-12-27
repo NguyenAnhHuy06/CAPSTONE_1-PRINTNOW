@@ -706,6 +706,13 @@
         }
 
         // Gọi hàm khi trang tải
+        // Set role cho tab này khi load trang
+        try {
+            sessionStorage.setItem("currentRole", "customer");
+        } catch (e) {
+            console.warn("Không thể set role:", e);
+        }
+        
         document.addEventListener("DOMContentLoaded", setActiveNavLink);
       </script>
     </main>

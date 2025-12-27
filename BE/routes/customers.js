@@ -114,7 +114,7 @@ async function countCustomerStatsBetween(from, to) {
 // POST /api/customers - Tạo khách hàng mới (staff/admin)
 router.post('/', auth, async (req, res) => {
     try {
-        const { fullName, email, phone, password, role } = req.body || {};
+        const { fullName, email, phone, password, role, department, isActive, avatarUrl } = req.body || {};
 
         if (!fullName || !email || !password) {
             return res.status(400).json({
@@ -187,15 +187,52 @@ router.post('/', auth, async (req, res) => {
             : 'customer';
 
         // Tạo user mới - dùng trường passwordHash để kích hoạt hook hash
+        // Lưu department vào address field (tạm thời vì không có field department trong model)
+        const address = department ? `Department: ${department}` : null;
+        
+        // Đảm bảo isActive luôn là 1 (Active) khi tạo staff mới
+        // Chỉ set thành 0 nếu explicitly là 0 hoặc '0' hoặc 'Inactive' hoặc false
+        let finalIsActive = 1; // Default: Active (staff mới luôn active để có thể đăng nhập)
+        if (isActive !== undefined && isActive !== null) {
+            // Chỉ set thành 0 nếu explicitly là 0 hoặc '0' hoặc 'Inactive' hoặc false
+            const isActiveStr = String(isActive).toLowerCase();
+            if (isActive === 0 || isActive === '0' || isActive === 'Inactive' || isActive === false || isActiveStr === 'inactive') {
+                finalIsActive = 0;
+                console.log('⚠️ Staff will be created as INACTIVE (isActive=0)');
+            } else {
+                // Bất kỳ giá trị nào khác (1, '1', 'Active', true, etc.) đều set thành 1
+                finalIsActive = 1;
+            }
+        }
+        
+        console.log('Creating staff with isActive:', finalIsActive, 'emailVerified: 1', 'from input:', isActive);
+        
+        // Force set isActive = 1 và emailVerified = 1 để đảm bảo staff có thể đăng nhập
         const newUser = await User.create({
             fullName,
             email,
             phone: normalizedPhone,
             passwordHash: password,
             role: userRole,
-            isActive: 1,
-            emailVerified: 1
+            isActive: Number(finalIsActive), // Force convert to number (1 or 0)
+            emailVerified: 1, // Luôn set emailVerified = 1 cho staff được tạo bởi owner
+            address: address,
+            avatarUrl: avatarUrl || null
         });
+        
+        // Reload user từ database để đảm bảo giá trị đúng
+        await newUser.reload();
+        
+        // Log để debug - kiểm tra giá trị sau khi tạo
+        console.log('✅ Staff created successfully:', {
+            id: newUser.id,
+            email: newUser.email,
+            role: newUser.role,
+            isActive: newUser.isActive,
+            emailVerified: newUser.emailVerified,
+            fullName: newUser.fullName
+        });
+        
         // Phát sự kiện realtime để các tab/dashboard khác biết có khách hàng mới
         try {
             publish({
@@ -271,7 +308,8 @@ router.get('/', auth, async (req, res) => {
             fromDate = '',
             toDate = '',
             minAmount = '',
-            maxAmount = ''
+            maxAmount = '',
+            role = '' // Thêm filter theo role
         } = req.query;
 
         // Điều kiện tìm kiếm
@@ -297,6 +335,11 @@ router.get('/', auth, async (req, res) => {
             whereClause.isActive = 0;
         }
 
+        // Filter theo role (staff, admin, customer, owner)
+        if (role && ['staff', 'admin', 'customer', 'owner'].includes(role.toLowerCase())) {
+            whereClause.role = role.toLowerCase();
+        }
+
         // Lọc theo ngày tạo tài khoản
         if (fromDate || toDate) {
             whereClause.createdAt = {};
@@ -311,12 +354,18 @@ router.get('/', auth, async (req, res) => {
             }
         }
 
-        // Lấy danh sách khách hàng
-        const allCustomers = await User.findAll({
+        // Lấy danh sách khách hàng/staff (không giới hạn số lượng)
+        // Nếu có limit trong query, áp dụng; nếu không thì lấy tất cả
+        const limitNum = limit ? Math.max(1, Math.min(parseInt(limit, 10) || 10000, 10000)) : null;
+        const findAllOptions = {
             where: whereClause,
-            attributes: ['id', 'fullName', 'email', 'phone', 'isActive', 'createdAt'],
+            attributes: ['id', 'fullName', 'email', 'phone', 'isActive', 'createdAt', 'role', 'avatarUrl', 'address'],
             order: [['createdAt', 'DESC']],
-        });
+        };
+        if (limitNum) {
+            findAllOptions.limit = limitNum;
+        }
+        const allCustomers = await User.findAll(findAllOptions);
 
         const customerIds = allCustomers.map(c => c.id);
 
@@ -355,7 +404,11 @@ router.get('/', auth, async (req, res) => {
                 orderCount: agg.orderCount || 0,
                 totalSpent: agg.totalSpent || 0,
                 joinedDate: c.createdAt,
-                status: c.isActive ? 'Active' : 'Inactive'
+                status: c.isActive ? 'Active' : 'Inactive',
+                isActive: c.isActive,
+                role: c.role || 'customer',
+                avatarUrl: c.avatarUrl || null,
+                address: c.address || null
             };
         });
 
@@ -382,10 +435,13 @@ router.get('/', auth, async (req, res) => {
         // Phân trang thủ công sau khi lọc
         // Chuẩn hoá phân trang để tránh NaN / 0 / âm
         const pageNum = Math.max(1, parseInt(page, 10) || 1);
-        const limitNum = Math.max(1, Math.min(parseInt(limit, 10) || 10, 100));
+        // Tăng giới hạn tối đa lên 10000 để không giới hạn số lượng staff
+        // Nếu limit >= 10000, không paginate (trả về tất cả)
+        const requestedLimit = parseInt(limit, 10);
+        const pageLimitNum = (requestedLimit >= 10000) ? filtered.length : Math.max(1, Math.min(requestedLimit || 10, 10000));
         const totalAfterFilter = filtered.length;
-        const start = (pageNum - 1) * limitNum;
-        const end = start + limitNum;
+        const start = (pageNum - 1) * pageLimitNum;
+        const end = (requestedLimit >= 10000) ? filtered.length : start + pageLimitNum;
         const paged = filtered.slice(start, end);
 
         res.json({
@@ -393,9 +449,9 @@ router.get('/', auth, async (req, res) => {
             data: paged,
             pagination: {
                 page: pageNum,
-                limit: limitNum,
+                limit: pageLimitNum,
                 total: totalAfterFilter,
-                totalPages: Math.ceil(totalAfterFilter / limitNum)
+                totalPages: Math.ceil(totalAfterFilter / pageLimitNum)
             }
         });
     } catch (error) {
@@ -521,7 +577,7 @@ router.get('/:customerId', auth, async (req, res) => {
         // Lấy thông tin khách hàng
         // Lưu ý: address không có trong model nhưng có trong DB, Sequelize sẽ tự map
         const customer = await User.findByPk(customerId, {
-            attributes: ['id', 'fullName', 'email', 'phone', 'isActive', 'createdAt', 'avatarUrl']
+            attributes: ['id', 'fullName', 'email', 'phone', 'isActive', 'createdAt', 'avatarUrl', 'role']
         });
 
         if (!customer) {
@@ -683,6 +739,134 @@ router.get('/:customerId', auth, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Lỗi server khi lấy chi tiết khách hàng',
+            error: error.message
+        });
+    }
+});
+
+// PUT /api/customers/:customerId - Cập nhật thông tin khách hàng/staff
+router.put('/:customerId', auth, async (req, res) => {
+    try {
+        const { customerId } = req.params;
+        const { fullName, email, phone, password, role, department, isActive, avatarUrl } = req.body || {};
+
+        // Kiểm tra khách hàng có tồn tại không
+        const customer = await User.findByPk(customerId);
+        if (!customer) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy khách hàng'
+            });
+        }
+
+        // Validate và cập nhật các trường
+        if (fullName !== undefined) {
+            if (fullName.length > 50) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Tên đăng nhập không được vượt quá 50 ký tự'
+                });
+            }
+            customer.fullName = fullName.trim();
+        }
+
+        if (email !== undefined) {
+            if (email.length > 50) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email không được vượt quá 50 ký tự'
+                });
+            }
+            // Kiểm tra email trùng (trừ chính user này)
+            const existed = await User.findOne({ 
+                where: { 
+                    email: email.trim(),
+                    id: { [Op.ne]: customerId }
+                } 
+            });
+            if (existed) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email đã tồn tại'
+                });
+            }
+            customer.email = email.trim();
+        }
+
+        if (phone !== undefined) {
+            let normalizedPhone = null;
+            if (phone) {
+                const digits = String(phone).replace(/\D/g, '');
+                if (digits) {
+                    if (digits.length !== 10) {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Số điện thoại phải có đúng 10 chữ số'
+                        });
+                    }
+                    normalizedPhone = digits;
+                }
+            }
+            customer.phone = normalizedPhone;
+        }
+
+        if (password !== undefined && password !== '') {
+            if (password.length < 8) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Mật khẩu phải có ít nhất 8 ký tự'
+                });
+            }
+            const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/;
+            if (!passwordRegex.test(password)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Mật khẩu phải có ít nhất 1 chữ in hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt'
+                });
+            }
+            customer.passwordHash = password; // Hook sẽ tự hash
+        }
+
+        if (role !== undefined) {
+            const validRoles = ['customer', 'staff', 'admin', 'owner'];
+            if (validRoles.includes(role.toLowerCase())) {
+                customer.role = role.toLowerCase();
+            }
+        }
+
+        if (isActive !== undefined) {
+            customer.isActive = isActive === true || isActive === 1 || isActive === 'Active' ? 1 : 0;
+        }
+
+        // Update department (stored in address field)
+        if (department !== undefined) {
+            customer.address = department ? `Department: ${department}` : null;
+        }
+
+        // Update avatarUrl if provided
+        if (avatarUrl !== undefined) {
+            customer.avatarUrl = avatarUrl || null;
+        }
+
+        await customer.save();
+
+        res.json({
+            success: true,
+            message: 'Cập nhật thông tin thành công',
+            data: {
+                id: customer.id,
+                fullName: customer.fullName,
+                email: customer.email,
+                phone: customer.phone,
+                role: customer.role,
+                isActive: customer.isActive
+            }
+        });
+    } catch (error) {
+        console.error('Lỗi cập nhật khách hàng:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server khi cập nhật thông tin',
             error: error.message
         });
     }

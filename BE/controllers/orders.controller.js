@@ -1768,10 +1768,13 @@ exports.listAllOrders = async (req, res) => {
 exports.getMyOrderById = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId)
+    if (!userId) {
+      console.error("[getMyOrderById] No userId from req.user:", req.user);
       return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
     const id = req.params.id;
+    console.log(`[getMyOrderById] Requesting order ${id} for user ${userId}`);
 
     // ✅ Allow privileged (staff/admin/owner) to view any order by id
     const whereClause = { id };
@@ -1890,21 +1893,35 @@ exports.getMyOrderById = async (req, res) => {
 exports.confirmStorePayment = async (req, res) => {
   try {
     const userId = req.user?.id;
-    if (!userId)
+    if (!userId) {
+      console.error("[confirmStorePayment] No userId from req.user:", req.user);
       return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
     const id = Number(req.params.id);
-    if (!id)
+    if (!id) {
+      console.error("[confirmStorePayment] Invalid order id:", req.params.id);
       return res
         .status(400)
         .json({ success: false, message: "Invalid order id" });
+    }
 
     // Chỉ cho chủ đơn
     const order = await db.Order.findOne({ where: { id, customerId: userId } });
-    if (!order)
+    if (!order) {
+      // Log để debug: kiểm tra xem order có tồn tại không (có thể thuộc user khác)
+      const orderExists = await db.Order.findOne({ where: { id } });
+      if (orderExists) {
+        console.error(
+          `[confirmStorePayment] Order ${id} exists but belongs to customerId ${orderExists.customerId}, not ${userId}`
+        );
+      } else {
+        console.error(`[confirmStorePayment] Order ${id} does not exist`);
+      }
       return res
         .status(404)
         .json({ success: false, message: "Order not found" });
+    }
 
     // Tính số tiền phải thanh toán ngay (tiền cọc hoặc đủ)
     const amount = calcDeposit(order.totalAmount);
