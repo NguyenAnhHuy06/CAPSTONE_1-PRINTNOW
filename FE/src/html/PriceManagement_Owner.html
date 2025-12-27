@@ -19,10 +19,14 @@
             --card-bg: #ffffff;
             --success-color: #48bb78;
             --error-color: #f56565;
-            --sidebar-width-collapsed: 70px;
-            --sidebar-width-expanded: 220px;
-            --sidebar-padding-x: 10px;
-            --transition-speed: 0.3s;
+            --sidebar-w: 70px;
+            --sidebar-expand: 240px;
+            --transition: 0.35s;
+            --white: #ffffff;
+            --primary: #043873;
+            --gray: #718096;
+            --blue: #4d59ff;
+            --orange: #f6ad55;
             --border-color: #e0e0e0;
             --action-color: #6c757d;
         }
@@ -44,97 +48,102 @@
         }
 
         .sidebar {
-            width: var(--sidebar-width-collapsed);
-            background-color: var(--card-bg);
+            width: var(--sidebar-w);
+            background: var(--white);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
-            transition: width var(--transition-speed) ease-in-out;
+            transition: width var(--transition) ease-in-out;
             overflow: hidden;
+            z-index: 1000;
             display: flex;
             flex-direction: column;
-            padding: 20px 0;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            z-index: 10;
+            flex-shrink: 0;
         }
 
         .sidebar:hover {
-            width: var(--sidebar-width-expanded);
+            width: var(--sidebar-expand);
         }
 
         .sidebar-header {
-            display: flex;
-            align-items: center;
-            padding: 0 10px 30px var(--sidebar-padding-x);
+            padding: 24px 20px;
+            text-align: center;
             white-space: nowrap;
         }
 
-        .sidebar-header i {
-            margin-left: 18px;
-        }
-
         .logo-icon {
-            font-size: 30px;
-            color: var(--primary-color);
-            min-width: 50px;
+            font-size: 36px;
+            color: var(--primary);
         }
 
         .logo-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-            font-size: 14px;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s var(--transition);
+        }
+
+        .sidebar:hover .logo-text {
+            opacity: 1;
+            transition-delay: 0.1s;
         }
 
         .logo-text strong {
             font-size: 18px;
-            color: var(--text-color);
+            display: block;
+            color: #333;
         }
 
         .logo-text span {
-            color: var(--sub-text-color);
+            font-size: 13px;
+            color: var(--gray);
         }
 
-        .sidebar-nav {
-            flex-grow: 1;
-        }
-
-        .sidebar-nav ul {
-            list-style: none;
-            padding: 0;
+        .nav-list {
+            flex: 1;
+            padding: 20px 12px 0;
+            overflow-y: auto;
         }
 
         .nav-item {
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
-        .sidebar-nav a {
+        .nav-item a {
             display: flex;
             align-items: center;
-            padding: 15px 10px;
-            text-decoration: none;
+            padding: 14px 16px;
+            border-radius: 12px;
             color: var(--sub-text-color);
-            transition: background-color 0.2s, color 0.2s;
-            border-radius: 8px;
-            margin: 0 var(--sidebar-padding-x);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.25s;
             position: relative;
         }
 
-        .sidebar-nav a:hover:not(.active a) {
-            background-color: var(--background-color);
+        .nav-item a:hover {
+            background: #eef1ff;
+            color: var(--primary-color);
         }
 
-        .nav-item .icon {
-            min-width: 50px;
+        .nav-item.active a {
+            background: rgba(4, 56, 115, 0.15);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .nav-item a i {
+            font-size: 22px;
+            width: 36px;
             text-align: center;
-            font-size: 20px;
         }
 
         .nav-text {
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.1s;
-            transition-delay: var(--transition-speed);
+            transition: opacity 0.2s;
+            transition-delay: 0.1s;
         }
 
         .sidebar:hover .nav-text {
@@ -143,69 +152,58 @@
             transition-delay: 0s;
         }
 
-        .nav-item.active a {
-            background-color: var(--secondary-blue);
-            color: var(--card-bg);
-            box-shadow: 0 4px 10px rgba(93, 92, 255, 0.4);
-        }
-
-        .nav-item.active .icon {
-            color: var(--card-bg);
-        }
-
         .badge {
-            margin-left: auto;
-            background-color: #f7a530;
-            color: var(--card-bg);
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-weight: bold;
             position: absolute;
-            top: 10px;
-            right: 15px;
-            display: block;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f7a530;
+            color: white;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: bold;
         }
 
         .sidebar:hover .badge {
             position: relative;
-            top: auto;
             right: auto;
+            top: auto;
+            transform: none;
             margin-left: auto;
         }
 
         .sidebar-footer {
-            padding: 20px 0;
+            padding: 16px 12px;
             border-top: 1px solid #f0f0f0;
         }
 
         .sidebar-footer a {
             display: flex;
             align-items: center;
-            padding: 10px 10px;
-            margin: 5px var(--sidebar-padding-x);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.25s;
+            margin-bottom: 6px;
             text-decoration: none;
-            color: var(--sub-text-color);
-            white-space: nowrap;
-            border-radius: 8px;
         }
 
         .contact-support {
-            background-color: rgba(93, 92, 255, 0.1);
-            color: var(--primary-color) !important;
-            border-radius: 8px;
+            background: rgba(77, 89, 255, 0.1);
+            color: var(--secondary-blue);
         }
 
         .logout {
-            color: var(--error-color) !important;
+            color: #f56565;
         }
 
-        .logout .icon {
+        .logout i {
             color: var(--sub-text-color);
         }
 
-        .sidebar:hover .logout .icon {
-            color: var(--error-color);
+        .sidebar:hover .logout i {
+            color: #f56565;
         }
 
         .sidebar:not(:hover) .logout .nav-text,
@@ -214,7 +212,11 @@
         }
 
         .main-content {
-            flex-grow: 1;
+            flex: 1;
+            margin-left: var(--sidebar-w);
+            transition: margin-left var(--transition);
+            display: flex;
+            flex-direction: column;
             padding: 0 30px 30px 30px;
         }
 
@@ -398,62 +400,97 @@
                 </div>
             </div>
 
-            <nav class="sidebar-nav">
-                <ul>
-                    <li class="nav-item active">
-                        <a href="#">
-                            <i class='bx bxs-dashboard icon'></i>
-                            <span class="nav-text">Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="nav-item has-badge">
-                        <a href="#">
-                            <i class='bx bx-notepad icon'></i>
-                            <span class="nav-text">Orders</span>
-                            <span class="badge">3</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#">
-                            <i class='bx bx-group icon'></i>
-                            <span class="nav-text">Customers</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#">
-                            <i class='bx bx-package icon'></i>
-                            <span class="nav-text">Inventory</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#">
-                            <i class='bx bx-cog icon'></i>
-                            <span class="nav-text">Settings</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            <div class="nav-list">
+                <div class="nav-item">
+                    <a href="Owner_Dashboard.html"><i class='bx bxs-dashboard'></i><span class="nav-text">Dashboard</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="OrderManage_Owner.html"><i class='bx bx-notepad'></i><span class="nav-text">Orders</span><span
+                            class="badge">3</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="CustomerManage_Owner.html"><i class='bx bx-group'></i><span class="nav-text">Customers</span></a>
+                </div>
+                <div class="nav-item active">
+                    <a href="PriceManagement_Owner.html"><i class='bx bx-package'></i><span class="nav-text">Inventory</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="Setting.html"><i class='bx bx-cog'></i><span class="nav-text">Settings</span></a>
+                </div>
+                <div class="nav-item">
+                    <a href="Staff.html"><i class='bx bxs-user'></i><span class="nav-text">Employee</span></a>
+                </div>
+            </div>
 
             <div class="sidebar-footer">
-                <a href="#" class="contact-support">
-                    <i class='bx bx-headphone icon'></i>
-                    <span class="nav-text">Contact Support</span>
-                </a>
-                <a href="#" class="logout">
-                    <i class='bx bx-log-out icon'></i>
-                    <span class="nav-text">Logout</span>
-                </a>
+                <a href="#" class="contact-support"><i class='bx bx-headphone'></i><span class="nav-text">Contact
+                        Support</span></a>
+                <a href="#" class="logout"><i class='bx bx-log-out'></i><span class="nav-text">Logout</span></a>
             </div>
         </aside>
         <main class="main-content">
             <header class="top-header">
-                <h2><i class='bx bx-home'></i>Printing Price Management</h2>
+                <h2><i class='bx bx-package'></i>Inventory & Pricing</h2>
                 <div class="user-actions">
                     <i class='bx bx-bell icon'></i>
                     <i class='bx bxs-user-circle user-avatar'></i>
                 </div>
             </header>
             <div class="container">
+                <!-- INVENTORY SECTION -->
+                <section class="price-section" style="margin-bottom: 30px;">
+                    <div class="section-header">
+                        <h2>Inventory Management</h2>
+                        <p>Manage inventory items and stock levels</p>
+                    </div>
+                    <div class="price-table">
+                        <div class="table-header table-row">
+                            <div class="col-service">Item Name</div>
+                            <div class="col-description">Category</div>
+                            <div class="col-unit">Quantity</div>
+                            <div class="col-price">Status</div>
+                            <div class="col-actions">Actions</div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-inv-1">
+                            <div class="col-service">A4 Paper (80gsm)</div>
+                            <div class="col-description">Paper</div>
+                            <div class="col-unit edit-field" data-name="quantity">1,250 reams</div>
+                            <div class="col-price price-value" style="color: var(--success-color);">In Stock</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-inv-1', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row" id="row-inv-2">
+                            <div class="col-service">Black Ink Cartridge</div>
+                            <div class="col-description">Ink</div>
+                            <div class="col-unit edit-field" data-name="quantity">45 units</div>
+                            <div class="col-price price-value" style="color: var(--warning-color);">Low Stock</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-inv-2', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="table-data table-row last-row" id="row-inv-3">
+                            <div class="col-service">Color Ink Cartridge Set</div>
+                            <div class="col-description">Ink</div>
+                            <div class="col-unit edit-field" data-name="quantity">0 sets</div>
+                            <div class="col-price price-value" style="color: var(--error-color);">Out of Stock</div>
+                            <div class="col-actions">
+                                <a href="#" class="edit-btn" onclick="editRow('row-inv-3', this, event)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PRICING SECTION -->
                 <section class="price-section">
                     <div class="section-header">
                         <h2>Printing Document</h2>

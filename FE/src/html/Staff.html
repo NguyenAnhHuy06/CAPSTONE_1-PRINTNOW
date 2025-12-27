@@ -258,11 +258,18 @@
             gap: 10px;
             box-shadow: 0 6px 20px rgba(4, 56, 115, 0.3);
             transition: all 0.3s;
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
         }
         
         .add-btn:hover {
             background: #02305c;
             transform: translateY(-2px);
+        }
+        
+        .add-btn:active {
+            transform: translateY(0);
         }
         
         .total-emp {
@@ -526,6 +533,20 @@
             </div>
         </main>
     </div>
+
+    <script>
+        // Add Staff Member button click handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const addBtn = document.querySelector('.add-btn');
+            if (addBtn) {
+                addBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Check if Add_Staff.html exists, otherwise show alert
+                    window.location.href = 'Add_Staff.html';
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

@@ -7,15 +7,13 @@
     <title>PrintNow Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
     <style>
         :root {
             --primary-color: #043873;
             --secondary-blue: #4d59ff;
             --text-color: #333333;
             --sub-text-color: #718096;
-            --background-color: #F8F9FA;
+            --background-color: #f4f7f6;
             --card-background: #FFFFFF;
             --card-bg: #ffffff;
             --success-color: #48bb78;
@@ -203,9 +201,6 @@
             color: #f56565;
         }
 
-        .sidebar:hover~.main {
-            margin-left: var(--sidebar-expand);
-        }
 
         .main {
             flex: 1;
@@ -215,11 +210,20 @@
             flex-direction: column;
         }
 
+        .sidebar:hover~.main {
+            margin-left: var(--sidebar-expand);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 0px 30px;
+        }
+
         .top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
+            padding: 0px 0 20px 0;
             background-color: var(--background-color);
             position: sticky;
             top: 0;
@@ -252,31 +256,9 @@
             color: var(--primary-color);
         }
 
-        .main-content {
-            flex-grow: 1;
-            padding: 0px 30px;
-        }
-
-        .orders-summary h2 {
-            margin-bottom: 0px;
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .orders-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .orders-header .btn-create-order {
-            margin-right: 0;
-        }
-
         .summary-cards {
             display: grid;
-            grid-template-columns: 3fr 3fr 2fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
             margin-bottom: 30px;
             margin-top: 20px;
@@ -309,25 +291,29 @@
             margin-right: 100px;
         }
 
-        .card-info .all-order {
+        .card-info .all-customer {
             display: flex;
             flex-direction: column;
             margin-top: 15px;
             gap: 3px;
         }
 
-        .card-info .pending {
+        .card-info .active {
             display: flex;
             flex-direction: column;
             margin-top: 15px;
             gap: 3px;
         }
 
-        .card-info .completed {
+        .card-info .in-active {
             display: flex;
             flex-direction: column;
             margin-top: 15px;
             gap: 3px;
+        }
+
+        .card-info .in-active .in-active-percent {
+            color: #DC3545;
         }
 
         .card-info .abandoned-cart .card-title {
@@ -463,14 +449,22 @@
             font-weight: 600;
             font-size: 12px;
             text-align: center;
-            display: inline-block;
-            min-width: 100px;
+            display: flex;
+            height: 24px;
+            width: 100px;
+            margin-top: 12px;
+            justify-content: center;
+            align-items: center;
         }
 
-        .status.completed,
-        .status.successful {
+        .status-active {
             background-color: #D4EDDA;
             color: var(--completed-color);
+        }
+
+        .status-in_active {
+            background-color: #F8D7DA;
+            color: var(--pending-color);
         }
 
         .status.in-progress,
@@ -482,40 +476,6 @@
         .status.pending {
             background-color: #F8D7DA;
             color: var(--pending-color);
-        }
-
-        .status-dropdown {
-            padding: 6px 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background-color: var(--card-background);
-            color: var(--text-color);
-            font-size: 13px;
-            cursor: pointer;
-            transition: border-color 0.2s;
-            width: 120px;
-        }
-
-        .status-dropdown:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
-
-        .status-dropdown.completed-select,
-        .status-dropdown.successful-select {
-            background-color: #D4EDDA;
-            border-color: var(--completed-color);
-        }
-
-        .status-dropdown.in-progress-select,
-        .status-dropdown.received-select {
-            background-color: #FFF3CD;
-            border-color: var(--in-progress-color);
-        }
-
-        .status-dropdown.pending-select {
-            background-color: #F8D7DA;
-            border-color: var(--pending-color);
         }
 
         /* Phân trang */
@@ -549,7 +509,6 @@
             outline-offset: 2px;
         }
 
-        /* --- SỬA LỖI HIỂN THỊ DROPDOWN VÀ LỊCH --- */
         .filter-dropdown {
             position: absolute;
             top: 100%;
@@ -561,18 +520,13 @@
             padding: 20px;
             width: 300px;
             margin-top: 10px;
-            /* ĐIỀU CHỈNH: Thêm !important để đảm bảo ẩn khi chưa có lớp .show */
             display: none !important;
             text-align: left;
         }
 
         .filter-dropdown.show {
-            /* ĐIỀU CHỈNH: Thêm !important để đảm bảo hiển thị */
             display: block !important;
         }
-
-        /* ------------------------------------------- */
-
 
         .filter-dropdown h4 {
             font-size: 16px;
@@ -588,34 +542,11 @@
 
         .filter-section label,
         .filter-section h5 {
-            /* display: block; */
+            display: block;
             font-size: 14px;
             font-weight: 500;
             color: var(--text-color);
             margin-bottom: 10px;
-        }
-
-        .checkbox-group {
-            width: 100%;
-            margin-top: 10px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            column-gap: 15px;
-            row-gap: 5px;
-        }
-
-        .checkbox-group label {
-            width: 45%;
-            display: flex;
-            align-items: center;
-            white-space: nowrap;
-            /* Không cho xuống dòng */
-            gap: 0px;
-            margin-bottom: 0px;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            margin-right: 5px;
         }
 
         .filter-select {
@@ -710,9 +641,6 @@
             gap: 10px;
         }
 
-        /* --- BỔ SUNG CSS CHO DROPDOWN CHỌN THÁNG/NĂM --- */
-
-        /* Cập nhật lại style cho container navigation */
         .calendar-navigation {
             display: flex;
             justify-content: space-between;
@@ -728,10 +656,8 @@
             border-radius: 6px;
             margin: 0 5px;
             flex-grow: 1;
-            /* Cho phép Tháng và Năm chia đều không gian */
             background-color: var(--card-background);
             color: var(--text-color);
-            /* Loại bỏ mũi tên mặc định của trình duyệt */
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
@@ -754,13 +680,8 @@
             border: none;
         }
 
-        /* --- BỔ SUNG CSS CHO CHỨC NĂNG LỊCH (Date Range) --- */
-
-        /* 1. Kích thước và vị trí Dropdown (Đảm bảo lịch vừa vặn) */
         #dateFilterDropdown {
-            /* Đảm bảo chiều rộng đủ cho lịch */
             width: 320px !important;
-            /* Đảm bảo vị trí hiển thị đúng (dựa trên HTML bạn đã cung cấp) */
             right: 10px;
         }
 
@@ -785,13 +706,11 @@
         }
 
         .date-range-details .btn-range.selected {
-            /* Màu nổi bật khi đang chọn chế độ From/To */
             background-color: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
         }
 
-        /* 3. Tiêu đề Lịch (Tháng/Năm) */
         .date-range-details .calendar-header {
             display: flex;
             justify-content: space-between;
@@ -808,10 +727,8 @@
 
         /* 4. Lưới Lịch */
         #dateRangeDetails.calendar-view {
-            /* ĐIỀU CHỈNH: Dùng 'flex' thay cho 'block' để nhất quán với flex-direction: column */
             display: flex !important;
             flex-direction: column;
-            /* Thêm lại để đảm bảo layout cột */
             margin-top: 10px;
         }
 
@@ -828,11 +745,9 @@
             padding: 6px 0;
             cursor: pointer;
             border-radius: 50%;
-            /* Mặc định là hình tròn */
             transition: background-color 0.1s, color 0.1s;
         }
 
-        /* Tiêu đề ngày (M, T, W...) */
         .calendar-grid span:nth-child(-n+7) {
             color: var(--primary-color);
             font-weight: 600;
@@ -853,50 +768,33 @@
             display: none !important;
         }
 
-        /* --- LOGIC ĐÁNH DẤU (HIGHLIGHTING) --- */
-
-        /* Ngày nằm TRONG KHOẢNG (IN-RANGE) */
         .calendar-grid .day.in-range {
-            /* Màu nền nhạt cho dải */
             background-color: #e6e4ff !important;
             color: var(--text-color);
             border-radius: 0 !important;
-            /* Quan trọng: Xóa bo góc để dải màu liền mạch */
         }
 
-        /* Ngày BẮT ĐẦU VÀ KẾT THÚC (SELECTED-RANGE) */
         .calendar-grid .day.selected-range {
-            /* Màu đậm cho ngày được chọn */
             background-color: var(--primary-color) !important;
             color: white !important;
             font-weight: 700;
-            /* Mặc định là hình tròn nếu là ngày đơn */
             border-radius: 50% !important;
         }
 
-        /* Đảm bảo bo góc cho ngày BẮT ĐẦU/KẾT THÚC khi nằm trong dải */
-
-        /* Ngày BẮT ĐẦU của dải */
         .calendar-grid .day.start-range {
-            /* Chỉ bo tròn góc bên trái */
             border-top-left-radius: 50% !important;
             border-bottom-left-radius: 50% !important;
-            /* Xóa bo tròn góc bên phải để nối với in-range */
             border-top-right-radius: 0 !important;
             border-bottom-right-radius: 0 !important;
         }
 
-        /* Ngày KẾT THÚC của dải */
         .calendar-grid .day.end-range {
-            /* Chỉ bo tròn góc bên phải */
             border-top-right-radius: 50% !important;
             border-bottom-right-radius: 50% !important;
-            /* Xóa bo tròn góc bên trái để nối với in-range */
             border-top-left-radius: 0 !important;
             border-bottom-left-radius: 0 !important;
         }
 
-        /* Nếu ngày bắt đầu VÀ kết thúc là CÙNG MỘT NGÀY */
         .calendar-grid .day.start-range.end-range {
             border-radius: 50% !important;
         }
@@ -919,11 +817,11 @@
                 <div class="nav-item">
                     <a href="Owner_Dashboard.html"><i class='bx bxs-dashboard'></i><span class="nav-text">Dashboard</span></a>
                 </div>
-                <div class="nav-item active">
+                <div class="nav-item">
                     <a href="OrderManage_Owner.html"><i class='bx bx-notepad'></i><span class="nav-text">Orders</span><span
                             class="badge">3</span></a>
                 </div>
-                <div class="nav-item">
+                <div class="nav-item active">
                     <a href="CustomerManage_Owner.html"><i class='bx bx-group'></i><span class="nav-text">Customers</span></a>
                 </div>
                 <div class="nav-item">
@@ -947,7 +845,7 @@
         <div class="main">
             <main class="main-content">
                 <header class="top-header">
-                    <h2><i class='bx bx-notepad'></i>Orders</h2>
+                    <h2><i class='bx bx-group'></i> Customers</h2>
                     <div class="user-actions">
                         <i class='bx bx-bell'></i>
                         <i class='bx bxs-user-circle user-avatar'></i>
@@ -955,7 +853,6 @@
                 </header>
 
                 <section class="orders-summary">
-
                     <div class="summary-cards">
                         <div class="card">
                             <div class="card-row">
@@ -967,17 +864,18 @@
                                 </select>
                             </div>
                             <div class="card-info">
-                                <div class="all-order">
-                                    <span class="card-title">All Orders</span>
-                                    <span class="card-value" id="summaryAllOrders">0</span>
+                                <div class="all-customer">
+                                    <span class="card-title">All Customers</span>
+                                    <span class="card-value">1,250<span class="percent positive">+15.80%</span></span>
                                 </div>
-                                <div class="pending">
-                                    <span class="card-title">Pending </span>
-                                    <span class="card-value" id="summaryPending">0</span>
+                                <div class="active">
+                                    <span class="card-title">Active </span>
+                                    <span class="card-value">1,180<span class="percent positive">+85%</span></span>
                                 </div>
-                                <div class="completed">
-                                    <span class="card-title">Completed </span>
-                                    <span class="card-value" id="summaryCompleted">0</span>
+                                <div class="in-active">
+                                    <span class="card-title">In-Active </span>
+                                    <span class="card-value">70<span
+                                            class="percent positive in-active-percent">-10%</span></span>
                                 </div>
                             </div>
                         </div>
@@ -992,38 +890,17 @@
                                 </select>
                             </div>
                             <div class="card-info">
-                                <div class="canceled">
-                                    <span class="card-title">Canceled</span>
-                                    <span class="card-value"><span id="summaryCanceled">0</span> <span class="percent negative" id="summaryCanceledChange">-</span></span>
+                                <div class="new-customer">
+                                    <span class="card-title">New Customers</span>
+                                    <span class="card-value">30</span>
                                 </div>
-                                <div class="returned">
-                                    <span class="card-title">Returned </span>
-                                    <span class="card-value" id="summaryReturned">0</span>
+                                <div class="purchasing">
+                                    <span class="card-title">Purchasing </span>
+                                    <span class="card-value">657</span>
                                 </div>
-                                <div class="damaged">
-                                    <span class="card-title">Damaged </span>
-                                    <span class="card-value" id="summaryDamaged">0</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-row">
-                                <div class="card-icon"><i class="fas fa-shopping-cart"></i></div>
-                                <select class="btn-control">
-                                    <option>This Week</option>
-                                    <option>This Month</option>
-                                    <option>This Year</option>
-                                </select>
-                            </div>
-                            <div class="card-info">
                                 <div class="abandoned-cart">
-                                    <span class="card-title">Abandoned Cart</span>
-                                    <span class="card-value"><span id="summaryAbandoned">0%</span> <span class="percent positive" id="summaryAbandonedChange">+0.00%</span></span>
-                                </div>
-                                <div class="customer">
-                                    <span class="card-title">Customers </span>
-                                    <span class="card-value" id="summaryCustomers">0</span>
+                                    <span class="card-title">Abandoned Carts </span>
+                                    <span class="card-value">5</span>
                                 </div>
                             </div>
                         </div>
@@ -1031,37 +908,32 @@
                 </section>
 
                 <section class="customer-orders-table">
-                    <h3>Customer Orders</h3>
+                    <h3>Customer</h3>
                     <div class="table-controls">
                         <div class="search-bar">
                             <i class="fas fa-search"></i>
-                            <input id="searchInput" type="text" placeholder="Search">
+                            <input type="text" placeholder="Search">
                         </div>
                         <div class="actions">
                             <div class="btn-control" id="generalFilterBtn">
                                 <i class='bx bx-filter'></i> Filter
                                 <div class="filter-dropdown" id="generalFilterDropdown">
                                     <h4>Filter</h4>
-
                                     <div class="filter-section">
-                                        <h5>Order Type</h5>
-                                        <div class="checkbox-group">
-                                            <label><input type="checkbox" class="order-type-filter" value="Print Document"> Print Document</label>
-                                            <label><input type="checkbox" class="order-type-filter" value="Print Photo"> Print Photo</label>
-                                            <label><input type="checkbox" class="order-type-filter" value="Print Card"> Print Card</label>
-                                            <label><input type="checkbox" class="order-type-filter" value="Print Cup"> Print Cup</label>
-                                        </div>
+                                        <h5>Status</h5>
+                                        <select class="filter-select">
+                                            <option>All</option>
+                                            <option>Active</option>
+                                            <option>In-Active</option>
+                                        </select>
                                     </div>
 
                                     <div class="filter-section">
-                                        <h5>Status</h5>
-                                        <select id="statusFilter" class="filter-select">
+                                        <h5>Customer</h5>
+                                        <select class="filter-select">
                                             <option>All</option>
-                                            <option>Pending</option>
-                                            <option>Received</option>
-                                            <option>In-Progress</option>
-                                            <option>Completed</option>
-                                            <option>Successful</option>
+                                            <option>Nguyễn Việt Anh</option>
+                                            <option>Lê Hùng</option>
                                         </select>
                                     </div>
 
@@ -1069,9 +941,9 @@
                                         <h5>Amount</h5>
                                         <div class="amount-group">
                                             <p>From</p>
-                                            <input id="amountFrom" type="number" min="0" placeholder="0.00">
+                                            <input type="number" min="0" placeholder="0.00">
                                             <p>To</p>
-                                            <input id="amountTo" type="number" min="0" placeholder="0.00">
+                                            <input type="number" min="0" placeholder="0.00">
                                         </div>
                                     </div>
 
@@ -1098,7 +970,7 @@
                                             Year</label>
                                         <label><input type="radio" name="date_range" value="last_year"> Last
                                             Year</label>
-                                        <label><input type="radio" id="customRangeRadio" name="date_range" value="custom"> Custom</label>
+
                                     </div>
 
                                     <div class="date-range-details calendar-view" id="dateRangeDetails"
@@ -1127,13 +999,12 @@
                                     <button class="btn-apply-filter">Filter</button>
                                 </div>
                             </div>
-                            <select class="btn-control">
-                                <option>Bulk Action</option>
-                                <option>Pending</option>
-                                <option>Received</option>
-                                <option>In-Progress</option>
-                                <option>Completed</option>
-                                <option>Successful</option>
+
+                            <!-- <button class="btn-control"><i class='bx bx-share'></i> Share</button> -->
+                            <select class="btn-control" id="bulkStatusSelect">
+                                <option value="">Bulk Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">In-Active</option>
                             </select>
                         </div>
                     </div>
@@ -1143,351 +1014,70 @@
                             <thead>
                                 <tr>
                                     <th><input type="checkbox"></th>
-                                    <th>Order ID</th>
+                                    <th>Customer ID</th>
                                     <th>Customer Name</th>
-                                    <th>Order Date</th>
-                                    <th>Order Type</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Orders</th>
                                     <th>Order Total</th>
+                                    <th>Customer Since</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody id="ordersTableBody">
-                                <tr class="empty-row">
-                                    <td colspan="7" style="text-align:center; color: var(--light-text-color);">Loading...</td>
-                                </tr>
+                                <!-- Customer data will be loaded here -->
                             </tbody>
                         </table>
                     </div>
 
                     <div class="pagination">
-                        <span id="itemsPerPageText">10 items per page</span>
-                        <span id="currentRangeText">1-10 of 0 items</span>
-                        <span id="pagesText">1 of 1 pages</span>
-                        <button id="prevPageBtn" class="page-nav"><i class="fas fa-chevron-left"></i></button>
-                        <button id="nextPageBtn" class="page-nav"><i class="fas fa-chevron-right"></i></button>
+                        <span id="itemsPerPage">10 items per page</span>
+                        <span id="itemsInfo">1-10 of 0 items</span>
+                        <span id="pagesInfo">1 of 1 pages</span>
+                        <button class="page-nav" id="prevPageBtn"><i class="fas fa-chevron-left"></i></button>
+                        <button class="page-nav" id="nextPageBtn"><i class="fas fa-chevron-right"></i></button>
                     </div>
                 </section>
             </main>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- KHAI BÁO BIẾN CHUNG ---
             const generalFilterBtn = document.getElementById('generalFilterBtn');
             const generalFilterDropdown = document.getElementById('generalFilterDropdown');
             const dateFilterBtn = document.getElementById('dateFilterBtn');
             const dateFilterDropdown = document.getElementById('dateFilterDropdown');
             const dateRangeDetails = document.getElementById('dateRangeDetails');
             const dateRangeRadios = document.querySelectorAll('input[name="date_range"]');
+
+            // Khai báo các biến DOM cho Lịch
             const calendarGrid = document.querySelector('#dateRangeDetails .calendar-grid');
             const fromDateBtn = document.querySelector('#dateRangeDetails .from-date');
             const toDateBtn = document.querySelector('#dateRangeDetails .to-date');
+
+            // Biến điều hướng Lịch
             const prevMonthBtn = document.getElementById('prevMonthBtn');
             const nextMonthBtn = document.getElementById('nextMonthBtn');
             const monthSelect = document.getElementById('monthSelect');
             const yearSelect = document.getElementById('yearSelect');
+
+            // Biến trạng thái Lịch
             let isSelectingFrom = true;
             let dateRange = {
                 fromElement: null,
                 toElement: null
             };
 
-            // --- API & RENDER STATE ---
-            const API_BASE = '/api';
-            const searchInput = document.getElementById('searchInput');
-            const amountFromInput = document.getElementById('amountFrom');
-            const amountToInput = document.getElementById('amountTo');
-            const statusFilter = document.getElementById('statusFilter');
-            const orderTypeCheckboxes = document.querySelectorAll('.order-type-filter');
-            const ordersTableBody = document.getElementById('ordersTableBody');
-            const itemsPerPageText = document.getElementById('itemsPerPageText');
-            const currentRangeText = document.getElementById('currentRangeText');
-            const pagesText = document.getElementById('pagesText');
-            const prevPageBtn = document.getElementById('prevPageBtn');
-            const nextPageBtn = document.getElementById('nextPageBtn');
-            const generalFilterApplyBtn = document.querySelector('#generalFilterDropdown .btn-apply-filter');
-            const dateFilterApplyBtn = document.querySelector('#dateFilterDropdown .btn-apply-filter');
-
-            const state = {
-                filters: {
-                    search: '',
-                    status: 'All',
-                    orderTypes: [],
-                    amountMin: '',
-                    amountMax: '',
-                    dateRange: 'this_week',
-                    from: '',
-                    to: '',
-                    page: 1,
-                    pageSize: 10
-                },
-                meta: {
-                    statusList: [],
-                    orderTypes: []
-                },
-                pagination: {
-                    totalItems: 0,
-                    totalPages: 1
-                }
-            };
-
-            function debounce(fn, delay = 300) {
-                let timeout;
-                return (...args) => {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => fn(...args), delay);
-                };
-            }
-
-            async function fetchJSON(url, options = {}) {
-                const response = await fetch(url, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    ...options
-                });
-                if (!response.ok) {
-                    const msg = await response.text();
-                    throw new Error(msg || `Request failed ${response.status}`);
-                }
-                return response.json();
-            }
-
-            function buildQueryParams() {
-                const params = new URLSearchParams();
-                const f = state.filters;
-                if (f.search) params.set('search', f.search);
-                if (f.status && f.status !== 'All') params.set('status', f.status);
-                if (f.orderTypes.length) params.set('orderType', f.orderTypes.join(','));
-                if (f.amountMin) params.set('amountMin', f.amountMin);
-                if (f.amountMax) params.set('amountMax', f.amountMax);
-                params.set('dateRange', f.dateRange);
-                if (f.dateRange === 'custom') {
-                    if (f.from) params.set('from', f.from);
-                    if (f.to) params.set('to', f.to);
-                }
-                params.set('page', f.page);
-                params.set('pageSize', f.pageSize);
-                return params.toString();
-            }
-
-            function renderSummary(summary = {}) {
-                const safe = (val, fallback = 0) => (val === undefined || val === null ? fallback : val);
-                const abandonedRate = summary.abandonedCartRate;
-                const abandonedPercent = (typeof abandonedRate === 'number'
-                    ? (abandonedRate <= 1 ? (abandonedRate * 100).toFixed(2) : abandonedRate.toFixed(2))
-                    : abandonedRate || 0);
-
-                document.getElementById('summaryAllOrders').textContent = safe(summary.all);
-                document.getElementById('summaryPending').textContent = safe(summary.pending);
-                document.getElementById('summaryCompleted').textContent = safe(summary.completed);
-                document.getElementById('summaryCanceled').textContent = safe(summary.canceled);
-                document.getElementById('summaryCanceledChange').textContent = summary.canceledChange || '-';
-                document.getElementById('summaryReturned').textContent = safe(summary.returned);
-                document.getElementById('summaryDamaged').textContent = safe(summary.damaged);
-                document.getElementById('summaryAbandoned').textContent = `${abandonedPercent}%`;
-                document.getElementById('summaryAbandonedChange').textContent = summary.abandonedChange || '+0.00%';
-                document.getElementById('summaryCustomers').textContent = safe(summary.customers);
-            }
-
-            function formatCurrency(value, currency = 'VND') {
-                if (Number.isNaN(Number(value))) return value || '-';
-                return Number(value).toLocaleString('vi-VN', { style: 'currency', currency });
-            }
-
-            function formatDateTime(value) {
-                if (!value) return '-';
-                const d = new Date(value);
-                if (Number.isNaN(d.getTime())) return value;
-                return d.toLocaleString('vi-VN');
-            }
-
-            function renderOrdersTable(data = []) {
-                ordersTableBody.innerHTML = '';
-                if (!data.length) {
-                    const row = document.createElement('tr');
-                    row.classList.add('empty-row');
-                    const cell = document.createElement('td');
-                    cell.colSpan = 7;
-                    cell.style.textAlign = 'center';
-                    cell.style.color = 'var(--light-text-color)';
-                    cell.textContent = 'No orders found';
-                    row.appendChild(cell);
-                    ordersTableBody.appendChild(row);
-                    return;
-                }
-
-                const statusOptions = state.meta.statusList.length ? state.meta.statusList : ['Pending', 'Received', 'In-Progress', 'Completed', 'Successful', 'Canceled', 'Returned', 'Damaged'];
-
-                data.forEach(order => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><input type="checkbox" data-order-id="${order.id}"></td>
-                        <td>${order.id}</td>
-                        <td>${order.customerName || '-'}</td>
-                        <td>${formatDateTime(order.orderDate)}</td>
-                        <td>${order.orderType || '-'}</td>
-                        <td>${formatCurrency(order.orderTotal, order.currency || 'VND')}</td>
-                        <td>
-                            <span class="status ${order.status ? order.status.toLowerCase().replace(' ', '-') : ''}">${order.status || '-'}</span>
-                        </td>
-                    `;
-
-                    const statusCell = tr.querySelector('td:last-child');
-                    statusCell.innerHTML = '';
-                    const select = document.createElement('select');
-                    select.classList.add('status-dropdown');
-                    select.dataset.orderId = order.id;
-                    statusOptions.forEach(opt => {
-                        const optionEl = document.createElement('option');
-                        optionEl.value = opt;
-                        optionEl.textContent = opt;
-                        if (opt.toLowerCase() === (order.status || '').toLowerCase()) {
-                            optionEl.selected = true;
-                        }
-                        select.appendChild(optionEl);
-                    });
-                    statusCell.appendChild(select);
-                    const statusSpan = document.createElement('span');
-                    statusSpan.classList.add('status');
-                    const statusClass = (order.status || '').toLowerCase().replace(' ', '-');
-                    if (statusClass) statusSpan.classList.add(statusClass);
-                    statusSpan.textContent = order.status || '-';
-                    statusSpan.style.marginLeft = '8px';
-                    statusCell.appendChild(statusSpan);
-                    ordersTableBody.appendChild(tr);
-                });
-
-                document.querySelectorAll('.status-dropdown').forEach(dropdown => {
-                    updateDropdownStyle(dropdown, dropdown.value);
-                });
-            }
-
-            function renderPagination(totalItems, page, pageSize) {
-                const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-                state.pagination.totalItems = totalItems;
-                state.pagination.totalPages = totalPages;
-
-                const startItem = (page - 1) * pageSize + 1;
-                const endItem = Math.min(page * pageSize, totalItems);
-
-                itemsPerPageText.textContent = `${pageSize} items per page`;
-                currentRangeText.textContent = totalItems ? `${startItem}-${endItem} of ${totalItems} items` : '0 items';
-                pagesText.textContent = `${page} of ${totalPages} pages`;
-
-                prevPageBtn.disabled = page <= 1;
-                nextPageBtn.disabled = page >= totalPages;
-            }
-
-            async function loadMeta() {
-                try {
-                    const meta = await fetchJSON(`${API_BASE}/orders/meta`);
-                    state.meta = {
-                        statusList: meta.statusList || [],
-                        orderTypes: meta.orderTypes || []
-                    };
-                    renderSummary(meta.summary || {});
-                } catch (err) {
-                    console.error('Load meta failed', err);
-                }
-            }
-
-            async function loadOrders() {
-                try {
-                    ordersTableBody.innerHTML = `<tr class="empty-row"><td colspan="7" style="text-align:center; color: var(--light-text-color);">Loading...</td></tr>`;
-                    const query = buildQueryParams();
-                    const res = await fetchJSON(`${API_BASE}/orders?${query}`);
-                    state.filters.page = res.page || state.filters.page;
-                    state.filters.pageSize = res.pageSize || state.filters.pageSize;
-                    renderSummary(res.summary || {});
-                    renderOrdersTable(res.data || []);
-                    renderPagination(res.totalItems || res.total || 0, res.page || state.filters.page, res.pageSize || state.filters.pageSize);
-                } catch (err) {
-                    console.error('Load orders failed', err);
-                    ordersTableBody.innerHTML = `<tr class="empty-row"><td colspan="7" style="text-align:center; color: var(--light-text-color);">Failed to load data</td></tr>`;
-                }
-            }
-
-            const debouncedSearch = debounce(value => {
-                state.filters.search = value;
-                state.filters.page = 1;
-                loadOrders();
-            }, 400);
-
-            if (searchInput) {
-                searchInput.addEventListener('input', e => debouncedSearch(e.target.value));
-            }
-
-            if (statusFilter) {
-                statusFilter.addEventListener('change', e => {
-                    state.filters.status = e.target.value;
-                    state.filters.page = 1;
-                    loadOrders();
-                });
-            }
-
-            orderTypeCheckboxes.forEach(cb => {
-                cb.addEventListener('change', () => {
-                    const selected = Array.from(orderTypeCheckboxes).filter(c => c.checked).map(c => c.value);
-                    state.filters.orderTypes = selected;
-                    state.filters.page = 1;
-                    loadOrders();
-                });
-            });
-
-            function applyAmountFilter() {
-                state.filters.amountMin = amountFromInput?.value || '';
-                state.filters.amountMax = amountToInput?.value || '';
-                state.filters.page = 1;
-            }
-
-            if (generalFilterApplyBtn) {
-                generalFilterApplyBtn.addEventListener('click', () => {
-                    applyAmountFilter();
-                    loadOrders();
-                    generalFilterDropdown.classList.remove('show');
-                });
-            }
-
-            if (dateFilterApplyBtn) {
-                dateFilterApplyBtn.addEventListener('click', () => {
-                    const selectedRange = Array.from(dateRangeRadios).find(r => r.checked);
-                    if (selectedRange) {
-                        state.filters.dateRange = selectedRange.value;
-                    }
-                    if (state.filters.dateRange !== 'custom') {
-                        state.filters.from = '';
-                        state.filters.to = '';
-                    }
-                    state.filters.page = 1;
-                    loadOrders();
-                    dateFilterDropdown.classList.remove('show');
-                });
-            }
-
-            if (prevPageBtn && nextPageBtn) {
-                prevPageBtn.addEventListener('click', () => {
-                    if (state.filters.page > 1) {
-                        state.filters.page -= 1;
-                        loadOrders();
-                    }
-                });
-                nextPageBtn.addEventListener('click', () => {
-                    if (state.filters.page < state.pagination.totalPages) {
-                        state.filters.page += 1;
-                        loadOrders();
-                    }
-                });
-            }
-
             // TRẠNG THÁI LỊCH HIỆN TẠI
             const today = new Date();
             let currentMonth = today.getMonth();
             let currentYear = today.getFullYear();
-            const currentMaxYear = today.getFullYear();
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const currentMaxYear = today.getFullYear(); // Ràng buộc: Năm lớn nhất được chọn
 
-            // Khởi tạo Dropdown Tháng
+            // --- LOGIC HỖ TRỢ LỊCH ĐỘNG ---
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             function setupMonthSelect() {
                 monthSelect.innerHTML = '';
                 monthNames.forEach((name, index) => {
@@ -1503,7 +1093,6 @@
                 });
             }
 
-            // Khởi tạo Dropdown Năm (Đã sửa lỗi Ràng buộc Năm)
             function setupYearSelect() {
                 yearSelect.innerHTML = '';
                 const startYear = currentMaxYear - 10;
@@ -1517,7 +1106,7 @@
                 }
 
                 if (currentYear > currentMaxYear) {
-                    currentYear = currentMaxYear;
+                    currentYear = currentMaxYear; // Tự động về năm hiện tại nếu nó đã vượt quá
                 }
                 yearSelect.value = currentYear;
                 yearSelect.addEventListener('change', (e) => {
@@ -1525,13 +1114,19 @@
                     renderCalendar(currentMonth, currentYear);
                 });
             }
+
+            // Hàm Tạo Lưới Lịch
             function renderCalendar(month, year) {
+                // Ràng buộc tháng/năm khi chuyển mũi tên (Nếu đang ở năm hiện tại thì không được chuyển sang tháng sau tháng hiện tại)
                 if (year === currentMaxYear && month > today.getMonth()) {
                     month = today.getMonth();
                     currentMonth = month;
                 }
+
                 monthSelect.value = month;
                 yearSelect.value = year;
+
+                // Cập nhật trạng thái nút Prev/Next (Tùy chọn: Vô hiệu hóa nút Next nếu đang ở tháng/năm hiện tại)
                 if (year === currentMaxYear && month === today.getMonth()) {
                     nextMonthBtn.disabled = true;
                 } else {
@@ -1565,6 +1160,7 @@
                 highlightSelectedRange();
             }
 
+            // Xử lý chuyển tháng (khi nhấn mũi tên)
             function changeMonth(delta) {
                 let newMonth = currentMonth + delta;
                 let newYear = currentYear;
@@ -1576,8 +1172,10 @@
                     newMonth = 0;
                     newYear++;
                 }
+
+                // Ràng buộc: Không được chuyển tới năm/tháng trong tương lai
                 if (newYear > currentMaxYear || (newYear === currentMaxYear && newMonth > today.getMonth())) {
-                    return;
+                    return; // Dừng lại, không cho phép chuyển
                 }
 
                 currentMonth = newMonth;
@@ -1585,10 +1183,14 @@
 
                 renderCalendar(currentMonth, currentYear);
             }
+
+            // Lắng nghe sự kiện chuyển tháng
             if (prevMonthBtn && nextMonthBtn) {
                 prevMonthBtn.addEventListener('click', () => changeMonth(-1));
                 nextMonthBtn.addEventListener('click', () => changeMonth(1));
             }
+
+            // --- LOGIC LỊCH (Ràng buộc và Highlight) ---
 
             function updateDateButtons() {
                 fromDateBtn.textContent = 'From';
@@ -1640,11 +1242,44 @@
 
                         const clickedDateStr = clickedDay.dataset.date;
                         const clickedDate = new Date(clickedDateStr);
+
+                        // Ràng buộc: Không cho phép chọn ngày trong tương lai
                         if (clickedDate.getTime() > today.getTime()) {
                             alert('Không được chọn ngày trong tương lai!');
                             return;
                         }
 
+                        // Kiểm tra nếu click vào cùng ngày với From và To (lọc 1 ngày)
+                        if (dateRange.fromElement && dateRange.toElement) {
+                            const fromDateStr = dateRange.fromElement.dataset.date;
+                            const toDateStr = dateRange.toElement.dataset.date;
+
+                            // Nếu click vào cùng ngày với From và To (cùng ngày) → reset
+                            if (fromDateStr === clickedDateStr && toDateStr === clickedDateStr) {
+                                dateRange.fromElement = null;
+                                dateRange.toElement = null;
+                                isSelectingFrom = true;
+                                updateDateButtons();
+                                highlightSelectedRange();
+                                return;
+                            }
+                        }
+
+                        // Kiểm tra nếu click vào cùng ngày với From (chưa có To) → set To = From (lọc 1 ngày)
+                        if (dateRange.fromElement && !dateRange.toElement) {
+                            const fromDateStr = dateRange.fromElement.dataset.date;
+
+                            if (fromDateStr === clickedDateStr) {
+                                // Click lần 2 vào cùng ngày → set To = From
+                                dateRange.toElement = clickedDay;
+                                isSelectingFrom = true;
+                                updateDateButtons();
+                                highlightSelectedRange();
+                                return;
+                            }
+                        }
+
+                        // --- LOGIC BÌNH THƯỜNG ---
                         if (isSelectingFrom) {
                             dateRange.fromElement = clickedDay;
 
@@ -1692,7 +1327,6 @@
                 });
             }
 
-            // --- CÁC LOGIC DROP DOWN KHÁC ---
             function closeAllDropdowns() {
                 generalFilterDropdown.classList.remove('show');
                 dateFilterDropdown.classList.remove('show');
@@ -1729,72 +1363,24 @@
 
             generalFilterDropdown.addEventListener('click', function (e) { e.stopPropagation(); });
             dateFilterDropdown.addEventListener('click', function (e) { e.stopPropagation(); });
+
+            // Logic Ẩn/Hiện Chi tiết Date Range (ĐÃ SỬA: SỬ DỤNG CLASS HIDDEN)
             function toggleDateRangeDetails() {
                 const customRangeRadio = document.getElementById('customRangeRadio');
-                if (!customRangeRadio) return;
-                dateRangeDetails.style.display = customRangeRadio.checked ? 'block' : 'none';
+                if (!customRangeRadio || !dateRangeDetails) {
+                    return; // Nếu không có element, không làm gì
+                }
+                if (customRangeRadio.checked) {
+                    dateRangeDetails.style.display = 'block';
+                } else {
+                    dateRangeDetails.style.display = 'none';
+                }
             }
 
             dateRangeRadios.forEach(radio => {
                 radio.addEventListener('change', toggleDateRangeDetails);
             });
-
-            // --- Logic Cập nhật Trạng thái Đơn hàng (giữ nguyên) ---
             const tableBody = document.getElementById('ordersTableBody');
-
-            tableBody.addEventListener('change', function (event) {
-                const dropdown = event.target;
-                if (dropdown.classList.contains('status-dropdown')) {
-                    const orderId = dropdown.dataset.orderId;
-                    const newStatus = dropdown.value;
-                    updateDropdownStyle(dropdown, newStatus);
-                    updateOrderStatus(orderId, newStatus, dropdown);
-                }
-            });
-
-            async function updateOrderStatus(id, status, dropdownElement) {
-                dropdownElement.disabled = true;
-                try {
-                    await fetchJSON(`${API_BASE}/orders/${id}/status`, {
-                        method: 'PATCH',
-                        body: JSON.stringify({ status })
-                    });
-                    updateDisplayStatus(dropdownElement, status);
-                } catch (error) {
-                    console.error('Cập nhật thất bại:', error);
-                    alert('Cập nhật trạng thái thất bại. Vui lòng kiểm tra kết nối.');
-                } finally {
-                    dropdownElement.disabled = false;
-                }
-            }
-
-            function updateDropdownStyle(dropdown, newStatus) {
-                dropdown.className = dropdown.className.split(' ').filter(c => !c.endsWith('-select')).join(' ');
-                const statusClass = newStatus.toLowerCase().replace(/\s+/g, '-') + '-select';
-                dropdown.classList.add(statusClass);
-            }
-
-            function updateDisplayStatus(dropdown, newStatus) {
-                const row = dropdown.closest('tr');
-                const statusDisplayCell = row.querySelector('td:last-child');
-                let statusSpan = statusDisplayCell.querySelector('.status');
-                if (!statusSpan) {
-                    statusSpan = document.createElement('span');
-                    statusSpan.classList.add('status');
-                    statusSpan.style.marginLeft = '8px';
-                    statusDisplayCell.appendChild(statusSpan);
-                }
-                const statusClass = newStatus.toLowerCase().replace('-', '-');
-
-                statusSpan.className = 'status';
-                statusSpan.classList.add(statusClass);
-                statusSpan.textContent = newStatus.replace('-', ' ');
-            }
-
-            document.querySelectorAll('.status-dropdown').forEach(dropdown => {
-                updateDropdownStyle(dropdown, dropdown.value);
-            });
-
             // --- KHỞI TẠO ---
             setupMonthSelect();
             setupYearSelect();
@@ -1804,9 +1390,525 @@
             // KHẮC PHỤC LỖI HIỂN THỊ: Đảm bảo ẩn lịch theo trạng thái radio button ban đầu
             toggleDateRangeDetails();
 
-            // --- INITIAL DATA LOAD ---
-            loadMeta();
-            loadOrders();
+            // ========== LOAD CUSTOMER MANAGEMENT STATS ==========
+            const API_BASE_URL = 'http://localhost:5000/api';
+
+            // Helper function để lấy token
+            function getAuthToken() {
+                return localStorage.getItem('token') || sessionStorage.getItem('token');
+            }
+
+            // Helper function để format số
+            function formatNumber(num) {
+                return new Intl.NumberFormat('vi-VN').format(num);
+            }
+
+            // Helper function để format % change
+            function formatPercentChange(value) {
+                const num = parseFloat(value);
+                if (isNaN(num)) return '0%';
+                const sign = num >= 0 ? '+' : '';
+                return `${sign}${num.toFixed(2)}%`;
+            }
+
+            // Load customer management stats
+            async function loadCustomerManagementStats(timeRange = 'week') {
+                try {
+                    const token = getAuthToken();
+                    if (!token) {
+                        console.error('❌ Chưa đăng nhập');
+                        window.location.href = 'Login.html';
+                        return;
+                    }
+
+                    console.log('🔄 Đang gọi API customers/management-stats với timeRange:', timeRange);
+                    const response = await fetch(`${API_BASE_URL}/customers/management-stats?timeRange=${timeRange}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            console.error('❌ Token không hợp lệ - redirect đến Login');
+                            alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
+                            localStorage.removeItem('token');
+                            sessionStorage.removeItem('token');
+                            window.location.href = 'Login.html';
+                            return;
+                        }
+                        const errorText = await response.text();
+                        console.error('❌ Không thể tải dữ liệu:', response.status, errorText);
+                        return;
+                    }
+
+                    const result = await response.json();
+                    console.log('✅ Management Stats API response:', result);
+
+                    if (!result.success) {
+                        console.error('❌ Lỗi:', result.message);
+                        return;
+                    }
+
+                    const data = result.data;
+                    console.log('📊 Management Stats data nhận được:', data);
+
+                    // Update Card 1: All Customers, Active, In-Active
+                    const allCustomersValue = document.querySelector('.all-customer .card-value');
+                    if (allCustomersValue) {
+                        const growthRate = parseFloat(data.allCustomersGrowthRate || 0);
+                        const growthClass = growthRate >= 0 ? 'positive' : 'negative';
+                        allCustomersValue.innerHTML = `
+                            ${formatNumber(data.allCustomers || 0)}
+                            <span class="percent ${growthClass}">${formatPercentChange(data.allCustomersGrowthRate)}</span>
+                        `;
+                    }
+
+                    const activeValue = document.querySelector('.active .card-value');
+                    if (activeValue) {
+                        const growthRate = parseFloat(data.activeGrowthRate || 0);
+                        const growthClass = growthRate >= 0 ? 'positive' : 'negative';
+                        activeValue.innerHTML = `
+                            ${formatNumber(data.active || 0)}
+                            <span class="percent ${growthClass}">${formatPercentChange(data.activeGrowthRate)}</span>
+                        `;
+                    }
+
+                    const inactiveValue = document.querySelector('.in-active .card-value');
+                    if (inactiveValue) {
+                        const growthRate = parseFloat(data.inactiveGrowthRate || 0);
+                        const growthClass = growthRate >= 0 ? 'positive' : 'negative';
+                        inactiveValue.innerHTML = `
+                            ${formatNumber(data.inactive || 0)}
+                            <span class="percent ${growthClass} in-active-percent">${formatPercentChange(data.inactiveGrowthRate)}</span>
+                        `;
+                    }
+
+                    // Update Card 2: New Customers, Purchasing, Abandoned Carts
+                    const newCustomerValue = document.querySelector('.new-customer .card-value');
+                    if (newCustomerValue) {
+                        newCustomerValue.textContent = formatNumber(data.newCustomers || 0);
+                    }
+
+                    const purchasingValue = document.querySelector('.purchasing .card-value');
+                    if (purchasingValue) {
+                        purchasingValue.textContent = formatNumber(data.purchasing || 0);
+                    }
+
+                    const abandonedCartValue = document.querySelector('.abandoned-cart .card-value');
+                    if (abandonedCartValue) {
+                        abandonedCartValue.textContent = formatNumber(data.abandonedCarts || 0);
+                    }
+
+                } catch (error) {
+                    console.error('❌ Lỗi khi load customer management stats:', error);
+                }
+            }
+
+            // Map dropdown value to API timeRange
+            function mapTimeRangeToAPI(value) {
+                const mapping = {
+                    'This Week': 'week',
+                    'This Month': 'month',
+                    'This Year': 'year'
+                };
+                return mapping[value] || 'week';
+            }
+
+            // Add event listeners to dropdowns
+            const timeFilterDropdowns = document.querySelectorAll('.summary-cards .card select.btn-control');
+            timeFilterDropdowns.forEach((dropdown, index) => {
+                dropdown.addEventListener('change', (e) => {
+                    const selectedValue = e.target.value;
+                    const timeRange = mapTimeRangeToAPI(selectedValue);
+                    console.log(`📅 Dropdown ${index + 1} changed to: ${selectedValue} (timeRange: ${timeRange})`);
+                    loadCustomerManagementStats(timeRange);
+                });
+            });
+
+            // Load initial data
+            loadCustomerManagementStats('week');
+
+            // ========== LOAD CUSTOMERS TABLE ==========
+            let currentPage = 1;
+            const itemsPerPage = 10;
+            let totalCustomers = 0;
+            let totalPages = 1;
+            let currentStatusFilter = ''; // Lưu status filter hiện tại
+            let currentFromDate = ''; // Lưu fromDate filter
+            let currentToDate = ''; // Lưu toDate filter
+
+            // Format date
+            function formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                const day = date.getDate();
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const month = monthNames[date.getMonth()];
+                const year = date.getFullYear();
+                const hours = date.getHours();
+                const minutes = date.getMinutes();
+                const ampm = hours >= 12 ? 'pm' : 'am';
+                const displayHours = hours % 12 || 12;
+                const displayMinutes = minutes.toString().padStart(2, '0');
+                return `${day} ${month} ${year} - ${displayHours}:${displayMinutes} ${ampm}`;
+            }
+
+            // Format currency
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('vi-VN').format(Math.round(amount || 0)) + 'VND';
+            }
+
+            // Format customer ID
+            function formatCustomerId(id) {
+                return id;
+            }
+
+            // Tính toán date range từ radio button
+            function getDateRangeFromRadio(value) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                let startDate, endDate;
+
+                switch (value) {
+                    case 'this_week':
+                        // Tuần này: Thứ 2 đến Chủ nhật
+                        const dayOfWeek = today.getDay();
+                        const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Thứ 2
+                        startDate = new Date(today);
+                        startDate.setDate(diff);
+                        startDate.setHours(0, 0, 0, 0);
+                        endDate = new Date(startDate);
+                        endDate.setDate(startDate.getDate() + 6);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+
+                    case 'last_week':
+                        // Tuần trước
+                        const lastWeekDayOfWeek = today.getDay();
+                        const lastWeekDiff = today.getDate() - lastWeekDayOfWeek + (lastWeekDayOfWeek === 0 ? -6 : 1) - 7;
+                        startDate = new Date(today);
+                        startDate.setDate(lastWeekDiff);
+                        startDate.setHours(0, 0, 0, 0);
+                        endDate = new Date(startDate);
+                        endDate.setDate(startDate.getDate() + 6);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+
+                    case 'this_month':
+                        // Tháng này
+                        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+
+                    case 'last_month':
+                        // Tháng trước
+                        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                        endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+
+                    case 'this_year':
+                        // Năm này
+                        startDate = new Date(today.getFullYear(), 0, 1);
+                        endDate = new Date(today.getFullYear(), 11, 31);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+
+                    case 'last_year':
+                        // Năm trước
+                        startDate = new Date(today.getFullYear() - 1, 0, 1);
+                        endDate = new Date(today.getFullYear() - 1, 11, 31);
+                        endDate.setHours(23, 59, 59, 999);
+                        break;
+
+                    default:
+                        return { fromDate: '', toDate: '' };
+                }
+
+                // Format date to YYYY-MM-DD
+                const formatDateForAPI = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                };
+
+                return {
+                    fromDate: formatDateForAPI(startDate),
+                    toDate: formatDateForAPI(endDate)
+                };
+            }
+
+            // Lấy date range từ custom calendar
+            function getDateRangeFromCalendar() {
+                const fromEl = dateRange.fromElement;
+                const toEl = dateRange.toElement;
+
+                if (!fromEl || !toEl) {
+                    return { fromDate: '', toDate: '' };
+                }
+
+                const fromDateStr = fromEl.dataset.date;
+                const toDateStr = toEl.dataset.date;
+
+                if (!fromDateStr || !toDateStr) {
+                    return { fromDate: '', toDate: '' };
+                }
+
+                const fromDate = new Date(fromDateStr);
+                const toDate = new Date(toDateStr);
+
+                // Đảm bảo fromDate <= toDate
+                const startDate = fromDate <= toDate ? fromDate : toDate;
+                const endDate = fromDate <= toDate ? toDate : fromDate;
+
+                // Format date to YYYY-MM-DD
+                const formatDateForAPI = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                };
+
+                return {
+                    fromDate: formatDateForAPI(startDate),
+                    toDate: formatDateForAPI(endDate)
+                };
+            }
+
+            // Load customers from API
+            async function loadCustomers(page = 1, limit = 10, status = null, fromDate = null, toDate = null) {
+                // Nếu status không được truyền vào, dùng currentStatusFilter
+                if (status === null) {
+                    status = currentStatusFilter;
+                }
+                // Nếu fromDate/toDate không được truyền vào, dùng currentFromDate/currentToDate
+                if (fromDate === null) {
+                    fromDate = currentFromDate;
+                }
+                if (toDate === null) {
+                    toDate = currentToDate;
+                }
+
+                try {
+                    const token = getAuthToken();
+                    if (!token) {
+                        console.error('❌ Chưa đăng nhập');
+                        return;
+                    }
+
+                    // Build query string
+                    let queryParams = `page=${page}&limit=${limit}`;
+                    if (status) {
+                        queryParams += `&status=${status}`;
+                    }
+                    if (fromDate) {
+                        queryParams += `&fromDate=${fromDate}`;
+                    }
+                    if (toDate) {
+                        queryParams += `&toDate=${toDate}`;
+                    }
+
+                    console.log(`🔄 Đang load customers - page: ${page}, limit: ${limit}, status: ${status || 'all'}, fromDate: ${fromDate || 'none'}, toDate: ${toDate || 'none'}`);
+                    const response = await fetch(`${API_BASE_URL}/customers?${queryParams}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
+                            localStorage.removeItem('token');
+                            sessionStorage.removeItem('token');
+                            window.location.href = 'Login.html';
+                            return;
+                        }
+                        const errorText = await response.text();
+                        console.error('❌ Không thể tải danh sách khách hàng:', response.status, errorText);
+                        alert('Không thể tải danh sách khách hàng');
+                        return;
+                    }
+
+                    const result = await response.json();
+                    console.log('✅ Customers API response:', result);
+
+                    if (!result.success) {
+                        console.error('❌ Lỗi:', result.message);
+                        return;
+                    }
+
+                    const customers = result.data || [];
+                    const pagination = result.pagination || {};
+
+                    // Update pagination info
+                    currentPage = pagination.page || 1;
+                    totalCustomers = pagination.total || 0;
+                    totalPages = pagination.totalPages || 1;
+
+                    // Render customers to table
+                    renderCustomersTable(customers);
+                    updatePaginationInfo();
+
+                } catch (error) {
+                    console.error('❌ Lỗi khi load customers:', error);
+                    alert('Có lỗi xảy ra khi tải danh sách khách hàng');
+                }
+            }
+
+            // Render customers to table
+            function renderCustomersTable(customers) {
+                const tableBody = document.getElementById('ordersTableBody');
+                if (!tableBody) return;
+
+                tableBody.innerHTML = '';
+
+                if (customers.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = '<td colspan="9" style="text-align: center; padding: 20px;">Không có dữ liệu</td>';
+                    tableBody.appendChild(row);
+                    return;
+                }
+
+                customers.forEach(customer => {
+                    const row = document.createElement('tr');
+                    const isActive = customer.status === 'Active' || customer.status === 'active';
+                    const statusClass = isActive ? 'status-active' : 'status-in_active';
+                    const statusText = isActive ? 'Active' : 'In-Active';
+
+                    row.innerHTML = `
+                        <td><input type="checkbox"></td>
+                        <td>${formatCustomerId(customer.id)}</td>
+                        <td>${customer.name || ''}</td>
+                        <td>${customer.email || ''}</td>
+                        <td>${customer.phone || ''}</td>
+                        <td>${customer.orderCount || 0}</td>
+                        <td>${formatCurrency(customer.totalSpent)}</td>
+                        <td>${formatDate(customer.joinedDate)}</td>
+                        <td class="status ${statusClass}">${statusText}</td>
+                    `;
+
+                    // Add click event to navigate to customer details
+                    row.style.cursor = 'pointer';
+                    row.addEventListener('click', (e) => {
+                        // Don't navigate if clicking checkbox
+                        if (e.target.type === 'checkbox') return;
+                        window.location.href = `Customer_details.html?id=${customer.id}`;
+                    });
+
+                    tableBody.appendChild(row);
+                });
+            }
+
+            // Update pagination info
+            function updatePaginationInfo() {
+                const itemsPerPageEl = document.getElementById('itemsPerPage');
+                const itemsInfoEl = document.getElementById('itemsInfo');
+                const pagesInfoEl = document.getElementById('pagesInfo');
+                const prevPageBtn = document.getElementById('prevPageBtn');
+                const nextPageBtn = document.getElementById('nextPageBtn');
+
+                if (itemsPerPageEl) {
+                    itemsPerPageEl.textContent = `${itemsPerPage} items per page`;
+                }
+
+                if (itemsInfoEl) {
+                    const start = totalCustomers === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+                    const end = Math.min(currentPage * itemsPerPage, totalCustomers);
+                    itemsInfoEl.textContent = `${start}-${end} of ${totalCustomers} items`;
+                }
+
+                if (pagesInfoEl) {
+                    pagesInfoEl.textContent = `${currentPage} of ${totalPages} pages`;
+                }
+
+                // Enable/disable pagination buttons
+                if (prevPageBtn) {
+                    prevPageBtn.disabled = currentPage <= 1;
+                }
+                if (nextPageBtn) {
+                    nextPageBtn.disabled = currentPage >= totalPages;
+                }
+            }
+
+            // Pagination button handlers
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+
+            if (prevPageBtn) {
+                prevPageBtn.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        loadCustomers(currentPage - 1, itemsPerPage);
+                    }
+                });
+            }
+
+            if (nextPageBtn) {
+                nextPageBtn.addEventListener('click', () => {
+                    if (currentPage < totalPages) {
+                        loadCustomers(currentPage + 1, itemsPerPage);
+                    }
+                });
+            }
+
+            // Bulk Status dropdown filter
+            const bulkStatusSelect = document.getElementById('bulkStatusSelect');
+            if (bulkStatusSelect) {
+                bulkStatusSelect.addEventListener('change', (e) => {
+                    const selectedValue = e.target.value;
+
+                    // Cập nhật currentStatusFilter
+                    currentStatusFilter = selectedValue;
+
+                    // Reset về trang 1 khi thay đổi filter
+                    currentPage = 1;
+
+                    // Load lại customers với filter mới
+                    loadCustomers(1, itemsPerPage, selectedValue);
+                });
+            }
+
+            // Date filter - Apply button
+            const dateFilterApplyBtn = dateFilterDropdown.querySelector('.btn-apply-filter');
+            if (dateFilterApplyBtn) {
+                dateFilterApplyBtn.addEventListener('click', () => {
+                    let dateRangeResult = { fromDate: '', toDate: '' };
+
+                    // Ưu tiên: Nếu có date được chọn trong calendar, dùng calendar
+                    if (dateRange.fromElement && dateRange.toElement) {
+                        dateRangeResult = getDateRangeFromCalendar();
+                        console.log('📅 Using custom date range from calendar');
+                    } else {
+                        // Nếu không có calendar date, dùng radio button
+                        const selectedRadio = document.querySelector('input[name="date_range"]:checked');
+                        if (selectedRadio) {
+                            const radioValue = selectedRadio.value;
+                            dateRangeResult = getDateRangeFromRadio(radioValue);
+                            console.log('📅 Using date range from radio:', radioValue);
+                        }
+                    }
+
+                    // Cập nhật current date filters
+                    currentFromDate = dateRangeResult.fromDate;
+                    currentToDate = dateRangeResult.toDate;
+
+                    // Reset về trang 1
+                    currentPage = 1;
+
+                    // Đóng dropdown
+                    dateFilterDropdown.classList.remove('show');
+
+                    // Load lại customers với filter mới
+                    loadCustomers(1, itemsPerPage, currentStatusFilter, currentFromDate, currentToDate);
+
+                    console.log('✅ Date filter applied:', { fromDate: currentFromDate, toDate: currentToDate });
+                });
+            }
+
+            // Load initial customers
+            loadCustomers(1, itemsPerPage);
         });
     </script>
 </body>
